@@ -1016,7 +1016,70 @@ window.OIL_CONFIG = {
     OIL.adFill();
   }
 
+  /* ── 위젯이 없을 때를 위한 대비 ───────────────────────────
+     블로그스팟이 테마를 받을 때 '블로그 게시물' 위젯을 빠뜨리는 일이 있다.
+     그러면 글이 통째로 안 보이므로, 블로거 피드에서 직접 가져와 그린다.
+     위젯이 정상이면 이 코드는 아무 일도 하지 않는다. */
+  function feedUrl() {
+    var path = location.pathname;
+    var m = path.match(/^\/search\/label\/(.+?)\/?$/);
+    if (m) {
+      return '/feeds/posts/default/-/' + m[1] + '?alt=json&max-results=25';
+    }
+    if (/\.html$/.test(path)) {
+      return '/feeds/posts/default?alt=json&max-results=1&path=' + encodeURIComponent(path);
+    }
+    return '/feeds/posts/default?alt=json&max-results=25';
+  }
+
+  function entryUrl(e) {
+    var links = e.link || [];
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].rel === 'alternate') return links[i].href;
+    }
+    return '#';
+  }
+
+  function renderFeed(entries, single) {
+    var wrap = document.querySelector('.oil-blog-wrap');
+    if (!wrap) return;
+    if (!entries.length) {
+      wrap.innerHTML = '<div class="oil-error">글이 없습니다.</div>';
+      return;
+    }
+    wrap.innerHTML = entries.map(function (e) {
+      var title = (e.title && e.title.$t) || '';
+      var body = (e.content && e.content.$t) || (e.summary && e.summary.$t) || '';
+      if (single) {
+        return '<div class="post"><h1 class="post-title">' + OIL.esc(title) + '</h1>' +
+          '<div class="post-body">' + body + '</div></div>';
+      }
+      var text = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 95);
+      return '<a class="post" href="' + entryUrl(e) + '" style="display:block;">' +
+        '<div class="post-title" style="margin-bottom:8px;">' + OIL.esc(title) + '</div>' +
+        '<div style="font-size:13px;line-height:1.7;color:#5B666A;">' + OIL.esc(text) + '...</div></a>';
+    }).join('');
+  }
+
+  function loadFromFeed() {
+    var single = /\.html$/.test(location.pathname) &&
+                 !/^\/search\//.test(location.pathname);
+    fetch(feedUrl(), { cache: 'no-cache' })
+      .then(function (r) { return r.json(); })
+      .then(function (js) {
+        renderFeed((js.feed && js.feed.entry) || [], single);
+        fillAds();
+        return OIL.meta().then(fillNumbers);
+      })
+      .catch(function (e) { if (window.console) console.error(e); });
+  }
+
   function run() {
+    /* 위젯이 글을 그렸는지 확인 */
+    if (!document.querySelector('.post-body')) {
+      loadFromFeed();
+      return;
+    }
     fillAds();
     if (!document.querySelector('.post-body [data-oil]')) return;
     OIL.meta().then(fillNumbers).catch(function () { /* 숫자는 못 채워도 글은 읽힌다 */ });
