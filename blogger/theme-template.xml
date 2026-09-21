@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:version='2' class='v2' expr:dir='data:blog.languageDirection' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+<head>
+
+  <!-- 1. 구글 서치 콘솔 설정값 (이 블로그용으로 새로 받아 넣어야 합니다) -->
+  <!-- <meta content='여기에_구글_인증값' name='google-site-verification'/> -->
+
+  <!-- 2. 네이버 서치 어드바이저 설정값 (이 블로그용으로 새로 받아 넣어야 합니다) -->
+  <!-- <meta content='여기에_네이버_인증값' name='naver-site-verification'/> -->
+
+  <!-- 3. 애드센스 (자동광고: 양쪽 사이드 레일 광고도 이 코드로 표시됨) -->
+  <script async='async' crossorigin='anonymous' expr:src='&quot;https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=@@OIL_AD_CLIENT@@&quot;'/>
+
+  <!-- 4. 아로스 애드센스 무효트래픽 방지코드 -->
+  <script>
+    window.redirectTarget = &quot;https://letsdoooit.com&quot;;
+  </script>
+  <script src='https://cdn.jsdelivr.net/gh/abaeksite/aros_adsense_blocker@main/aros_adsense_blocker_v7-1.js'/>
+
+<!-- Open Graph -->
+<meta content='주유소찾기 - 우리 동네 기름값, 고를 가치가 있을까' property='og:title'/>
+<meta content='전국 주유소 1만여 곳의 실제 판매가로 우리 동네 기름값을 비교합니다. 같은 동네 안에서도 수백 원 차이가 나는 곳이 있습니다. 매일 갱신됩니다.' property='og:description'/>
+<meta expr:content='data:blog.url' property='og:url'/>
+<meta content='website' property='og:type'/>
+<meta content='주유소찾기' property='og:site_name'/>
+
+<!-- Twitter -->
+<meta content='summary_large_image' name='twitter:card'/>
+<meta content='주유소찾기 - 우리 동네 기름값' name='twitter:title'/>
+<meta content='전국 주유소 실제 판매가로 우리 동네 기름값을 비교합니다.' name='twitter:description'/>
+
+<meta content='전국 주유소 1만여 곳의 실제 판매가로 우리 동네 기름값을 비교합니다. 같은 동네 안에서도 수백 원 차이가 나는 곳이 있습니다. 매일 갱신됩니다.' name='description'/>
+<meta content='width=device-width,initial-scale=1.0' name='viewport'/>
+<link href='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css' rel='stylesheet'/>
+<b:include data='blog' name='all-head-content'/>
+<title><data:blog.pageTitle/></title>
+
+<b:skin><![CDATA[
+/* 주유소찾기 - 블로그스팟 전용 테마 (scripts/build_theme.py 로 자동 생성) */
+/*@@OIL_CSS@@*/
+]]></b:skin>
+</head>
+
+<body>
+<header class='oil-header'>
+  <a class='oil-logo' expr:href='data:blog.homepageUrl'>주유소찾기</a>
+  <span class='oil-sub'>매일 최신 가격으로 업데이트 <i class='oil-sub-sep'>/</i> <b>우리 동네 최저가 바로 확인!!</b></span>
+</header>
+
+<nav class='oil-tabs' id='oil-tabs'>
+  <ul><li><a class='active' href='/'>우리 동네</a></li></ul>
+</nav>
+
+<!-- 화면이 그려지는 자리 (홈 / 동네 상세 / 계산기) -->
+<div id='oil-root'/>
+
+<!-- 일반 블로그 글 (앱 화면에서는 숨김) -->
+<div class='oil-blog-wrap'>
+<b:section class='main' id='main' showaddelement='no'>
+  <b:widget id='Blog1' locked='true' title='블로그 게시물' type='Blog' version='1'>
+    <b:widget-settings>
+      <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+      <b:widget-setting name='showShareButtons'>false</b:widget-setting>
+      <b:widget-setting name='showAuthor'>false</b:widget-setting>
+      <b:widget-setting name='showTimestamp'>false</b:widget-setting>
+      <b:widget-setting name='showLabels'>false</b:widget-setting>
+      <b:widget-setting name='showCommentLink'>false</b:widget-setting>
+      <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+      <b:widget-setting name='showReactions'>false</b:widget-setting>
+      <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+      <b:widget-setting name='showLocation'>false</b:widget-setting>
+      <b:widget-setting name='showAuthorProfile'>false</b:widget-setting>
+      <b:widget-setting name='postsPerAd'>1</b:widget-setting>
+      <b:widget-setting name='style.layout'>1x1</b:widget-setting>
+    </b:widget-settings>
+    <b:includable id='main' var='top'>
+      <div class='blog-posts hfeed'>
+        <b:loop values='data:posts' var='post'>
+          <div class='post-outer'>
+            <b:include data='post' name='post'/>
+          </div>
+        </b:loop>
+      </div>
+    </b:includable>
+    <b:includable id='post' var='post'>
+      <div class='post hentry' itemprop='blogPost' itemscope='itemscope' itemtype='http://schema.org/BlogPosting'>
+        <b:if cond='data:post.title'>
+          <h3 class='post-title entry-title' itemprop='name'>
+            <b:if cond='data:post.link or (data:post.url and data:blog.url != data:post.url)'>
+              <a expr:href='data:post.link ? data:post.link : data:post.url'><data:post.title/></a>
+            <b:else/>
+              <data:post.title/>
+            </b:if>
+          </h3>
+        </b:if>
+        <div class='post-body entry-content' expr:id='&quot;post-body-&quot; + data:post.id' itemprop='articleBody'>
+          <data:post.body/>
+          <div style='clear: both;'/>
+        </div>
+      </div>
+    </b:includable>
+  </b:widget>
+</b:section>
+</div>
+
+<footer class='oil-footer'>
+  <div><b>주유소찾기</b>한국석유공사 오피넷이 공개하는 전국 주유소 판매가격을 바탕으로 정보 제공을 목적으로 운영됩니다.<br/>
+  실제 판매가는 주유소 사정에 따라 다를 수 있으니 방문 전 확인하시기 바랍니다.</div>
+</footer>
+
+<script>
+//<![CDATA[
+/*@@OIL_CONFIG_START@@*/
+window.OIL_CONFIG = {
+  listPageUrl: '/',
+  areaPageUrl: '/p/area.html',
+  calcPageUrl: '/p/calc.html',
+  reportLabelUrl: '/search/label/기름값리포트',
+  dataBaseUrl: '@@OIL_DATA_URL@@',
+  adClient: '@@OIL_AD_CLIENT@@',
+  adSlot: '@@OIL_AD_SLOT@@'
+};
+/*@@OIL_CONFIG_END@@*/
+//]]>
+</script>
+<script>
+//<![CDATA[
+/*@@OIL_JS@@*/
+//]]>
+</script>
+</body>
+</html>

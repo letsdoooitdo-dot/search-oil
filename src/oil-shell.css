@@ -1,0 +1,93 @@
+/* 주유소찾기 - 테마 껍데기 (헤더·탭·푸터·블로그 글) */
+
+:root {
+  --oil-bg: #EFF1F0;
+  --oil-card: #FFFFFF;
+  --oil-line: #DDE3E1;
+  --oil-line-soft: #E9EEEC;
+  --oil-soft: #F5F7F6;
+  --oil-ink: #13181A;
+  --oil-ink2: #4A5558;
+  --oil-muted: #5B666A;
+  --oil-muted2: #8A9599;
+  --oil-accent: #D96206;
+  --oil-accent-dark: #A54A04;
+  --oil-accent-soft: #FDF0E4;
+  --oil-teal: #0B6B60;
+  --oil-teal-dark: #0A5850;
+  --oil-teal-soft: #E2F1EE;
+  --oil-max: 768px;
+}
+
+html, body {
+  margin: 0; padding: 0;
+  background: var(--oil-bg);
+  color: var(--oil-ink);
+  font-family: Pretendard, "IBM Plex Sans KR", system-ui, -apple-system, sans-serif;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  -webkit-text-size-adjust: 100%;
+}
+* { box-sizing: border-box; }
+a { color: var(--oil-accent-dark); text-decoration: none; }
+button, input, select { font-family: inherit; }
+
+/* 헤더 */
+.oil-header {
+  background: var(--oil-card);
+  border-bottom: 1px solid var(--oil-line);
+  padding: 11px 16px 10px;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px;
+  position: sticky; top: 0; z-index: 30;
+}
+.oil-logo {
+  font-size: 17px; font-weight: 900; letter-spacing: -0.03em; color: var(--oil-ink);
+}
+.oil-sub { font-size: 11.5px; color: #ef4444; font-weight: 600; }
+.oil-sub b { font-weight: 700; }
+.oil-sub-sep { color: var(--oil-line); font-style: normal; margin: 0 2px; }
+
+/* 탭 */
+.oil-tabs {
+  background: var(--oil-card);
+  border-bottom: 1px solid var(--oil-line);
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.oil-tabs ul {
+  display: flex; gap: 2px; margin: 0 auto; padding: 0 12px;
+  max-width: var(--oil-max); list-style: none;
+}
+.oil-tabs a {
+  display: block; flex-shrink: 0; white-space: nowrap;
+  padding: 11px 10px 9px; font-size: 12.5px; font-weight: 500;
+  color: #6B7679; border-bottom: 2px solid transparent;
+}
+.oil-tabs a.active { color: var(--oil-ink); font-weight: 700; border-bottom-color: var(--oil-ink); }
+
+/* 본문 자리 */
+#oil-root { max-width: var(--oil-max); margin: 0 auto; padding: 16px; }
+#oil-root:empty { min-height: 60vh; }
+
+/* 푸터 */
+.oil-footer {
+  max-width: var(--oil-max); margin: 24px auto 0; padding: 16px 16px 28px;
+  font-size: 11.5px; line-height: 1.65; color: var(--oil-muted);
+  border-top: 1px solid var(--oil-line);
+}
+.oil-footer b { color: var(--oil-ink); margin-right: 6px; }
+
+/* 일반 블로그 글 (앱 화면에서는 숨김) */
+.oil-blog-wrap { max-width: var(--oil-max); margin: 0 auto; padding: 16px; }
+.oil-mode-home .oil-blog-wrap,
+.oil-mode-area .oil-blog-wrap,
+.oil-mode-calc .oil-blog-wrap { display: none; }
+.oil-blog-wrap .post {
+  background: var(--oil-card); border: 1px solid var(--oil-line);
+  border-radius: 16px; padding: 22px; margin: 0 0 16px;
+}
+.oil-blog-wrap .post-title { font-size: 21px; font-weight: 800; margin: 0 0 14px; letter-spacing: -0.02em; }
+.oil-blog-wrap .post-title a { color: var(--oil-ink); }
+.oil-blog-wrap .post-body { font-size: 16px; line-height: 1.8; color: var(--oil-ink2); }
+.oil-blog-wrap .post-body img { max-width: 100%; height: auto; border-radius: 10px; }
+.oil-blog-wrap .post-body h2 { font-size: 19px; margin: 26px 0 10px; color: var(--oil-ink); }
+.oil-blog-wrap .post-body h3 { font-size: 17px; margin: 22px 0 8px; color: var(--oil-ink); }

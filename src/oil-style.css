@@ -1,0 +1,140 @@
+/* 주유소찾기 - 화면 스타일 */
+
+/* 공통 조각 */
+.oil-stack { display: flex; flex-direction: column; gap: 12px; }
+.oil-card {
+  background: var(--oil-card); border: 1px solid var(--oil-line);
+  border-radius: 16px; padding: 16px;
+}
+.oil-card.is-accent { border-color: var(--oil-accent); box-shadow: 0 0 0 3px var(--oil-accent-soft); }
+.oil-card.is-teal { border-color: var(--oil-teal); box-shadow: 0 0 0 3px var(--oil-teal-soft); }
+.oil-card.is-flush { padding: 16px 0 6px; }
+.oil-card-title {
+  font-size: 17px; font-weight: 900; letter-spacing: -0.02em; color: var(--oil-ink);
+  margin: 0 0 10px;
+}
+.oil-kicker {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--oil-accent-dark);
+}
+.oil-h1 {
+  margin: 5px 0 0; font-size: 23px; font-weight: 900; letter-spacing: -0.03em;
+  color: var(--oil-ink); line-height: 1.32;
+}
+.oil-lead { margin: 10px 0 0; font-size: 13.5px; line-height: 1.7; color: var(--oil-ink2); }
+.oil-p { margin: 0 0 11px; font-size: 13.5px; line-height: 1.75; color: var(--oil-ink2); }
+.oil-p:last-child { margin-bottom: 0; }
+.oil-p b, .oil-lead b { font-weight: 700; color: var(--oil-ink); }
+.oil-hero {
+  font-size: 34px; font-weight: 900; letter-spacing: -0.03em;
+  color: var(--oil-accent-dark); line-height: 1.1;
+}
+.oil-hero-unit { font-size: 13px; color: var(--oil-muted); font-weight: 500; margin-left: 7px; }
+
+/* 표 */
+.oil-rows { border: 1px solid var(--oil-line-soft); border-radius: 11px; overflow: hidden; margin-top: 13px; }
+.oil-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 10px 12px; font-size: 12.5px; border-bottom: 1px solid var(--oil-line-soft);
+}
+.oil-row:last-child { border-bottom: 0; background: var(--oil-soft); }
+.oil-row-k { color: var(--oil-muted); }
+.oil-row-v { font-weight: 700; color: var(--oil-ink); text-align: right; }
+.oil-row-v.is-accent { color: var(--oil-accent-dark); }
+
+/* 주유소 목록 */
+.oil-list-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  padding: 11px 16px;
+}
+.oil-list-item:nth-child(even) { background: var(--oil-soft); }
+.oil-list-name { font-size: 12.5px; color: var(--oil-ink); min-width: 0; }
+.oil-list-price { font-size: 13.5px; font-weight: 700; color: var(--oil-ink); flex-shrink: 0; }
+.oil-tag { font-size: 10.5px; color: #6B7679; margin-left: 4px; }
+.oil-badge {
+  font-size: 10.5px; font-weight: 600; padding: 2px 6px; border-radius: 5px; margin-left: 5px;
+  white-space: nowrap;
+}
+.oil-badge.is-low { background: #E4F2E8; color: #0F5628; }
+.oil-badge.is-high { background: #FBEAE4; color: var(--oil-accent-dark); }
+
+/* 지역 선택 */
+.oil-sido-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.oil-chip {
+  font-size: 12px; padding: 7px 11px; border-radius: 9px;
+  border: 1px solid var(--oil-line); background: var(--oil-card); color: var(--oil-ink2);
+  cursor: pointer;
+}
+.oil-chip.active { background: var(--oil-ink); color: #fff; border-color: var(--oil-ink); font-weight: 600; }
+.oil-region-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 11px; }
+.oil-region-grid a {
+  font-size: 11.5px; padding: 5px 10px; border-radius: 7px;
+  border: 1px solid var(--oil-line); color: var(--oil-ink2); background: var(--oil-card);
+}
+.oil-search {
+  width: 100%; padding: 12px 13px; font-size: 15px; font-weight: 500;
+  border: 1px solid var(--oil-line); border-radius: 11px; background: var(--oil-card);
+  color: var(--oil-ink);
+}
+.oil-suggest { margin-top: 8px; display: flex; flex-direction: column; }
+.oil-suggest a {
+  padding: 10px 12px; font-size: 13px; color: var(--oil-ink);
+  border-bottom: 1px solid var(--oil-line-soft);
+}
+.oil-suggest a:last-child { border-bottom: 0; }
+.oil-suggest .s { color: var(--oil-muted); font-size: 11.5px; margin-left: 6px; }
+
+/* 순위 목록 */
+.oil-rank a {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 16px; font-size: 12.5px; color: var(--oil-ink);
+}
+.oil-rank a:nth-child(even) { background: var(--oil-soft); }
+.oil-rank .v { font-weight: 700; color: var(--oil-accent-dark); flex-shrink: 0; }
+
+/* 버튼 */
+.oil-btn {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 14px; border-radius: 14px; background: var(--oil-ink); color: #fff;
+  font-size: 13px; font-weight: 700;
+}
+.oil-btn.is-ghost {
+  background: var(--oil-card); color: var(--oil-ink2); border: 1px solid var(--oil-line);
+  font-weight: 500; font-size: 12.5px; padding: 12px 14px;
+}
+.oil-btn svg { flex-shrink: 0; }
+
+/* 계산기 */
+.oil-field { margin-bottom: 13px; }
+.oil-field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--oil-ink2); margin-bottom: 6px; }
+.oil-field-in { display: flex; align-items: center; gap: 8px; }
+.oil-field input, .oil-field select {
+  flex-grow: 1; min-width: 0; padding: 11px 12px; font-size: 15px; font-weight: 600;
+  color: var(--oil-ink); background: var(--oil-card);
+  border: 1px solid var(--oil-line); border-radius: 11px;
+}
+.oil-field-unit { flex-shrink: 0; font-size: 12.5px; color: var(--oil-muted); }
+.oil-field-hint { font-size: 11px; color: var(--oil-muted2); margin-top: 4px; }
+
+/* 광고 */
+.oil-ad { margin: 2px 0; }
+.oil-ad-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+  color: var(--oil-muted2); margin-bottom: 6px;
+}
+
+/* 알림 */
+.oil-note {
+  background: #FDF6EE; border: 1px solid #F0D9BE; border-radius: 12px; padding: 12px 14px;
+  font-size: 12.5px; line-height: 1.65; color: #5A4632;
+}
+.oil-loading { padding: 40px 0; text-align: center; color: var(--oil-muted); font-size: 13px; }
+.oil-error { padding: 28px 16px; text-align: center; color: var(--oil-muted); font-size: 13px; }
+
+/* 도식 */
+.oil-diagram { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--oil-line-soft); }
+.oil-diagram svg { display: block; width: 100%; height: auto; }
+
+@media (min-width: 620px) {
+  .oil-h1 { font-size: 26px; }
+  #oil-root { padding: 20px 16px; }
+}

@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+블로그스팟 테마 파일 만들기
+============================
+실행:  python build_theme.py [데이터 주소]
+  예)  python build_theme.py https://letsdoooitdo-dot.github.io/search-oil/api/
+
+만들어지는 것
+  blogger/theme-oil.xml        블로그스팟 [테마 → HTML 편집]에 붙여넣을 파일
+  .theme-preview/index.html    내 컴퓨터에서 확인용 (홈)
+  .theme-preview/area.html     확인용 (동네 상세)
+  .theme-preview/calc.html     확인용 (계산기)
+
+정부지원금찾기의 build-theme.mjs 와 같은 방식이다.
+"""
+
+import sys as _s
+try: _s.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception: pass
+
+import os
+import re
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+sys.path.insert(0, HERE)
+
+from ui import ADSENSE_CLIENT, ADSENSE_SLOT_INCONTENT
+
+DEFAULT_DATA_URL = "https://letsdoooitdo-dot.github.io/search-oil/api/"
+
+CSS_FILES = ["src/oil-shell.css", "src/oil-style.css"]
+JS_FILES = ["src/oil-blogger.js", "src/oil-core.js", "src/oil-area.js", "src/oil-calc.js"]
+
+
+def read(rel):
+    with open(os.path.join(ROOT, rel), encoding="utf-8") as f:
+        return f.read()
+
+
+def main():
+    data_url = (sys.argv[1] if len(sys.argv) > 1 else DEFAULT_DATA_URL).rstrip("/") + "/"
+
+    css = "\n".join(read(p) for p in CSS_FILES)
+    js = "\n".join(read(p) for p in JS_FILES)
+
+    # 블로그스팟 테마는 XML이라 CDATA 안에 "]]>" 가 있으면 통째로 깨진다
+    for name, text in (("CSS", css), ("JS", js)):
+        if "]]>" in text:
+            raise SystemExit(f"{name} 안에 ]]> 가 있어 테마에 넣을 수 없습니다")
+
+    theme = (read("blogger/theme-template.xml")
+             .replace("/*@@OIL_CSS@@*/", css)
+             .replace("/*@@OIL_JS@@*/", js)
+             .replace("@@OIL_DATA_URL@@", data_url)
+             .replace("@@OIL_AD_CLIENT@@", ADSENSE_CLIENT)
+             .replace("@@OIL_AD_SLOT@@", ADSENSE_SLOT_INCONTENT))
+
+    out = os.path.join(ROOT, "blogger", "theme-oil.xml")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(theme)
+
+    # ── 내 컴퓨터 확인용: 블로그스팟이 테마를 HTML로 바꾸는 과정을 흉내낸다 ──
+    prev_dir = os.path.join(ROOT, ".theme-preview")
+    os.makedirs(prev_dir, exist_ok=True)
+
+    body = theme
+    body = re.sub(r"<b:skin><!\[CDATA\[(.*?)\]\]></b:skin>",
+                  lambda m: "<style>" + m.group(1) + "</style>", body, flags=re.S)
+    body = re.sub(r"<b:section.*?</b:section>", "", body, flags=re.S)
+    body = re.sub(r"<b:include[^>]*/>", "", body)
+    body = body.replace("//<![CDATA[", "").replace("//]]>", "")
+    body = body.replace("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n", "")
+    body = re.sub(r"\sexpr:(dir|href|src|content|id)='[^']*'", "", body)
+    body = re.sub(r"<title><data:blog.pageTitle/></title>", "<title>주유소찾기</title>", body)
+    body = body.replace("<html b:version='2' class='v2'", "<html lang='ko'")
+    body = re.sub(r"\sxmlns:[a-z]+='[^']*'", "", body)
+    # 미리보기에서는 실제 광고를 부르지 않는다
+    body = re.sub(r"<script async='async'[^>]*adsbygoogle\.js[^>]*/>", "", body)
+    body = body.replace("<script src='https://cdn.jsdelivr.net/gh/abaeksite/"
+                        "aros_adsense_blocker@main/aros_adsense_blocker_v7-1.js'/>", "")
+    body = body.replace("adClient: '" + ADSENSE_CLIENT + "'", "adClient: ''")
+
+    for name, path in (("index.html", "/"), ("area.html", "/p/area.html"),
+                       ("calc.html", "/p/calc.html")):
+        page = body.replace("location.pathname.replace(/\\/+$/, '') || '/'",
+                            "'" + path + "'")
+        with open(os.path.join(prev_dir, name), "w", encoding="utf-8") as f:
+            f.write(page)
+
+    print(f"테마 작성: {out}  ({os.path.getsize(out)/1024:,.0f}KB)")
+    print(f"데이터 주소: {data_url}")
+    print(f"미리보기: {prev_dir}\\index.html  (area.html, calc.html 도 같이 생성)")
+
+
+if __name__ == "__main__":
+    main()
