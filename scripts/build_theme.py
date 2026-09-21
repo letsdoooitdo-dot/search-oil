@@ -32,7 +32,8 @@ from ui import ADSENSE_CLIENT, ADSENSE_SLOT_INCONTENT
 DEFAULT_DATA_URL = "https://letsdoooitdo-dot.github.io/search-oil/api/"
 
 CSS_FILES = ["src/oil-shell.css", "src/oil-style.css"]
-JS_FILES = ["src/oil-blogger.js", "src/oil-core.js", "src/oil-area.js", "src/oil-calc.js"]
+JS_FILES = ["src/oil-blogger.js", "src/oil-core.js", "src/oil-area.js",
+            "src/oil-calc.js", "src/oil-post.js"]
 
 
 def read(rel):
@@ -85,9 +86,20 @@ def main():
     body = body.replace("adClient: '" + ADSENSE_CLIENT + "'", "adClient: ''")
 
     for name, path in (("index.html", "/"), ("area.html", "/p/area.html"),
-                       ("calc.html", "/p/calc.html")):
+                       ("calc.html", "/p/calc.html"), ("post.html", "/2026/09/sample.html")):
         page = body.replace("location.pathname.replace(/\\/+$/, '') || '/'",
                             "'" + path + "'")
+        if name == "post.html":
+            # 블로그 글 화면 확인용 - 만들어둔 글 본문 하나를 끼워 넣는다
+            sample = os.path.join(ROOT, "posts", "01-요일속설.html")
+            if os.path.exists(sample):
+                with open(sample, encoding="utf-8") as f:
+                    post_body = f.read()
+                page = page.replace(
+                    '<div class=\'oil-blog-wrap\'>\n\n</div>',
+                    '<div class=\'oil-blog-wrap\'><div class="post">'
+                    '<h3 class="post-title">"화요일에 넣으면 싸다"는 진짜일까</h3>'
+                    f'<div class="post-body">{post_body}</div></div></div>')
         with open(os.path.join(prev_dir, name), "w", encoding="utf-8") as f:
             f.write(page)
 

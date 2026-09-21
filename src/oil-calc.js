@@ -101,6 +101,8 @@
     html += '</div>';
 
     OIL.render(html);
+    /* 블로그스팟이 "주유소찾기: calc" 로 붙이는 제목을 검색용으로 바꾼다 */
+    document.title = '기름값 계산기 - 연간 주유비·경차 환급·우회 손익분기';
     wire(gas, diesel, selfM, fullM, cheap, pricey);
   }
 

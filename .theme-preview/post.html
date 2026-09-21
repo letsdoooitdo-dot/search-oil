@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html>
-<html b:version='2' class='v2' expr:dir='data:blog.languageDirection' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+<html lang='ko' xmlns='http://www.w3.org/1999/xhtml'>
 <head>
 
   <!-- 1. 구글 서치 콘솔 설정값 (이 블로그용으로 새로 받아 넣어야 합니다) -->
@@ -10,18 +9,18 @@
   <!-- <meta content='여기에_네이버_인증값' name='naver-site-verification'/> -->
 
   <!-- 3. 애드센스 (자동광고: 양쪽 사이드 레일 광고도 이 코드로 표시됨) -->
-  <script async='async' crossorigin='anonymous' expr:src='&quot;https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5167405501174218&quot;'/>
+  <script async='async' crossorigin='anonymous'/>
 
   <!-- 4. 아로스 애드센스 무효트래픽 방지코드 -->
   <script>
     window.redirectTarget = &quot;https://letsdoooit.com&quot;;
   </script>
-  <script src='https://cdn.jsdelivr.net/gh/abaeksite/aros_adsense_blocker@main/aros_adsense_blocker_v7-1.js'/>
+  
 
 <!-- Open Graph -->
 <meta content='주유소찾기 - 우리 동네 기름값, 고를 가치가 있을까' property='og:title'/>
 <meta content='전국 주유소 1만여 곳의 실제 판매가로 우리 동네 기름값을 비교합니다. 같은 동네 안에서도 수백 원 차이가 나는 곳이 있습니다. 매일 갱신됩니다.' property='og:description'/>
-<meta expr:content='data:blog.url' property='og:url'/>
+<meta property='og:url'/>
 <meta content='website' property='og:type'/>
 <meta content='주유소찾기' property='og:site_name'/>
 
@@ -33,10 +32,10 @@
 <meta content='전국 주유소 1만여 곳의 실제 판매가로 우리 동네 기름값을 비교합니다. 같은 동네 안에서도 수백 원 차이가 나는 곳이 있습니다. 매일 갱신됩니다.' name='description'/>
 <meta content='width=device-width,initial-scale=1.0' name='viewport'/>
 <link href='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css' rel='stylesheet'/>
-<b:include data='blog' name='all-head-content'/>
-<title><data:blog.pageTitle/></title>
 
-<b:skin><![CDATA[
+<title>주유소찾기</title>
+
+<style>
 /* 주유소찾기 - 블로그스팟 전용 테마 (scripts/build_theme.py 로 자동 생성) */
 /* 주유소찾기 - 테마 껍데기 (헤더·탭·푸터·블로그 글) */
 
@@ -273,12 +272,12 @@ button, input, select { font-family: inherit; }
   #oil-root { padding: 20px 16px; }
 }
 
-]]></b:skin>
+</style>
 </head>
 
 <body>
 <header class='oil-header'>
-  <a class='oil-logo' expr:href='data:blog.homepageUrl'>주유소찾기</a>
+  <a class='oil-logo'>주유소찾기</a>
   <span class='oil-sub'>매일 최신 가격으로 업데이트 <i class='oil-sub-sep'>/</i> <b>우리 동네 최저가 바로 확인!!</b></span>
 </header>
 
@@ -292,53 +291,18 @@ button, input, select { font-family: inherit; }
 <div id='oil-root'></div>
 
 <!-- 일반 블로그 글 (앱 화면에서는 숨김) -->
-<div class='oil-blog-wrap'>
-<b:section class='main' id='main' showaddelement='no'>
-  <b:widget id='Blog1' locked='true' title='블로그 게시물' type='Blog' version='1'>
-    <b:widget-settings>
-      <b:widget-setting name='showDateHeader'>false</b:widget-setting>
-      <b:widget-setting name='showShareButtons'>false</b:widget-setting>
-      <b:widget-setting name='showAuthor'>false</b:widget-setting>
-      <b:widget-setting name='showTimestamp'>false</b:widget-setting>
-      <b:widget-setting name='showLabels'>false</b:widget-setting>
-      <b:widget-setting name='showCommentLink'>false</b:widget-setting>
-      <b:widget-setting name='showInlineAds'>false</b:widget-setting>
-      <b:widget-setting name='showReactions'>false</b:widget-setting>
-      <b:widget-setting name='showBacklinks'>false</b:widget-setting>
-      <b:widget-setting name='showLocation'>false</b:widget-setting>
-      <b:widget-setting name='showAuthorProfile'>false</b:widget-setting>
-      <b:widget-setting name='postsPerAd'>1</b:widget-setting>
-      <b:widget-setting name='style.layout'>1x1</b:widget-setting>
-    </b:widget-settings>
-    <b:includable id='main' var='top'>
-      <div class='blog-posts hfeed'>
-        <b:loop values='data:posts' var='post'>
-          <div class='post-outer'>
-            <b:include data='post' name='post'/>
-          </div>
-        </b:loop>
-      </div>
-    </b:includable>
-    <b:includable id='post' var='post'>
-      <div class='post hentry' itemprop='blogPost' itemscope='itemscope' itemtype='http://schema.org/BlogPosting'>
-        <b:if cond='data:post.title'>
-          <h3 class='post-title entry-title' itemprop='name'>
-            <b:if cond='data:post.link or (data:post.url and data:blog.url != data:post.url)'>
-              <a expr:href='data:post.link ? data:post.link : data:post.url'><data:post.title/></a>
-            <b:else/>
-              <data:post.title/>
-            </b:if>
-          </h3>
-        </b:if>
-        <div class='post-body entry-content' expr:id='&quot;post-body-&quot; + data:post.id' itemprop='articleBody'>
-          <data:post.body/>
-          <div style='clear: both;'/>
-        </div>
-      </div>
-    </b:includable>
-  </b:widget>
-</b:section>
-</div>
+<div class='oil-blog-wrap'><div class="post"><h3 class="post-title">"화요일에 넣으면 싸다"는 진짜일까</h3><div class="post-body"><p class="oil-p">주유 커뮤니티에서 오래 도는 이야기가 있습니다. 화요일이 싸다, 주말은 비싸다. 1년치 전국 가격을 전부 확인해봤습니다.</p>
+<h2 class="oil-card-title" style="font-size:19px;margin:26px 0 10px;">결론부터: 요일 차이는 4원이 안 됩니다</h2>
+<div class="oil-card" style="margin:16px 0;"><svg viewBox="0 0 326 216" style="display:block;width:100%;height:auto;" role="img" aria-label="요일별 평균 가격 차이. 가장 싼 일요일과 가장 비싼 토요일이 3.9원 차이." font-family="IBM Plex Sans KR, sans-serif"><line x1="96" y1="0" x2="96" y2="210" stroke="#E1E0D9" stroke-width="1"></line><text x="88" y="17" text-anchor="end" font-size="11.5" fill="#13181A" font-weight="600">일요일</text><text x="98" y="17" font-size="11.5" fill="#6B7679">기준</text><text x="88" y="47" text-anchor="end" font-size="11.5" fill="#6B7679" font-weight="400">월요일</text><rect x="96" y="33" width="23.6" height="20" rx="4" fill="#C6D0CD"><title>월요일: 0.5원</title></rect><text x="126.6" y="47" font-size="11.5" fill="#6B7679" font-weight="500">0.5원</text><text x="88" y="77" text-anchor="end" font-size="11.5" fill="#6B7679" font-weight="400">화요일</text><rect x="96" y="63" width="33.0" height="20" rx="4" fill="#C6D0CD"><title>화요일: 0.7원</title></rect><text x="136.0" y="77" font-size="11.5" fill="#6B7679" font-weight="500">0.7원</text><text x="88" y="107" text-anchor="end" font-size="11.5" fill="#6B7679" font-weight="400">수요일</text><rect x="96" y="93" width="75.5" height="20" rx="4" fill="#C6D0CD"><title>수요일: 1.6원</title></rect><text x="178.5" y="107" font-size="11.5" fill="#6B7679" font-weight="500">1.6원</text><text x="88" y="137" text-anchor="end" font-size="11.5" fill="#6B7679" font-weight="400">목요일</text><rect x="96" y="123" width="108.5" height="20" rx="4" fill="#C6D0CD"><title>목요일: 2.3원</title></rect><text x="211.5" y="137" font-size="11.5" fill="#6B7679" font-weight="500">2.3원</text><text x="88" y="167" text-anchor="end" font-size="11.5" fill="#6B7679" font-weight="400">금요일</text><rect x="96" y="153" width="146.3" height="20" rx="4" fill="#C6D0CD"><title>금요일: 3.1원</title></rect><text x="249.3" y="167" font-size="11.5" fill="#6B7679" font-weight="500">3.1원</text><text x="88" y="197" text-anchor="end" font-size="11.5" fill="#13181A" font-weight="600">토요일</text><rect x="96" y="183" width="184.0" height="20" rx="4" fill="#D96206"><title>토요일: 3.9원</title></rect><text x="287.0" y="197" font-size="11.5" fill="#13181A" font-weight="700">3.9원</text></svg><p class="oil-p" style="margin-top:12px;">가장 싼 요일은 <b>일요일</b>, 가장 비싼 요일은 <b>토요일</b>이고 그 차이가 <b>리터당 <span data-oil="weekdayGap"></span>원</b>입니다. 50L를 넣어도 200원이 안 됩니다. 캔커피 한 잔 값이 안 되는 셈입니다.</p><div style="margin-top:14px;"><table style="width:100%;border-collapse:collapse;margin-top:4px;"><thead><tr><th scope="col" style="text-align:left;padding:8px 10px;font-size:11.5px;font-weight:600;color:#6B7679;border-bottom:1px solid #E1E0D9;">요일</th><th scope="col" style="text-align:right;padding:8px 10px;font-size:11.5px;font-weight:600;color:#6B7679;border-bottom:1px solid #E1E0D9;">1년 평균</th><th scope="col" style="text-align:right;padding:8px 10px;font-size:11.5px;font-weight:600;color:#6B7679;border-bottom:1px solid #E1E0D9;">최저 요일 대비</th></tr></thead><tbody><tr><td style="text-align:left;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;">일요일</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">1,812.6원</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">기준</td></tr><tr><td style="text-align:left;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;">월요일</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">1,813.2원</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">+0.5원</td></tr><tr><td style="text-align:left;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;">화요일</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">1,813.4원</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">+0.7원</td></tr><tr><td style="text-align:left;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;">수요일</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">1,814.2원</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">+1.6원</td></tr><tr><td style="text-align:left;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;">목요일</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">1,814.9원</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">+2.3원</td></tr><tr><td style="text-align:left;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;">금요일</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">1,815.8원</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">+3.1원</td></tr><tr><td style="text-align:left;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;">토요일</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">1,816.5원</td><td style="text-align:right;padding:8px 10px;font-size:12px;color:#13181A;border-bottom:1px solid #F0EFEC;font-variant-numeric:tabular-nums;">+3.9원</td></tr></tbody></table><p style="margin:9px 0 0;font-size:11px;color:#6B7679;line-height:1.55;">요일별 53일씩, 총 371일 전국 중앙가 평균</p></div></div>
+<p class="oil-p">흥미롭게도 화요일이 특별히 싸지도 않았습니다. 화요일은 일요일보다 0.7원 비쌌고, 순서로 보면 세 번째로 싼 요일이었습니다. 속설의 방향 자체는 틀리지 않았지만 — 주중이 주말보다 싸긴 합니다 — 그 크기가 의미 없는 수준입니다.</p>
+<div class="oil-ad-here"></div>
+<h2 class="oil-card-title" style="font-size:19px;margin:26px 0 10px;">그럼 뭐가 중요한가</h2>
+<div class="oil-card" style="margin:16px 0;"><svg viewBox="0 0 326 190" style="display:block;width:100%;height:auto;" role="img" aria-label="리터당 차이 비교. 요일 3.9원, 국면 21원, 셀프 39원, 지역 303원." font-family="IBM Plex Sans KR, sans-serif"><text x="0" y="14" font-size="11.5" fill="#6B7679" font-weight="400">요일 고르기</text><rect x="0" y="19" width="3.6" height="20" rx="4" fill="#C6D0CD"><title>요일 고르기: 3.9원</title></rect><text x="10.6" y="33" font-size="11.5" fill="#6B7679" font-weight="500">3.9원</text><text x="0" y="60" font-size="11.5" fill="#6B7679" font-weight="400">상승장에서 일주일 미루기</text><rect x="0" y="65" width="19.4" height="20" rx="4" fill="#C6D0CD"><title>상승장에서 일주일 미루기: 21.0원</title></rect><text x="26.4" y="79" font-size="11.5" fill="#6B7679" font-weight="500">21.0원</text><text x="0" y="106" font-size="11.5" fill="#6B7679" font-weight="400">셀프 주유소 고르기</text><rect x="0" y="111" width="36.0" height="20" rx="4" fill="#C6D0CD"><title>셀프 주유소 고르기: 39.0원</title></rect><text x="43.0" y="125" font-size="11.5" fill="#6B7679" font-weight="500">39.0원</text><text x="0" y="152" font-size="11.5" fill="#13181A" font-weight="600">가장 싼 동네 vs 비싼 동네</text><rect x="0" y="157" width="280.0" height="20" rx="4" fill="#D96206"><title>가장 싼 동네 vs 비싼 동네: 303.0원</title></rect><text x="287.0" y="171" font-size="11.5" fill="#13181A" font-weight="700">303.0원</text></svg><p class="oil-p" style="margin-top:12px;">같은 1년 데이터로 다른 변수들을 재봤습니다. 요일이 4원일 때 <b>어느 동네에서 넣느냐는 300원이 넘습니다.</b> 약 78배입니다.</p></div>
+<p class="oil-p">두 번째로 큰 건 <b>타이밍</b>입니다. 다만 요일이 아니라 <b>국면</b>입니다. 가격이 오르는 구간에서 주유를 일주일 미루면 평균 21원을 더 냈고, 이 일은 10번 중 7~8번(75%) 일어났습니다. 반대로 내리는 구간에서 일주일 기다려봐야 평균 2원밖에 못 아꼈습니다. <b>오를 때 미루면 확실히 손해, 내릴 때 기다려봐야 별 이득 없음</b>입니다.</p>
+<div style="background:#13181A;border-radius:16px;padding:17px 16px;margin:18px 0;"><p style="margin:0;font-size:14px;line-height:1.7;color:#fff;font-weight:600;">요일을 고르느라 쓴 시간은 리터당 4원짜리입니다. 같은 시간에 우리 동네 싼 주유소를 찾으면 그 수십 배가 남습니다.</p></div>
+<div style="margin:20px 0;"><a class="oil-btn" href="/" style="text-decoration:none;"><span>우리 동네 기름값 확인하기</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"></path></svg></a></div>
+<p class="oil-p" style="font-size:11.5px;color:#5B666A;margin-top:22px;">출처 오피넷 · 전국 주유소 <span data-oil="gasN"></span>곳 · 오늘 가격은 <span data-oil="date"></span> 실제 판매가, 1년 통계는 최근 1년 일별 가격 기준 · 국면은 전국 중앙가의 주간 추세로 상승·하락·횡보를 분류</p>
+</div></div></div>
 
 <footer class='oil-footer'>
   <div><b>주유소찾기</b>한국석유공사 오피넷이 공개하는 전국 주유소 판매가격을 바탕으로 정보 제공을 목적으로 운영됩니다.<br/>
@@ -346,7 +310,7 @@ button, input, select { font-family: inherit; }
 </footer>
 
 <script>
-//<![CDATA[
+
 /*@@OIL_CONFIG_START@@*/
 window.OIL_CONFIG = {
   listPageUrl: '/',
@@ -354,14 +318,14 @@ window.OIL_CONFIG = {
   calcPageUrl: '/p/calc.html',
   reportLabelUrl: '/search/label/기름값리포트',
   dataBaseUrl: 'https://letsdoooitdo-dot.github.io/search-oil/api/',
-  adClient: 'ca-pub-5167405501174218',
+  adClient: '',
   adSlot: '3416081882'
 };
 /*@@OIL_CONFIG_END@@*/
-//]]>
+
 </script>
 <script>
-//<![CDATA[
+
 /* 주유소찾기 - 블로그스팟 화면 분기
    주소를 보고 어떤 화면을 그릴지 정한다.
      /                    홈 (지역 선택 + 오늘 현황)
@@ -374,7 +338,7 @@ window.OIL_CONFIG = {
 
   var cfg = window.OIL_CONFIG || {};
   var html = document.documentElement;
-  var path = location.pathname.replace(/\/+$/, '') || '/';
+  var path = '/2026/09/sample.html';
 
   var areaPath = (cfg.areaPageUrl || '/p/area.html').replace(/\/+$/, '');
   var calcPath = (cfg.calcPageUrl || '/p/calc.html').replace(/\/+$/, '');
@@ -1029,7 +993,7 @@ window.OIL_CONFIG = {
   }
 })();
 
-//]]>
+
 </script>
 </body>
 </html>
