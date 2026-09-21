@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>경차 유류세 환급 계산기 - 주유소찾기</title>
+<meta name="description" content="경차 유류세 환급액을 월 주유량으로 계산합니다. 리터당 250원, 연 30만원 한도 기준.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@700;800;900&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5167405501174218" crossorigin="anonymous"></script>
+<style>
+  html,body{margin:0;padding:0;background:#D8DCDA;font-family:"IBM Plex Sans KR",system-ui,sans-serif;}
+  a{color:#A54A04;text-decoration:none}
+  a:hover{opacity:0.85}
+  button{font-family:inherit}
+  .frame{width:390px;max-width:100vw;margin:24px auto;background:#EFF1F0;
+          display:flex;flex-direction:column;overflow:hidden;border-radius:20px;
+          box-shadow:0 12px 32px rgba(19,24,26,0.18);
+          word-break:keep-all;overflow-wrap:break-word;}
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <nav style="display: flex; align-items: center; gap: 2px; padding: 0 12px; background: #FFFFFF;
+              border-bottom: 1px solid #DDE3E1;">
+    <a href="/" style="flex-shrink: 0; font-family: 'Gothic A1', sans-serif; font-size: 13.5px; font-weight: 900;
+       color: #13181A; padding: 11px 12px 9px 0; letter-spacing: -0.02em;
+       border-bottom: 2px solid transparent;">주유소찾기</a>
+    <a href="/area/" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; font-weight: 500; color: #6B7679; border-bottom: 2px solid transparent;">우리 동네</a><a href="/data/" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; font-weight: 500; color: #6B7679; border-bottom: 2px solid transparent;">리포트</a><a href="/calc/" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; font-weight: 700; color: #13181A; border-bottom: 2px solid #13181A;">계산기</a><a href="/policy/" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; font-weight: 500; color: #6B7679; border-bottom: 2px solid transparent;">지원금</a>
+  </nav>
+
+  <div style="padding: 16px 16px 0; display: flex; flex-direction: column; gap: 11px; flex-grow: 1;">
+
+    <div>
+      <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #A54A04;">계산기</div>
+      <h1 style="margin: 5px 0 0; font-family: 'Gothic A1', sans-serif; font-size: 23px; font-weight: 900; letter-spacing: -0.025em; color: #13181A; line-height: 1.3;">경차 유류세<br>얼마나 돌려받나요</h1>
+      <p style="margin: 9px 0 0; font-size: 13px; line-height: 1.65; color: #4A5558;">배기량 1,000cc 미만 경차는 유류세 일부를 환급받습니다. 월 주유량만 넣으면 1년에 얼마를 돌려받는지 바로 나옵니다.</p>
+    </div>
+    <div style="background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 16px; padding: 16px;">
+      
+        <div style="margin-bottom: 13px;">
+          <label for="monthly" style="display: block; font-size: 12.5px; font-weight: 600; color: #4A5558; margin-bottom: 6px;">한 달 주유량</label>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input id="monthly" type="number" inputmode="decimal" value="40"
+              style="flex-grow: 1; min-width: 0; padding: 11px 12px; font-family: inherit; font-size: 15px; font-weight: 600;
+                     color: #13181A; background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 11px;">
+            <span style="flex-shrink: 0; font-size: 12.5px; color: #5B666A;">L</span>
+          </div>
+          <div style="font-size: 11px; color: #8A9599; margin-top: 4px;">월 주유비를 오늘 중앙값으로 나누면 대략 나옵니다</div>
+        </div>
+    </div>
+
+    
+    <div style="background: #FFFFFF; border: 1px solid #A54A04; box-shadow: 0 0 0 3px #FDF0E4; border-radius: 16px; padding: 18px 16px;">
+      <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #A54A04;">연간 환급액</div>
+      <div id="out" style="font-family: 'Gothic A1', sans-serif; font-size: 34px; font-weight: 900; letter-spacing: -0.03em; color: #13181A; line-height: 1.15; margin-top: 6px;">-</div>
+      <p id="sub" style="margin: 9px 0 0; font-size: 12.5px; line-height: 1.6; color: #4A5558;"></p>
+    </div>
+
+    
+    <div style="margin: 2px 0;">
+      <div style="font-size: 10px; font-weight: 600; letter-spacing: 0.08em; color: #8A9599; margin-bottom: 6px;">광고</div>
+      <ins class="adsbygoogle" style="display:block"
+           data-ad-client="ca-pub-5167405501174218"
+           data-ad-slot="3416081882"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 16px; padding: 16px;">
+      <div style="font-family: 'Gothic A1', sans-serif; font-size: 17px; font-weight: 900; color: #13181A;">알아두실 것</div>
+      <div style="margin-top: 11px; border: 1px solid #E9EEEC; border-radius: 11px; overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; padding: 10px 12px; font-size: 12.5px; border-bottom: 1px solid #E9EEEC;">
+          <span style="color: #5B666A;">환급 단가</span><span style="font-weight: 600; color: #13181A;">리터당 250원</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 10px 12px; font-size: 12.5px; border-bottom: 1px solid #E9EEEC;">
+          <span style="color: #5B666A;">연 한도</span><span style="font-weight: 600; color: #13181A;">300,000원</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 10px 12px; font-size: 12.5px; background: #F5F7F6;">
+          <span style="color: #5B666A;">한도까지 주유량</span><span id="capL" style="font-weight: 700; color: #A54A04;">1,200L</span>
+        </div>
+      </div>
+      <p style="margin: 12px 0 0; font-size: 12.5px; line-height: 1.65; color: #4A5558;">
+        한도를 다 쓰면 그해 남은 기간은 일반 가격으로 넣게 됩니다. 한도가 얼마 안 남았다면
+        <b style="color: #13181A;">남은 한도만큼만 넣고</b> 나머지는 다음 해로 넘기는 편이 유리합니다.
+        한도는 매년 1월에 초기화됩니다.
+      </p>
+      <p style="margin: 10px 0 0; font-size: 12.5px; line-height: 1.65; color: #4A5558;">
+        환급은 전용 유류구매카드로 결제해야 자동 적용됩니다. 일반 카드로 결제하면 소급이 안 됩니다.
+      </p>
+    </div>
+
+    
+    <a href="/" style="display: flex; justify-content: space-between; align-items: center; background: #13181A; border-radius: 14px; padding: 14px;">
+      <span style="font-size: 13px; font-weight: 700; color: #FFFFFF;">내 경로에서 진짜 이득인 곳 찾기</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+    </a>
+    <a href="/calc/" style="display: flex; justify-content: space-between; align-items: center; background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 14px; padding: 12px 14px;">
+      <span style="font-size: 12.5px; color: #4A5558;">다른 계산기 보기</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B666A" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+    </a>
+  </div>
+<script>
+
+var $ = function (id) { return document.getElementById(id); };
+var won = function (n) { return Math.round(n).toLocaleString('ko-KR'); };
+var RATE = 250, CAP = 300000, CAP_L = 1200;
+
+function calc() {
+  var monthly = parseFloat($('monthly').value) || 0;
+  var yearL = monthly * 12;
+  var refund = Math.min(yearL * RATE, CAP);
+
+  $('out').textContent = won(refund) + '원';
+
+  if (yearL <= 0) {
+    $('sub').textContent = '월 주유량을 입력해주세요.';
+  } else if (yearL * RATE >= CAP) {
+    var months = CAP_L / monthly;
+    $('sub').innerHTML = '연 한도 <b>30만원</b>을 채웁니다. 약 <b>' + months.toFixed(1) +
+      '개월</b>이면 한도에 도달하고, 그 뒤 주유분은 환급되지 않습니다.';
+  } else {
+    var left = CAP - yearL * RATE;
+    $('sub').innerHTML = '1년에 <b>' + won(yearL) + 'L</b>를 넣으시는 기준입니다. ' +
+      '한도까지 <b>' + won(left) + '원</b>이 남아, 더 넣으셔도 전액 환급 대상입니다.';
+  }
+  $('capL').textContent = won(CAP_L) + 'L';
+}
+$('monthly').addEventListener('input', calc);
+calc();
+
+</script>
+  <div style="padding: 12px 16px 18px;">
+    <p style="margin: 0; font-size: 11px; color: #5B666A; line-height: 1.55;">조세특례제한법상 경차 유류세 환급 기준 (휘발유·경유 리터당 250원, 연 30만원 한도). 현재 2026년 12월 31일 일몰 예정이며 연장 여부는 정부 발표를 확인하세요. 실제 환급액은 카드사·국세청 처리 기준에 따라 달라질 수 있습니다.</p>
+  </div>
+</div>
+</body>
+</html>

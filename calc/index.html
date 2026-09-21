@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>기름값 계산기 - 주유소찾기</title>
+<meta name="description" content="연간 주유비, 경차 유류세 환급, 우회 손익분기를 전국 1만 곳 실제 판매가로 계산합니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@700;800;900&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5167405501174218" crossorigin="anonymous"></script>
+<style>
+  html,body{margin:0;padding:0;background:#D8DCDA;font-family:"IBM Plex Sans KR",system-ui,sans-serif;}
+  a{color:#A54A04;text-decoration:none}
+  a:hover{opacity:0.85}
+  button{font-family:inherit}
+  .frame{width:390px;max-width:100vw;margin:24px auto;background:#EFF1F0;
+          display:flex;flex-direction:column;overflow:hidden;border-radius:20px;
+          box-shadow:0 12px 32px rgba(19,24,26,0.18);
+          word-break:keep-all;overflow-wrap:break-word;}
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <nav style="display: flex; align-items: center; gap: 2px; padding: 0 12px; background: #FFFFFF;
+              border-bottom: 1px solid #DDE3E1;">
+    <a href="/" style="flex-shrink: 0; font-family: 'Gothic A1', sans-serif; font-size: 13.5px; font-weight: 900;
+       color: #13181A; padding: 11px 12px 9px 0; letter-spacing: -0.02em;
+       border-bottom: 2px solid transparent;">주유소찾기</a>
+    <a href="/area/" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; font-weight: 500; color: #6B7679; border-bottom: 2px solid transparent;">우리 동네</a><a href="/data/" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; font-weight: 500; color: #6B7679; border-bottom: 2px solid transparent;">리포트</a><a href="/calc/" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; font-weight: 700; color: #13181A; border-bottom: 2px solid #13181A;">계산기</a><a href="/policy/" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; font-weight: 500; color: #6B7679; border-bottom: 2px solid transparent;">지원금</a>
+  </nav>
+
+  <div style="padding: 16px 16px 0; display: flex; flex-direction: column; gap: 11px; flex-grow: 1;">
+
+    <div>
+      <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #A54A04;">계산기</div>
+      <h1 style="margin: 5px 0 0; font-family: 'Gothic A1', sans-serif; font-size: 23px; font-weight: 900; letter-spacing: -0.025em; color: #13181A; line-height: 1.3;">기름값 계산기</h1>
+      <p style="margin: 9px 0 0; font-size: 13px; line-height: 1.65; color: #4A5558;">전국 10,298곳 실제 판매가를 기준으로 계산합니다. 일반적인 평균치가 아니라 오늘 실제로 팔리는 가격입니다.</p>
+    </div>
+    <div style="background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 16px; overflow: hidden;">
+      
+      <a href="/calc/fuel-cost.html" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 16px; ">
+        <span style="min-width: 0;">
+          <span style="display: block; font-size: 14px; font-weight: 700; color: #13181A;">연간 주유비</span>
+          <span style="display: block; font-size: 12px; color: #5B666A; margin-top: 3px; line-height: 1.5;">한 달 주행거리와 연비로 1년 기름값을 계산합니다</span>
+        </span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B666A" stroke-width="2.5" style="flex-shrink: 0;" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </a>
+      <a href="/calc/light-car-refund.html" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid #E9EEEC;">
+        <span style="min-width: 0;">
+          <span style="display: block; font-size: 14px; font-weight: 700; color: #13181A;">경차 유류세 환급</span>
+          <span style="display: block; font-size: 12px; color: #5B666A; margin-top: 3px; line-height: 1.5;">리터당 250원, 연 30만원 한도로 얼마를 돌려받는지</span>
+        </span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B666A" stroke-width="2.5" style="flex-shrink: 0;" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </a>
+      <a href="/calc/detour-breakeven.html" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid #E9EEEC;">
+        <span style="min-width: 0;">
+          <span style="display: block; font-size: 14px; font-weight: 700; color: #13181A;">우회 손익분기</span>
+          <span style="display: block; font-size: 12px; color: #5B666A; margin-top: 3px; line-height: 1.5;">싼 주유소까지 몇 km 돌아가면 본전인지</span>
+        </span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B666A" stroke-width="2.5" style="flex-shrink: 0;" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </a>
+    </div>
+
+    
+    <div style="margin: 2px 0;">
+      <div style="font-size: 10px; font-weight: 600; letter-spacing: 0.08em; color: #8A9599; margin-bottom: 6px;">광고</div>
+      <ins class="adsbygoogle" style="display:block"
+           data-ad-client="ca-pub-5167405501174218"
+           data-ad-slot="3416081882"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    
+    <a href="/" style="display: flex; justify-content: space-between; align-items: center; background: #13181A; border-radius: 14px; padding: 14px;">
+      <span style="font-size: 13px; font-weight: 700; color: #FFFFFF;">내 경로에서 진짜 이득인 곳 찾기</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+    </a>
+    <a href="/calc/" style="display: flex; justify-content: space-between; align-items: center; background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 14px; padding: 12px 14px;">
+      <span style="font-size: 12.5px; color: #4A5558;">다른 계산기 보기</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B666A" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+    </a>
+  </div>
+<script>
+
+</script>
+  <div style="padding: 12px 16px 18px;">
+    <p style="margin: 0; font-size: 11px; color: #5B666A; line-height: 1.55;">2026년 9월 22일 실제 판매가 기준 · 출처 오피넷</p>
+  </div>
+</div>
+</body>
+</html>

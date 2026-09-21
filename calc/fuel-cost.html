@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>연간 주유비 계산기 - 주유소찾기</title>
+<meta name="description" content="한 달 주행거리와 연비로 연간 주유비를 계산합니다. 전국 1만 곳 실제 판매가 기준, 셀프·지역별 차이까지 비교합니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@700;800;900&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5167405501174218" crossorigin="anonymous"></script>
+<style>
+  html,body{margin:0;padding:0;background:#D8DCDA;font-family:"IBM Plex Sans KR",system-ui,sans-serif;}
+  a{color:#A54A04;text-decoration:none}
+  a:hover{opacity:0.85}
+  button{font-family:inherit}
+  .frame{width:390px;max-width:100vw;margin:24px auto;background:#EFF1F0;
+          display:flex;flex-direction:column;overflow:hidden;border-radius:20px;
+          box-shadow:0 12px 32px rgba(19,24,26,0.18);
+          word-break:keep-all;overflow-wrap:break-word;}
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <nav style="display: flex; align-items: center; gap: 2px; padding: 0 12px; background: #FFFFFF;
+              border-bottom: 1px solid #DDE3E1;">
+    <a href="/" style="flex-shrink: 0; font-family: 'Gothic A1', sans-serif; font-size: 13.5px; font-weight: 900;
+       color: #13181A; padding: 11px 12px 9px 0; letter-spacing: -0.02em;
+       border-bottom: 2px solid transparent;">주유소찾기</a>
+    <a href="/area/" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; font-weight: 500; color: #6B7679; border-bottom: 2px solid transparent;">우리 동네</a><a href="/data/" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; font-weight: 500; color: #6B7679; border-bottom: 2px solid transparent;">리포트</a><a href="/calc/" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; font-weight: 700; color: #13181A; border-bottom: 2px solid #13181A;">계산기</a><a href="/policy/" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; font-weight: 500; color: #6B7679; border-bottom: 2px solid transparent;">지원금</a>
+  </nav>
+
+  <div style="padding: 16px 16px 0; display: flex; flex-direction: column; gap: 11px; flex-grow: 1;">
+
+    <div>
+      <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #A54A04;">계산기</div>
+      <h1 style="margin: 5px 0 0; font-family: 'Gothic A1', sans-serif; font-size: 23px; font-weight: 900; letter-spacing: -0.025em; color: #13181A; line-height: 1.3;">1년에 기름값으로<br>얼마나 쓰고 계신가요</h1>
+      <p style="margin: 9px 0 0; font-size: 13px; line-height: 1.65; color: #4A5558;">한 달 주행거리와 연비만 넣으면 연간 주유비가 나옵니다. 전국 10,298곳 실제 판매가를 기준으로 계산합니다.</p>
+    </div>
+    <div style="background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 16px; padding: 16px;">
+      
+        <div style="margin-bottom: 13px;">
+          <label for="km" style="display: block; font-size: 12.5px; font-weight: 600; color: #4A5558; margin-bottom: 6px;">한 달 주행거리</label>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input id="km" type="number" inputmode="decimal" value="1200"
+              style="flex-grow: 1; min-width: 0; padding: 11px 12px; font-family: inherit; font-size: 15px; font-weight: 600;
+                     color: #13181A; background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 11px;">
+            <span style="flex-shrink: 0; font-size: 12.5px; color: #5B666A;">km</span>
+          </div>
+          <div style="font-size: 11px; color: #8A9599; margin-top: 4px;">출퇴근 왕복 20km × 22일이면 약 440km입니다</div>
+        </div>
+      
+        <div style="margin-bottom: 13px;">
+          <label for="kmpl" style="display: block; font-size: 12.5px; font-weight: 600; color: #4A5558; margin-bottom: 6px;">연비</label>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input id="kmpl" type="number" inputmode="decimal" value="12"
+              style="flex-grow: 1; min-width: 0; padding: 11px 12px; font-family: inherit; font-size: 15px; font-weight: 600;
+                     color: #13181A; background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 11px;">
+            <span style="flex-shrink: 0; font-size: 12.5px; color: #5B666A;">km/L</span>
+          </div>
+          <div style="font-size: 11px; color: #8A9599; margin-top: 4px;">모르시면 일반 승용차 12, 경차 16, SUV 8 정도로 넣으세요</div>
+        </div>
+      <div>
+        <label for="fuel" style="display: block; font-size: 12.5px; font-weight: 600; color: #4A5558; margin-bottom: 6px;">유종</label>
+        <select id="fuel" style="width: 100%; padding: 11px 12px; font-family: inherit; font-size: 15px; font-weight: 600; color: #13181A; background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 11px;">
+          <option value="gasoline">휘발유</option>
+          <option value="diesel">경유</option>
+        </select>
+      </div>
+    </div>
+
+    
+    <div style="background: #FFFFFF; border: 1px solid #A54A04; box-shadow: 0 0 0 3px #FDF0E4; border-radius: 16px; padding: 18px 16px;">
+      <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #A54A04;">연간 주유비</div>
+      <div id="out" style="font-family: 'Gothic A1', sans-serif; font-size: 34px; font-weight: 900; letter-spacing: -0.03em; color: #13181A; line-height: 1.15; margin-top: 6px;">-</div>
+      <p id="sub" style="margin: 9px 0 0; font-size: 12.5px; line-height: 1.6; color: #4A5558;"></p>
+    </div>
+
+    
+    <div style="margin: 2px 0;">
+      <div style="font-size: 10px; font-weight: 600; letter-spacing: 0.08em; color: #8A9599; margin-bottom: 6px;">광고</div>
+      <ins class="adsbygoogle" style="display:block"
+           data-ad-client="ca-pub-5167405501174218"
+           data-ad-slot="3416081882"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div id="compare" style="background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 16px; padding: 16px;">
+      <div style="font-family: 'Gothic A1', sans-serif; font-size: 17px; font-weight: 900; color: #13181A;">어디서 넣느냐로 갈리는 돈</div>
+      <p style="margin: 7px 0 12px; font-size: 12.5px; line-height: 1.6; color: #4A5558;">
+        같은 거리를 달려도 주유소를 어떻게 고르느냐에 따라 1년 치가 이만큼 달라집니다.
+      </p>
+      <div style="border: 1px solid #E9EEEC; border-radius: 11px; overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; padding: 10px 12px; font-size: 12.5px; border-bottom: 1px solid #E9EEEC;">
+          <span style="color: #5B666A;">셀프로만 넣으면 (39원 저렴)</span>
+          <span id="selfSave" style="font-weight: 700; color: #A54A04;">-</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 10px 12px; font-size: 12.5px; background: #F5F7F6;">
+          <span style="color: #5B666A;">가장 싼 동네 vs 비싼 동네</span>
+          <span id="regionSave" style="font-weight: 700; color: #A54A04;">-</span>
+        </div>
+      </div>
+      <p style="margin: 11px 0 0; font-size: 12px; line-height: 1.6; color: #6B7679;">
+        오늘 시군구 중앙값은 대구 서구 1,797원이 가장 낮고 서울 용산구 2,098원이 가장 높습니다.
+        사는 동네를 바꿀 수는 없지만, <b style="color: #13181A;">가는 길에 있는 싼 곳</b>은 고를 수 있습니다.
+      </p>
+    </div>
+
+    
+    <a href="/" style="display: flex; justify-content: space-between; align-items: center; background: #13181A; border-radius: 14px; padding: 14px;">
+      <span style="font-size: 13px; font-weight: 700; color: #FFFFFF;">내 경로에서 진짜 이득인 곳 찾기</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+    </a>
+    <a href="/calc/" style="display: flex; justify-content: space-between; align-items: center; background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 14px; padding: 12px 14px;">
+      <span style="font-size: 12.5px; color: #4A5558;">다른 계산기 보기</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B666A" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+    </a>
+  </div>
+<script>
+
+var $ = function (id) { return document.getElementById(id); };
+var won = function (n) { return Math.round(n).toLocaleString('ko-KR'); };
+var GAS = 1855, DIESEL = 1839, SELF = 1839, FULL = 1878, CHEAP = 1797, PRICEY = 2098;
+
+function calc() {
+  var km = parseFloat($('km').value) || 0;
+  var kmpl = parseFloat($('kmpl').value) || 0;
+  var fuel = $('fuel').value;
+  if (kmpl <= 0) { $('out').textContent = '-'; $('sub').textContent = '연비를 입력해주세요.'; return; }
+
+  var base = (fuel === 'diesel') ? DIESEL : GAS;
+  var liters = (km * 12) / kmpl;
+  var year = liters * base;
+
+  $('out').textContent = won(year) + '원';
+  $('sub').innerHTML = '1년에 약 <b>' + won(liters) + 'L</b>를 넣게 됩니다 (월 ' +
+    won(km / kmpl) + 'L). 오늘 전국 중앙값 ' + won(base) + '원 기준입니다.';
+
+  if (fuel === 'gasoline') {
+    $('selfSave').textContent = won(liters * (FULL - SELF)) + '원';
+    $('regionSave').textContent = won(liters * (PRICEY - CHEAP)) + '원';
+    $('compare').style.display = '';
+  } else {
+    $('compare').style.display = 'none';
+  }
+}
+['km', 'kmpl', 'fuel'].forEach(function (id) {
+  $(id).addEventListener('input', calc);
+  $(id).addEventListener('change', calc);
+});
+calc();
+
+</script>
+  <div style="padding: 12px 16px 18px;">
+    <p style="margin: 0; font-size: 11px; color: #5B666A; line-height: 1.55;">2026년 9월 22일 실제 판매가 기준 (휘발유 중앙값 1,855원, 경유 1,839원) · 출처 오피넷 · 실제 주유비는 운전 습관·유가 변동에 따라 달라집니다</p>
+  </div>
+</div>
+</body>
+</html>
