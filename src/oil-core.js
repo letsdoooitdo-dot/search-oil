@@ -66,6 +66,80 @@
     return new URLSearchParams(location.search).get(k) || '';
   };
 
+  /* ── 거리와 손익분기 ─────────────────────────────────────────
+     우리 서비스의 핵심이다. "싼 집이 항상 이득은 아니다" 를 숫자로 보여준다.
+
+     주의할 점 두 가지
+       1) 좌표로 재면 직선거리다. 실제 도로는 보통 1.3배쯤 된다 - ROAD 로 보정하고
+          화면에도 어림값이라고 밝힌다.
+       2) 목적지가 없으면 '우회'가 아니라 '일부러 갔다 오는 것'이다. 그래서 왕복으로 센다.
+          목적지 기준 진짜 우회 계산은 2차에서 붙인다.
+  */
+  var ROAD = 1.3;
+  OIL.ROAD = ROAD;
+
+  OIL.distKm = function (lat1, lng1, lat2, lng2) {
+    var R = 6371, rad = Math.PI / 180;
+    var dLat = (lat2 - lat1) * rad, dLng = (lng2 - lng1) * rad;
+    var s = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.sqrt(s));
+  };
+
+  /* price  이 주유소 가격
+     base   기준 주유소 가격 (여기서 가장 가까운 집 - 아무것도 안 따지면 갔을 곳)
+     km     출발지에서 이 주유소까지 직선거리
+     baseKm 출발지에서 기준 주유소까지 직선거리
+
+     기준 주유소도 어차피 가야 하므로, 무는 것은 '더 가는 거리'뿐이다.
+     출발지에서의 전체 거리를 물리면 가까운 집이 공짜가 되어 늘 이긴다.
+     주유하고 가던 길을 계속 간다고 보고 편도로 센다. */
+  OIL.calcTrip = function (price, base, km, baseKm) {
+    var car = (OIL.prefs && OIL.prefs.car()) || { kmpl: 12, usual: 30, label: '일반 승용차' };
+    var L = car.usual, kmpl = car.kmpl;
+    var road = km * ROAD;                        /* 화면에 보여줄 도로거리(어림) */
+    var extra = Math.max(0, km - (baseKm || 0)); /* 기준보다 더 가는 직선거리 */
+    var extraRoad = extra * ROAD;
+    var cost = extraRoad / kmpl * price;         /* 더 가느라 쓰는 기름값 */
+    var gain = (base - price) * L;               /* 싸게 넣어 아끼는 돈 */
+    /* 손익분기: 기준보다 몇 km 더 가는 데까지 본전인가 (도로거리) */
+    var beKm = price > 0 ? gain * kmpl / price : 0;
+    return { km: km, road: road, extra: extra, extraRoad: extraRoad,
+             cost: cost, gain: gain, net: gain - cost, beKm: beKm,
+             L: L, kmpl: kmpl, car: car };
+  };
+
+  /* 카드에 한 줄로 넣을 판정 문구. 숫자를 늘어놓지 않는다 - 근거는 상세보기로 민다. */
+  OIL.tripLine = function (t, isBase) {
+    if (isBase) {
+      return { cls: 'is-base', text: '여기서 <b>가장 가까운 주유소</b> · 비교 기준' };
+    }
+    if (t.gain === 0) {
+      return { cls: 'is-bad', text: '가까운 곳과 <b>같은 가격</b>인데 더 멉니다' };
+    }
+    if (t.gain < 0) {
+      return { cls: 'is-bad', text: '가까운 곳보다 <b>비싼데</b> 더 멀기까지 합니다' };
+    }
+    if (t.net > 0) {
+      return { cls: 'is-good',
+               text: '더 가는 ' + t.extraRoad.toFixed(1) + 'km 기름값 빼도 <b>' +
+                     OIL.won(t.net) + '원 이득</b>' };
+    }
+    return { cls: 'is-bad',
+             text: '<b>' + t.beKm.toFixed(1) + 'km까지만 이득</b>인데 ' +
+                   t.extraRoad.toFixed(1) + 'km 더 갑니다' };
+  };
+
+  /* 찾아가기 - 카카오맵. API 키가 필요 없고 앱이 깔려 있으면 앱이 열린다. */
+  OIL.mapUrl = function (s) {
+    var name = String(s.n || '주유소').replace(/,/g, ' ');
+    if (s.la && s.ln) {
+      return 'https://map.kakao.com/link/to/' + encodeURIComponent(name) +
+        ',' + s.la + ',' + s.ln;
+    }
+    return 'https://map.kakao.com/link/search/' + encodeURIComponent(name);
+  };
+
   /* ── 광고 ────────────────────────────────────────────────── */
   OIL.adHtml = function () {
     if (!CFG.adClient || !CFG.adSlot) return '';
@@ -75,6 +149,14 @@
       ' data-ad-slot="' + CFG.adSlot + '"' +
       ' data-ad-format="auto" data-full-width-responsive="true"></ins></div>';
   };
+  /* 광고 자리. 개발 중(ADS_ON=False)에도 자리는 남겨둬야 나중에 광고를 켤 때
+     화면이 밀리지 않는다. 그래서 빈 상자를 같은 크기로 그려둔다. */
+  OIL.adSlotHtml = function () {
+    var ad = OIL.adHtml();
+    if (ad) return ad;
+    return '<div class="oil-ad is-empty"><span>광고 영역</span></div>';
+  };
+
   /* 화면을 그린 뒤 호출한다. 아직 요청하지 않은 ins 만 채운다. */
   OIL.adFill = function () {
     try {

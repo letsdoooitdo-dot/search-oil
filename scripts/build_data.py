@@ -93,8 +93,8 @@ def main():
         ).fetchone() or ("횡보", snap["gas"]["median"], 0.0)
 
         rows = con.execute("""
-            SELECT s.region, s.name, s.brand, s.is_self, s.lat, s.lng, s.addr,
-                   p.gasoline, p.diesel, c.character
+            SELECT s.region, s.name, s.brand, s.is_self, s.lat, s.lng, s.addr, s.tel,
+                   p.gasoline, p.diesel, p.premium_gasoline, p.kerosene, c.character
             FROM stations s
             JOIN prices p ON p.station_id = s.station_id AND p.price_date = ?
             LEFT JOIN station_character c ON c.station_id = s.station_id
@@ -103,12 +103,23 @@ def main():
 
         by_region = {}
         dongs = {}
-        for region, name, brand, is_self, lat, lng, addr, gas, diesel, ch in rows:
-            by_region.setdefault(region, []).append({
+        for (region, name, brand, is_self, lat, lng, addr, tel,
+             gas, diesel, prem, kero, ch) in rows:
+            # 좌표·주소·전화는 "여기서 몇 km" 와 상세보기·찾아가기에 쓴다.
+            # 이게 없으면 우회 손익분기를 계산할 수가 없다.
+            item = {
                 "n": display_name(name), "b": brand, "s": 1 if is_self else 0,
                 "g": gas, "d": diesel, "c": ch or "",
-                "_lat": lat, "_lng": lng,
-            })
+                "a": addr or "", "t": tel or "",
+            }
+            if lat and lng:
+                item["la"] = round(lat, 5)
+                item["ln"] = round(lng, 5)
+            if prem:
+                item["p"] = prem        # 고급휘발유 - 취급하는 곳만
+            if kero:
+                item["k"] = kero        # 실내등유 - 취급하는 곳만
+            by_region.setdefault(region, []).append(item)
             d = dong_of(addr)
             if d and lat and lng:
                 dongs.setdefault((region, d), []).append((lat, lng))
@@ -142,18 +153,18 @@ def main():
                 summary[key] = s
 
             # 동네 중심 좌표 - 휴대폰 좌표에서 가장 가까운 동네를 찾는 데 쓴다
-            pts = [(x["_lat"], x["_lng"]) for x in items if x["_lat"] and x["_lng"]]
+            pts = [(x["la"], x["ln"]) for x in items if "la" in x]
             if pts:
                 summary["la"] = round(sum(p[0] for p in pts) / len(pts), 4)
                 summary["ln"] = round(sum(p[1] for p in pts) / len(pts), 4)
 
             summaries.append(summary)
 
+            # 전부 담는다. 싼 40곳만 담으면 "지금 내 옆에 있는 주유소" 가 빠져서
+            # 비교 기준(가까운 집 가격)을 잡을 수가 없다.
             detail = dict(summary)
-            detail["stations"] = [
-                {k: v for k, v in x.items() if not k.startswith("_")}
-                for x in sorted(items, key=lambda x: (x["g"] or 9e9, x["c"] != "늘 최저권"))[:40]
-            ]
+            detail["stations"] = sorted(
+                items, key=lambda x: (x["g"] or 9e9, x["c"] != "늘 최저권"))
             total_bytes += write(os.path.join(OUT, "region", f"{slug(region)}.json"), detail)
 
         summaries.sort(key=lambda x: (x["g"] or {}).get("rk", 9999))

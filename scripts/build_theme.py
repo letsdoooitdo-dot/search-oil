@@ -21,6 +21,7 @@ except Exception: pass
 
 import os
 import re
+import shutil
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -35,8 +36,17 @@ DEFAULT_DATA_URL = "https://letsdoooitdo-dot.github.io/search-oil/api/"
 # False 면 테마의 애드센스 로더와 설정값이 모두 빠져서 자동광고까지 함께 멈춘다.
 ADS_ON = False
 
+# 카카오맵 JavaScript 키 ("장소명 검색"에 쓴다).
+# developers.kakao.com 에서 앱을 만들고 [앱 키] → JavaScript 키를 여기 넣는다.
+# 플랫폼 > Web 에 아래 두 주소를 모두 등록해야 한다.
+#   https://16story-005.letsdoooit.com     (실제 블로그)
+#   http://localhost:8080                  (내 컴퓨터 미리보기 - preview.py)
+# 등록한 주소 밖에서는 동작하지 않으므로 테마에 들어가도 안전하다.
+KAKAO_KEY = "f0e3cf8d7eda3f38469d8ab719daed3c"
+
 CSS_FILES = ["src/oil-shell.css", "src/oil-style.css"]
 JS_FILES = ["src/oil-blogger.js", "src/oil-core.js", "src/oil-prefs.js",
+            "src/oil-place.js", "src/oil-find.js", "src/oil-near.js",
             "src/oil-area.js", "src/oil-calc.js", "src/oil-post.js"]
 
 
@@ -61,7 +71,8 @@ def main():
              .replace("/*@@OIL_JS@@*/", js)
              .replace("@@OIL_DATA_URL@@", data_url)
              .replace("@@OIL_AD_CLIENT@@", ADSENSE_CLIENT if ADS_ON else "")
-             .replace("@@OIL_AD_SLOT@@", ADSENSE_SLOT_INCONTENT if ADS_ON else ""))
+             .replace("@@OIL_AD_SLOT@@", ADSENSE_SLOT_INCONTENT if ADS_ON else "")
+             .replace("@@OIL_KAKAO_KEY@@", KAKAO_KEY))
 
     if not ADS_ON:
         # 애드센스 로더 자체를 빼야 자동광고(사이드 레일)도 함께 멈춘다
@@ -95,9 +106,23 @@ def main():
     # 미리보기는 그대로라 JS 문법 오류가 난다 - 해당 블록을 통째로 뺀다.
     body = re.sub(r"<script>\s*window\.redirectTarget[^<]*</script>", "", body, flags=re.S)
     body = body.replace("adClient: '" + ADSENSE_CLIENT + "'", "adClient: ''")
+    # 미리보기는 한 폴더에 평평하게 깔린다. 화면 사이 이동이 실제로 되도록 주소를 맞춘다.
+    body = (body.replace("listPageUrl: '/'", "listPageUrl: 'index.html'")
+                .replace("areaPageUrl: '/p/area.html'", "areaPageUrl: 'area.html'")
+                .replace("calcPageUrl: '/p/calc.html'", "calcPageUrl: 'calc.html'"))
 
-    for name, path in (("index.html", "/"), ("area.html", "/p/area.html"),
-                       ("calc.html", "/p/calc.html"), ("post.html", "/2026/09/sample.html")):
+    # 아직 올리지 않은 데이터로도 확인할 수 있게 api 폴더를 통째로 복사해 쓴다.
+    # (깃허브에 올린 데이터를 보면 방금 만든 항목이 없어서 화면이 비어 보인다)
+    api_src = os.path.join(ROOT, "api")
+    if os.path.isdir(api_src):
+        api_dst = os.path.join(prev_dir, "api")
+        if os.path.isdir(api_dst):
+            shutil.rmtree(api_dst)
+        shutil.copytree(api_src, api_dst)
+        body = body.replace("dataBaseUrl: '" + data_url + "'", "dataBaseUrl: 'api/'")
+
+    for name, path in (("index.html", "/"), ("area.html", "area.html"),
+                       ("calc.html", "calc.html"), ("post.html", "/2026/09/sample.html")):
         page = body.replace("location.pathname.replace(/\\/+$/, '') || '/'",
                             "'" + path + "'")
         if name == "post.html":

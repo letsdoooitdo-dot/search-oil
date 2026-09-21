@@ -1,0 +1,133 @@
+/* 주유소찾기 - 장소 검색과 저장
+
+   검색은 카카오맵을 쓴다. 키가 없거나 카카오가 답이 없으면 우리 데이터로 찾는다
+   (읍·면·동 2,722곳 + 시·군·구 230곳). 둘 다 좌표를 돌려주므로 뒤 계산은 같다.
+
+   저장은 브라우저가 한다. 로그인도 서버도 없다.
+   기기마다 따로 남고 사용기록을 지우면 같이 날아간다 - 없어도 서비스는 돌아가야 한다.
+
+   장소 하나는 { n: 이름, a: 주소, la: 위도, ln: 경도 } 로만 다룬다.
+*/
+(function () {
+  'use strict';
+
+  var OIL = window.OIL;
+  if (!OIL) return;
+
+  var KEY = 'oil.places';
+  var MAX_RECENT = 8;
+
+  function read() {
+    try {
+      var o = JSON.parse(localStorage.getItem(KEY));
+      return (o && typeof o === 'object') ? o : {};
+    } catch (e) { return {}; }   /* 시크릿 모드 등 - 빈 걸로 간다 */
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* 못 담아도 동작은 한다 */ }
+  }
+
+  var store = read();
+  if (!Array.isArray(store.recent)) store.recent = [];
+
+  var PL = OIL.place = {};
+
+  /* ── 저장 ────────────────────────────────────────────────── */
+  PL.slot = function (name) { return store[name] || null; };          /* 'home' | 'work' */
+  PL.setSlot = function (name, p) { store[name] = p; save(); };
+  PL.clearSlot = function (name) { delete store[name]; save(); };
+
+  PL.recent = function () { return store.recent; };
+  PL.remember = function (p) {
+    if (!p) return;
+    store.recent = store.recent.filter(function (x) {
+      return !(x.n === p.n && x.a === p.a);
+    });
+    store.recent.unshift(p);
+    store.recent = store.recent.slice(0, MAX_RECENT);
+    save();
+  };
+  PL.forget = function (i) { store.recent.splice(i, 1); save(); };
+  PL.clearRecent = function () { store.recent = []; save(); };
+
+  /* 고른 장소를 다음 화면으로 넘긴다 */
+  PL.url = function (p) {
+    return (OIL.cfg.areaPageUrl || '/p/area.html') +
+      '?la=' + p.la.toFixed(5) + '&ln=' + p.ln.toFixed(5) +
+      '&q=' + encodeURIComponent(p.n);
+  };
+
+  /* ── 카카오 SDK ──────────────────────────────────────────────
+     검색창을 실제로 쓸 때 그때 부른다. 안 쓰는 사람은 내려받지 않는다. */
+  var sdk = null;
+  function loadSdk() {
+    if (sdk) return sdk;
+    var key = OIL.cfg.kakaoKey;
+    if (!key) {
+      sdk = Promise.reject(new Error('kakaoKey 없음'));
+      return sdk;
+    }
+    sdk = new Promise(function (ok, no) {
+      var s = document.createElement('script');
+      s.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' +
+        encodeURIComponent(key) + '&libraries=services&autoload=false';
+      s.onload = function () {
+        try { window.kakao.maps.load(function () { ok(window.kakao); }); }
+        catch (e) { no(e); }
+      };
+      s.onerror = function () { no(new Error('SDK 로드 실패')); };
+      document.head.appendChild(s);
+    });
+    return sdk;
+  }
+
+  PL.hasKakao = function () { return !!OIL.cfg.kakaoKey; };
+
+  /* ── 검색 ────────────────────────────────────────────────── */
+  function fromKakao(q) {
+    return loadSdk().then(function (kakao) {
+      return new Promise(function (ok) {
+        new kakao.maps.services.Places().keywordSearch(q, function (data, status) {
+          if (status !== kakao.maps.services.Status.OK || !data || !data.length) {
+            ok([]);
+            return;
+          }
+          ok(data.slice(0, 15).map(function (d) {
+            return {
+              n: d.place_name,
+              a: d.road_address_name || d.address_name || '',
+              la: parseFloat(d.y), ln: parseFloat(d.x)
+            };
+          }));
+        });
+      });
+    });
+  }
+
+  /* 카카오가 없을 때. 동네 이름만 찾을 수 있다. */
+  PL.searchLocal = function (q) {
+    return Promise.all([OIL.regions(), OIL.load('geo.json')]).then(function (a) {
+      var regions = a[0].items, geo = a[1].items, out = [];
+      for (var i = 0; i < regions.length && out.length < 15; i++) {
+        var r = regions[i];
+        if (r.la != null && r.r.indexOf(q) >= 0) {
+          out.push({ n: r.r, a: '시·군·구', la: r.la, ln: r.ln });
+        }
+      }
+      for (var j = 0; j < geo.length && out.length < 15; j++) {
+        var g = geo[j];
+        if (g.d.indexOf(q) >= 0) out.push({ n: g.d, a: g.r, la: g.la, ln: g.ln });
+      }
+      return out;
+    }).catch(function () { return []; });
+  };
+
+  PL.search = function (q) {
+    q = String(q || '').trim();
+    if (q.length < 1) return Promise.resolve([]);
+    if (!PL.hasKakao()) return PL.searchLocal(q);
+    return fromKakao(q)
+      .then(function (list) { return list.length ? list : PL.searchLocal(q); })
+      .catch(function () { return PL.searchLocal(q); });
+  };
+})();

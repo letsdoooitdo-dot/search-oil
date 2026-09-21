@@ -9,7 +9,7 @@
   var OIL = window.OIL;
   if (!OIL) return;
   var mode = window.OIL_MODE;
-  if (mode !== 'home' && mode !== 'area') return;
+  if (mode !== 'browse' && mode !== 'area') return;
 
   var esc = OIL.esc, won = OIL.won;
   var P = OIL.prefs;
@@ -250,7 +250,7 @@
 
   /* ── 시작 ────────────────────────────────────────────────── */
   OIL.loading();
-  if (mode === 'home') {
+  if (mode === 'browse') {
     Promise.all([OIL.meta(), OIL.regions()])
       .then(function (a) { renderHome(a[0], a[1]); }).catch(OIL.fail);
   } else {

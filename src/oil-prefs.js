@@ -21,7 +21,11 @@
   var VEHICLE_ORDER = ['경차', '일반', 'SUV', '화물'];
   var FUELS = { g: '휘발유', d: '경유' };
 
-  var DEFAULTS = { fuel: 'g', vehicle: '일반', home: '', work: '', last: '', spot: '', visits: 0 };
+  /* radius - 주변 주유소를 몇 km 안에서 찾을지. 사용자가 직접 고른다. */
+  var RADIUS = [1, 2, 3, 4, 5, 10, 15, 20];
+
+  var DEFAULTS = { fuel: 'g', vehicle: '일반', radius: 5,
+                   home: '', work: '', last: '', spot: '', visits: 0 };
 
   function read() {
     try {
@@ -42,6 +46,7 @@
   for (var k in DEFAULTS) state[k] = (saved && saved[k] != null) ? saved[k] : DEFAULTS[k];
   if (!VEHICLE[state.vehicle]) state.vehicle = '일반';
   if (!FUELS[state.fuel]) state.fuel = 'g';
+  if (RADIUS.indexOf(state.radius) < 0) state.radius = 5;
 
   state.visits = (state.visits || 0) + 1;
   write(state);
@@ -49,6 +54,7 @@
   var P = OIL.prefs = {
     VEHICLE: VEHICLE,
     FUELS: FUELS,
+    RADIUS: RADIUS,
     isFirstVisit: isFirst,
     get: function (k) { return k ? state[k] : state; },
     set: function (k, v) { state[k] = v; write(state); },
@@ -106,6 +112,42 @@
       if (!b) return;
       var key = b.getAttribute('data-pref');
       P.set(key, b.getAttribute('data-val'));
+      if (onChange) onChange(key);
+    });
+  };
+
+  /* ── 고르는 줄 (주변반경 · 유종 · 차종) ────────────────────
+     주변 주유소 화면 맨 위에 붙는다. 세 가지가 전부 결과를 바꾼다.
+       반경 - 몇 km 안에서 찾을지 (사용자가 갈 의향이 있는 거리)
+       유종 - 휘발유가 싼 집이 경유도 싸다는 보장이 없다
+       차종 - 연비에 따라 손익분기가 2배까지 달라진다
+     휴대폰에서는 <select> 가 운영체제 고르개를 띄워줘서 가장 쓰기 편하다. */
+  function sel(key, label, opts) {
+    return '<label class="oil-pick">' +
+      '<span class="oil-pick-k">' + label + '</span>' +
+      '<select class="oil-pick-s" data-pref="' + key + '">' +
+      opts.map(function (o) {
+        return '<option value="' + o[0] + '"' +
+          (String(state[key]) === String(o[0]) ? ' selected' : '') + '>' + o[1] + '</option>';
+      }).join('') + '</select></label>';
+  }
+
+  P.pickerHtml = function () {
+    return '<div class="oil-picks">' +
+      sel('radius', '주변반경', RADIUS.map(function (k) { return [k, k + 'km']; })) +
+      sel('fuel', '유종', Object.keys(FUELS).map(function (f) { return [f, FUELS[f]]; })) +
+      sel('vehicle', '차종', VEHICLE_ORDER.map(function (v) { return [v, VEHICLE[v].label]; })) +
+      '</div>';
+  };
+
+  P.wirePicker = function (onChange) {
+    var box = document.querySelector('.oil-picks');
+    if (!box) return;
+    box.addEventListener('change', function (e) {
+      var s = e.target.closest('[data-pref]');
+      if (!s) return;
+      var key = s.getAttribute('data-pref');
+      P.set(key, key === 'radius' ? parseInt(s.value, 10) : s.value);
       if (onChange) onChange(key);
     });
   };

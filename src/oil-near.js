@@ -1,0 +1,245 @@
+/* 주유소찾기 - 어떤 지점 주변의 주유소 목록
+
+   들어오는 주소:  /p/area.html?la=37.038&ln=127.056&q=삼성전자 평택캠퍼스
+                  /p/area.html?la=..&ln=..&me=1        (내 위치)
+
+   순서는 가격순이 아니라 '실질 이득순'이다. 이게 오피넷과 다른 유일한 지점이고,
+   사람들이 우리를 쓸 이유다. 싼 집이 멀면 기름값으로 다 까먹는다.
+
+   비교 기준은 '여기서 가장 가까운 주유소'다. 거기서 넣는 대신 이 집까지 가면
+   얼마가 남는지를 센다. 기준점이 없으면 '이득'이라는 말 자체가 성립하지 않는다.
+*/
+(function () {
+  'use strict';
+
+  var OIL = window.OIL;
+  if (!OIL || window.OIL_MODE !== 'near') return;
+
+  var esc = OIL.esc, won = OIL.won;
+  var P = OIL.prefs, PL = OIL.place;
+
+  /* 반경은 사용자가 고른다(1~20km). 자료는 가장 넓은 경우에 맞춰 한 번만 받아두고
+     반경을 바꿀 때는 다시 받지 않고 걸러내기만 한다. */
+  var MAX_RADIUS = 20;
+  var NEAR_REGION = 35;   /* 시군구 경계 문제 - 중심이 이 안에 있는 동네를 함께 본다 */
+  var MAX_REGION = 4;
+  var SHOW = 20;
+
+  function fuel() { return P ? P.get('fuel') : 'g'; }
+  function fuelName() { return P ? P.fuelName() : '휘발유'; }
+  function radius() { return P ? P.get('radius') : 5; }
+  function price(s) { return fuel() === 'd' ? s.d : s.g; }
+
+  var la = parseFloat(OIL.param('la'));
+  var ln = parseFloat(OIL.param('ln'));
+  var qname = OIL.param('q');
+  var isMe = OIL.param('me') === '1';
+  var placeName = isMe ? '내 위치' : (qname || '선택한 장소');
+
+  /* ── 데이터 모으기 ───────────────────────────────────────────
+     시군구 하나만 보면 경계 바로 건너편의 더 싼 집을 놓친다.
+     그래서 가까운 동네 몇 곳을 같이 불러 합친다. */
+  function collect(reg) {
+    var near = reg.items
+      .filter(function (r) { return r.la != null; })
+      .map(function (r) {
+        return { r: r, km: OIL.distKm(la, ln, r.la, r.ln) };
+      })
+      .filter(function (x) { return x.km <= NEAR_REGION; })
+      .sort(function (a, b) { return a.km - b.km; })
+      .slice(0, MAX_REGION);
+
+    if (!near.length) return Promise.resolve({ stations: [], regions: [] });
+
+    return Promise.all(near.map(function (x) {
+      return OIL.region(x.r.sl).catch(function () { return null; });
+    })).then(function (list) {
+      var out = [];
+      list.forEach(function (detail, i) {
+        if (!detail) return;
+        (detail.stations || []).forEach(function (s) {
+          if (s.la == null) return;
+          var km = OIL.distKm(la, ln, s.la, s.ln);
+          if (km > MAX_RADIUS) return;
+          s._km = km;
+          s._region = near[i].r.r;
+          out.push(s);
+        });
+      });
+      return { stations: out, regions: near.map(function (x) { return x.r; }) };
+    });
+  }
+
+  /* ── 한 곳 카드 ──────────────────────────────────────────── */
+  function card(s, i, baseName) {
+    var p = price(s);
+    var t = s._trip;
+    var line = OIL.tripLine(t, s._isBase);
+
+    var tags = '';
+    if (s.s) tags += '<span class="oil-tag">셀프</span>';
+    if (s.b) tags += '<span class="oil-tag">' + esc(s.b) + '</span>';
+    if (s.c === '늘 최저권') tags += '<span class="oil-badge is-low">1년 내내 최저권</span>';
+    else if (s.c === '늘 최고권') tags += '<span class="oil-badge is-high">오늘만 쌈</span>';
+
+    return '<article class="oil-st">' +
+      '<div class="oil-st-top">' +
+        '<span class="oil-st-name">' + esc(s.n) + '<span class="oil-st-tags">' + tags + '</span></span>' +
+        '<span class="oil-st-fig">' +
+          '<b class="oil-st-price">' + won(p) + '<i>원</i></b>' +
+          '<span class="oil-st-km">약 ' + t.road.toFixed(1) + 'km</span>' +
+        '</span>' +
+      '</div>' +
+      '<div class="oil-st-line ' + line.cls + '">' + line.text + '</div>' +
+      '<div class="oil-st-acts">' +
+        '<button type="button" class="oil-st-btn" data-detail="' + i + '">상세보기</button>' +
+        '<a class="oil-st-btn is-go" href="' + OIL.mapUrl(s) + '" ' +
+          'target="_blank" rel="noopener">찾아가기</a>' +
+      '</div>' +
+      '<div class="oil-st-detail" id="oil-det-' + i + '" hidden>' + detail(s, baseName) + '</div>' +
+      '</article>';
+  }
+
+  function detail(s, baseName) {
+    var t = s._trip;
+    var fuels = [];
+    if (s.g) fuels.push(['휘발유', s.g]);
+    if (s.d) fuels.push(['경유', s.d]);
+    if (s.p) fuels.push(['고급휘발유', s.p]);
+    if (s.k) fuels.push(['실내등유', s.k]);
+
+    var html = '<div class="oil-rows">';
+    fuels.forEach(function (f) {
+      html += '<div class="oil-row"><span class="oil-row-k">' + f[0] + '</span>' +
+        '<span class="oil-row-v">' + won(f[1]) + '원</span></div>';
+    });
+    html += '<div class="oil-row"><span class="oil-row-k">주소</span>' +
+      '<span class="oil-row-v" style="font-weight:500;">' + esc(s.a || '-') + '</span></div>';
+    if (s.t) {
+      html += '<div class="oil-row"><span class="oil-row-k">전화</span>' +
+        '<span class="oil-row-v"><a href="tel:' + esc(s.t) + '">' + esc(s.t) + '</a></span></div>';
+    }
+    html += '<div class="oil-row"><span class="oil-row-k">상표</span>' +
+      '<span class="oil-row-v" style="font-weight:500;">' + esc(s.b || '-') +
+      (s.s ? ' · 셀프' : '') + '</span></div>';
+    html += '</div>';
+
+    /* 왜 이런 판정이 나왔는지 - 숨기지 않고 밝힌다 */
+    html += '<p class="oil-st-why">' +
+      '여기서 직선 ' + t.km.toFixed(1) + 'km → 도로 약 ' + t.road.toFixed(1) + 'km' +
+      (s._isBase
+        ? '<br>가장 가까운 주유소라 이곳을 비교 기준으로 씁니다.'
+        : '<br>기준(' + esc(baseName) + ')보다 <b>' + t.extraRoad.toFixed(1) + 'km 더</b> 갑니다' +
+          '<br>' + t.car.label + ' ' + t.kmpl + 'km/L · ' + t.L + 'L 주유 기준<br>' +
+          '아끼는 돈 ' + won(t.gain) + '원 − 더 가는 기름값 ' + won(t.cost) + '원 = ' +
+          '<b>' + (t.net >= 0 ? '+' : '') + won(t.net) + '원</b>') +
+      '<br><span class="oil-st-caveat">직선거리에 1.3배를 곱한 어림값입니다. ' +
+      '실제 길은 더 돌 수 있습니다.</span></p>';
+
+    if (s.c === '늘 최저권') {
+      html += '<p class="oil-st-why">이 주유소는 최근 1년 동안 동네 최저권을 지켰습니다. ' +
+        '오늘만 싼 곳이 아닙니다.</p>';
+    } else if (s.c === '늘 최고권') {
+      html += '<p class="oil-st-why">이 주유소는 평소 동네에서 비싼 축입니다. ' +
+        '오늘 싼 건 일시적일 수 있습니다.</p>';
+    }
+    return html;
+  }
+
+  /* ── 화면 ────────────────────────────────────────────────── */
+  function render(meta, data) {
+    var rad = radius();
+    /* 고른 반경은 화면에 보여주는 거리(도로 어림)와 같은 잣대여야 한다.
+       직선거리로 거르면 "5km 선택"인데 목록에 "약 6.5km"가 나와 어긋난다. */
+    var all = data.stations.filter(function (s) {
+      return price(s) && s._km * OIL.ROAD <= rad;
+    });
+
+    var html = '<div class="oil-stack">';
+
+    /* 머리말 - 장소 이름과 찾은 개수 */
+    html += '<div class="oil-near-head">' +
+      '<h1 class="oil-near-h1">' + esc(placeName) + ' 주변 주유소' +
+      '<span class="oil-near-n">(' + all.length + ')</span></h1></div>';
+
+    /* 고르는 줄 - 반경 · 유종 · 차종 */
+    if (P) html += P.pickerHtml();
+
+    if (!all.length) {
+      html += '<div class="oil-note">' + esc(placeName) + ' 반경 <b>' + rad +
+        'km</b> 안에 ' + fuelName() + ' 파는 주유소가 없습니다. ' +
+        '위에서 반경을 넓혀보세요.</div>' +
+        '<a class="oil-btn" href="' + (OIL.cfg.listPageUrl || '/') + '">' +
+        '<span>다른 장소로 찾기</span>' + OIL.chev('#fff') + '</a></div>';
+      OIL.render(html);
+      if (P) P.wirePicker(function () { render(meta, data); });
+      return;
+    }
+
+    /* 기준 = 여기서 가장 가까운 주유소. 아무것도 안 따지면 갔을 곳이다. */
+    var base = all.reduce(function (a, b) { return b._km < a._km ? b : a; });
+    var basePrice = price(base);
+
+    all.forEach(function (s) {
+      s._isBase = (s === base);
+      s._trip = OIL.calcTrip(price(s), basePrice, s._km, base._km);
+    });
+
+    var list = all.slice().sort(function (a, b) {
+      if (b._trip.net !== a._trip.net) return b._trip.net - a._trip.net;
+      return a._km - b._km;
+    }).slice(0, SHOW);
+
+    var best = list[0];
+    var lead = (best._isBase || best._trip.net <= 0)
+      ? '반경 ' + rad + 'km 안에서는 <b>가장 가까운 곳</b>에서 넣는 게 낫습니다. ' +
+        '더 싼 집이 있어도 더 가는 기름값이 그보다 큽니다.'
+      : '맨 위 주유소까지 더 가는 기름값을 빼고도 <b>' + won(best._trip.net) +
+        '원</b>이 남습니다. 가격만 싼 순서가 아니라 실제로 남는 순서입니다.';
+    html += '<p class="oil-lead" style="margin-top:0;">' + lead + '</p>';
+
+    html += OIL.adSlotHtml();
+
+    html += '<div class="oil-sts">' + list.map(function (s, i) {
+      return card(s, i, base.n);
+    }).join('') + '</div>';
+
+    if (all.length > list.length) {
+      html += '<p class="oil-p" style="font-size:12px;color:var(--oil-muted);text-align:center;">' +
+        '반경 ' + rad + 'km 안 ' + all.length + '곳 중 남는 순서로 ' + list.length +
+        '곳을 보여드립니다</p>';
+    }
+
+    html += '<a class="oil-btn" href="' + (OIL.cfg.listPageUrl || '/') + '">' +
+      '<span>다른 장소로 찾기</span>' + OIL.chev('#fff') + '</a>';
+
+    html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
+      OIL.dateKo(meta.date) + ' ' + fuelName() + ' 실제 판매가 · 출처 오피넷 · ' +
+      '거리는 직선거리에 1.3배를 곱한 어림값입니다</p></div>';
+
+    OIL.render(html);
+    document.title = placeName + ' 주변 주유소 최저가 - 주유소찾기';
+
+    if (P) P.wirePicker(function () { render(meta, data); });
+
+    OIL.root().addEventListener('click', function (e) {
+      var b = e.target.closest('[data-detail]');
+      if (!b) return;
+      var box = document.getElementById('oil-det-' + b.getAttribute('data-detail'));
+      if (!box) return;
+      box.hidden = !box.hidden;
+      b.textContent = box.hidden ? '상세보기' : '접기';
+    });
+  }
+
+  /* ── 시작 ────────────────────────────────────────────────── */
+  if (!la || !ln) { location.replace(OIL.cfg.listPageUrl || '/'); return; }
+  if (!isMe && qname && PL) PL.remember({ n: qname, a: '', la: la, ln: ln });
+
+  OIL.loading('주변 주유소를 찾는 중...');
+  Promise.all([OIL.meta(), OIL.regions()])
+    .then(function (a) {
+      return collect(a[1]).then(function (data) { render(a[0], data); });
+    })
+    .catch(OIL.fail);
+})();
