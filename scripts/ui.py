@@ -9,7 +9,22 @@
 표준 라이브러리만 사용.
 """
 
+import os
 import re
+
+# GitHub Pages 프로젝트 사이트는 주소 뒤에 저장소 이름이 붙는다
+# (letsdoooitdo-dot.github.io/search-oil). 그러면 "/area/" 같은 링크가 저장소 폴더를
+# 건너뛰고 최상위로 가버려 전부 깨진다. 그래서 내부 링크는 전부 이 접두사를 거친다.
+# 나중에 전용 도메인(oil.letsdoooit.com)을 붙이면 BASE_PATH="" 로 두면 된다.
+BASE_PATH = os.environ.get("BASE_PATH", "/search-oil").rstrip("/")
+
+
+def url(path: str) -> str:
+    """사이트 내부 경로를 실제 주소로 바꾼다. url('/area/') -> '/search-oil/area/'"""
+    if not path.startswith("/"):
+        return path
+    return f"{BASE_PATH}{path}" if BASE_PATH else path
+
 
 FONT_LINK = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
              '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
@@ -58,7 +73,7 @@ def site_nav(active_href: str):
     for label, href in NAV:
         on = (href == active_href)
         items.append(
-            f'<a href="{href}" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; '
+            f'<a href="{url(href)}" style="flex-shrink: 0; padding: 11px 9px 9px; font-size: 12.5px; '
             f'font-weight: {700 if on else 500}; color: {"#13181A" if on else "#6B7679"}; '
             f'border-bottom: 2px solid {"#13181A" if on else "transparent"};">{label}</a>'
         )
@@ -66,7 +81,7 @@ def site_nav(active_href: str):
     return f"""
   <nav style="display: flex; align-items: center; gap: 2px; padding: 0 12px; background: #FFFFFF;
               border-bottom: 1px solid #DDE3E1;">
-    <a href="/" style="flex-shrink: 0; font-family: 'Gothic A1', sans-serif; font-size: 13.5px; font-weight: 900;
+    <a href="{url('/')}" style="flex-shrink: 0; font-family: 'Gothic A1', sans-serif; font-size: 13.5px; font-weight: 900;
        color: #13181A; padding: 11px 12px 9px 0; letter-spacing: -0.02em;
        border-bottom: 2px solid {"#13181A" if home else "transparent"};">주유소찾기</a>
     {''.join(items)}

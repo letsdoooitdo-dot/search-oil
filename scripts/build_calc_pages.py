@@ -26,7 +26,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import figures
-from ui import esc, ad_slot, page_shell
+from ui import esc, ad_slot, page_shell, url
 
 OUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "calc")
 ACCENT = "#A54A04"
@@ -82,12 +82,12 @@ def head_block(kicker, title, lead):
 
 
 def back_links():
-    return """
-    <a href="/" style="display: flex; justify-content: space-between; align-items: center; background: #13181A; border-radius: 14px; padding: 14px;">
+    return f"""
+    <a href="{url('/')}" style="display: flex; justify-content: space-between; align-items: center; background: #13181A; border-radius: 14px; padding: 14px;">
       <span style="font-size: 13px; font-weight: 700; color: #FFFFFF;">내 경로에서 진짜 이득인 곳 찾기</span>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
     </a>
-    <a href="/calc/" style="display: flex; justify-content: space-between; align-items: center; background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 14px; padding: 12px 14px;">
+    <a href="{url('/calc/')}" style="display: flex; justify-content: space-between; align-items: center; background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 14px; padding: 12px 14px;">
       <span style="font-size: 12.5px; color: #4A5558;">다른 계산기 보기</span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B666A" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
     </a>"""
@@ -377,7 +377,7 @@ CALCS = [
 
 def build_index():
     items = "".join(f"""
-      <a href="/calc/{href}" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 16px; {'border-top: 1px solid #E9EEEC;' if i else ''}">
+      <a href="{url(f"/calc/{href}")}" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 16px; {'border-top: 1px solid #E9EEEC;' if i else ''}">
         <span style="min-width: 0;">
           <span style="display: block; font-size: 14px; font-weight: 700; color: #13181A;">{esc(name)}</span>
           <span style="display: block; font-size: 12px; color: #5B666A; margin-top: 3px; line-height: 1.5;">{esc(desc)}</span>

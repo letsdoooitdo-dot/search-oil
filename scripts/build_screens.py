@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import route_gain as rg
 import verdict as vd
 import fill_amount as fa
-from ui import esc, display_name, title_font_px, site_nav, ad_slot, page_shell
+from ui import esc, display_name, title_font_px, site_nav, ad_slot, page_shell, url
 
 DB = rg.DB
 import figures
@@ -69,7 +69,7 @@ def route_t(point, seg_a, seg_b):
 def area_link(region: str):
     """판정 화면 -> 지역 페이지. 탭 간 순환이 체류시간을 가장 크게 늘린다."""
     return f"""
-    <a href="/area/" style="display: flex; justify-content: space-between; align-items: center;
+    <a href="{url('/area/')}" style="display: flex; justify-content: space-between; align-items: center;
        background: #FFFFFF; border: 1px solid #DDE3E1; border-radius: 14px; padding: 12px 14px;">
       <span style="font-size: 12.5px; color: #4A5558;"><b style="font-weight: 700; color: #13181A;">{esc(region)}</b> 기름값 이야기</span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B666A" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>

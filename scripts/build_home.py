@@ -25,7 +25,7 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
 import figures
-from ui import esc, ad_slot, page_shell, ADSENSE_CLIENT
+from ui import esc, ad_slot, page_shell, ADSENSE_CLIENT, url
 
 SITE_URL = os.environ.get("SITE_URL", "https://oil.letsdoooit.com").rstrip("/")
 ACCENT = "#A54A04"
@@ -45,7 +45,7 @@ def build_index(s):
     top = s["regions"][0]
 
     cards = "".join(f"""
-      <a href="{href}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:15px 16px;{'border-top:1px solid #E9EEEC;' if i else ''}">
+      <a href="{url(href)}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:15px 16px;{'border-top:1px solid #E9EEEC;' if i else ''}">
         <span style="min-width:0;">
           <span style="display:block;font-size:14.5px;font-weight:700;color:{INK};">{esc(t)}</span>
           <span style="display:block;font-size:12px;color:#5B666A;margin-top:4px;line-height:1.55;">{esc(d)}</span>
@@ -89,12 +89,12 @@ def build_index(s):
     <div>
       <div style="font-family:'Gothic A1',sans-serif;font-size:17px;font-weight:900;color:{INK};margin-bottom:9px;">이런 답을 드립니다</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <a href="/screen_24_detour.html" style="background:#FFFFFF;border:1px solid #D96206;border-radius:14px;padding:13px;">
+        <a href="{url('/screen_24_detour.html')}" style="background:#FFFFFF;border:1px solid #D96206;border-radius:14px;padding:13px;">
           <span style="display:block;font-size:11px;font-weight:700;color:#A54A04;">24%</span>
           <span style="display:block;font-size:13.5px;font-weight:800;color:{INK};margin-top:3px;">돌아가세요</span>
           <span style="display:block;font-size:11.5px;color:#5B666A;margin-top:4px;line-height:1.5;">벗어나도 남는 게 있을 때</span>
         </a>
-        <a href="/screen_76_stay.html" style="background:#FFFFFF;border:1px solid #0B6B60;border-radius:14px;padding:13px;">
+        <a href="{url('/screen_76_stay.html')}" style="background:#FFFFFF;border:1px solid #0B6B60;border-radius:14px;padding:13px;">
           <span style="display:block;font-size:11px;font-weight:700;color:#0A5850;">76%</span>
           <span style="display:block;font-size:13.5px;font-weight:800;color:{INK};margin-top:3px;">그냥 넣으세요</span>
           <span style="display:block;font-size:11.5px;color:#5B666A;margin-top:4px;line-height:1.5;">돌아갈 가치가 없을 때</span>

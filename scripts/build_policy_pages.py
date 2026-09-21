@@ -21,7 +21,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from ui import esc, ad_slot, page_shell
+from ui import esc, ad_slot, page_shell, url
 
 OUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "policy")
 ACCENT = "#A54A04"
@@ -83,12 +83,12 @@ def verify_note(text):
 
 
 def links():
-    return """
-    <a href="/" style="display:flex;justify-content:space-between;align-items:center;background:#13181A;border-radius:14px;padding:14px;">
+    return f"""
+    <a href="{url('/')}" style="display:flex;justify-content:space-between;align-items:center;background:#13181A;border-radius:14px;padding:14px;">
       <span style="font-size:13px;font-weight:700;color:#FFFFFF;">내 경로에서 진짜 이득인 곳 찾기</span>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
     </a>
-    <a href="/policy/" style="display:flex;justify-content:space-between;align-items:center;background:#FFFFFF;border:1px solid #DDE3E1;border-radius:14px;padding:12px 14px;">
+    <a href="{url('/policy/')}" style="display:flex;justify-content:space-between;align-items:center;background:#FFFFFF;border:1px solid #DDE3E1;border-radius:14px;padding:12px 14px;">
       <span style="font-size:12.5px;color:#4A5558;">다른 제도 보기</span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B666A" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
     </a>"""
@@ -226,7 +226,7 @@ def build_light_car():
     inner += ad_slot()
 
     inner += f"""
-    <a href="/calc/light-car-refund.html" style="display:flex;justify-content:space-between;align-items:center;background:#FFFFFF;border:1px solid {ACCENT};box-shadow:0 0 0 3px #FDF0E4;border-radius:14px;padding:14px;">
+    <a href="{url('/calc/light-car-refund.html')}" style="display:flex;justify-content:space-between;align-items:center;background:#FFFFFF;border:1px solid {ACCENT};box-shadow:0 0 0 3px #FDF0E4;border-radius:14px;padding:14px;">
       <span style="min-width:0;">
         <span style="display:block;font-size:13.5px;font-weight:700;color:{INK};">내 환급액 계산해보기</span>
         <span style="display:block;font-size:12px;color:#5B666A;margin-top:3px;">월 주유량만 넣으면 1년 환급액이 바로 나옵니다</span>
@@ -261,7 +261,7 @@ ITEMS = [
 
 def build_index():
     items = "".join(f"""
-      <a href="/policy/{href}" style="display:block;padding:15px 16px;{'border-top:1px solid #E9EEEC;' if i else ''}">
+      <a href="{url(f"/policy/{href}")}" style="display:block;padding:15px 16px;{'border-top:1px solid #E9EEEC;' if i else ''}">
         <span style="display:block;font-size:14.5px;font-weight:700;color:{INK};line-height:1.45;">{esc(t)}</span>
         <span style="display:block;font-size:12px;color:#5B666A;margin-top:5px;line-height:1.55;">{esc(d)}</span>
       </a>""" for i, (href, t, d) in enumerate(ITEMS))

@@ -26,7 +26,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import route_gain as rg
 import verdict as vd
-from ui import esc, display_name, ad_slot, page_shell
+from ui import esc, display_name, ad_slot, page_shell, url
 
 DB = rg.DB
 import figures
@@ -178,7 +178,7 @@ def build_page(s, rank, total, national_median):
       {station_rows(s)}
     </div>
 
-    <a href="/" style="display: flex; justify-content: space-between; align-items: center; background: #13181A; border-radius: 14px; padding: 14px;">
+    <a href="{url('/')}" style="display: flex; justify-content: space-between; align-items: center; background: #13181A; border-radius: 14px; padding: 14px;">
       <span style="font-size: 13px; font-weight: 700; color: #FFFFFF;">내 경로에서 진짜 이득인 곳 찾기</span>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
     </a>
@@ -205,7 +205,7 @@ def build_index(summaries, national_median):
     """230개 페이지로 들어가는 입구. 시도별로 묶고, 격차 큰 동네를 위에 띄운다."""
     top = sorted(summaries, key=lambda s: -s["spread"])[:10]
     top_rows = "".join(f"""
-        <a href="/area/{slug(s['region'])}.html" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; {'background: #F5F7F6;' if i % 2 else ''}">
+        <a href="{url(f"/area/{slug(s['region'])}.html")}" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; {'background: #F5F7F6;' if i % 2 else ''}">
           <span style="font-size: 12.5px; color: #13181A;">{esc(s['region'])}</span>
           <span style="font-size: 12.5px; font-weight: 700; color: {ACCENT}; flex-shrink: 0;">{s['spread']:,.0f}원 차이</span>
         </a>""" for i, s in enumerate(top))
@@ -217,7 +217,7 @@ def build_index(summaries, national_median):
       <div style="padding: 12px 16px; border-top: 1px solid #E9EEEC;">
         <div style="font-size: 12px; font-weight: 700; color: #13181A; margin-bottom: 7px;">{esc(sido)}</div>
         <div style="display: flex; flex-wrap: wrap; gap: 5px;">
-          {''.join(f'<a href="/area/{slug(s["region"])}.html" style="font-size: 11.5px; padding: 4px 9px; border-radius: 7px; border: 1px solid #DDE3E1; color: #4A5558;">{esc(s["region"].split(maxsplit=1)[1] if " " in s["region"] else s["region"])}</a>' for s in items)}
+          {''.join(f'<a href="{url(f'/area/{slug(s["region"])}.html')}" style="font-size: 11.5px; padding: 4px 9px; border-radius: 7px; border: 1px solid #DDE3E1; color: #4A5558;">{esc(s["region"].split(maxsplit=1)[1] if " " in s["region"] else s["region"])}</a>' for s in items)}
         </div>
       </div>""" for sido, items in by_sido.items())
 
@@ -249,7 +249,7 @@ def build_index(summaries, national_median):
       {sido_blocks}
     </div>
 
-    <a href="/" style="display: flex; justify-content: space-between; align-items: center; background: #13181A; border-radius: 14px; padding: 14px;">
+    <a href="{url('/')}" style="display: flex; justify-content: space-between; align-items: center; background: #13181A; border-radius: 14px; padding: 14px;">
       <span style="font-size: 13px; font-weight: 700; color: #FFFFFF;">내 경로에서 진짜 이득인 곳 찾기</span>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
     </a>

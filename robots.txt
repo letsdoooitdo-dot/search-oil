@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://oil.letsdoooit.com/sitemap.xml
+Sitemap: https://letsdoooitdo-dot.github.io/search-oil/sitemap.xml
