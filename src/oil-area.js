@@ -193,8 +193,10 @@
     var isWork = P && P.get('work') === r.sl;
 
     var html = '<div class="oil-stack">';
+    var spot = P ? P.get('spot') : '';
     html += '<div><div class="oil-kicker">우리 동네 ' + fuelName() + '</div>' +
-      '<h1 class="oil-h1">' + esc(v.head) + '</h1></div>';
+      '<h1 class="oil-h1">' + esc(v.head) + '</h1>' +
+      (spot ? '<div class="oil-spot">현위치 ' + esc(spot) + '</div>' : '') + '</div>';
 
     if (P) html += P.barHtml({ regionName: r.r });
 

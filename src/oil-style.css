@@ -141,6 +141,13 @@
 }
 .oil-prefs-hint { font-size: 11.5px; color: var(--oil-muted2); margin-top: 10px; line-height: 1.6; }
 
+/* 찾은 현위치 표시 */
+.oil-spot {
+  display: inline-block; margin-top: 8px; padding: 5px 10px; border-radius: 8px;
+  background: var(--oil-soft); border: 1px solid var(--oil-line-soft);
+  font-size: 12px; color: var(--oil-muted);
+}
+
 /* 내 위치 버튼 */
 .oil-locate {
   display: flex; align-items: center; justify-content: center; gap: 7px;

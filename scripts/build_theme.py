@@ -31,6 +31,10 @@ from ui import ADSENSE_CLIENT, ADSENSE_SLOT_INCONTENT
 
 DEFAULT_DATA_URL = "https://letsdoooitdo-dot.github.io/search-oil/api/"
 
+# 광고 스위치. 개발 중에는 꺼두고, 화면·기능이 정리되면 True 로 바꾼다.
+# False 면 테마의 애드센스 로더와 설정값이 모두 빠져서 자동광고까지 함께 멈춘다.
+ADS_ON = False
+
 CSS_FILES = ["src/oil-shell.css", "src/oil-style.css"]
 JS_FILES = ["src/oil-blogger.js", "src/oil-core.js", "src/oil-prefs.js",
             "src/oil-area.js", "src/oil-calc.js", "src/oil-post.js"]
@@ -56,8 +60,12 @@ def main():
              .replace("/*@@OIL_CSS@@*/", css)
              .replace("/*@@OIL_JS@@*/", js)
              .replace("@@OIL_DATA_URL@@", data_url)
-             .replace("@@OIL_AD_CLIENT@@", ADSENSE_CLIENT)
-             .replace("@@OIL_AD_SLOT@@", ADSENSE_SLOT_INCONTENT))
+             .replace("@@OIL_AD_CLIENT@@", ADSENSE_CLIENT if ADS_ON else "")
+             .replace("@@OIL_AD_SLOT@@", ADSENSE_SLOT_INCONTENT if ADS_ON else ""))
+
+    if not ADS_ON:
+        # 애드센스 로더 자체를 빼야 자동광고(사이드 레일)도 함께 멈춘다
+        theme = re.sub(r"\n\s*<script async='async'[^>]*adsbygoogle\.js[^>]*/>", "", theme)
 
     out = os.path.join(ROOT, "blogger", "theme-oil.xml")
     os.makedirs(os.path.dirname(out), exist_ok=True)
@@ -83,6 +91,9 @@ def main():
     body = re.sub(r"<script async='async'[^>]*adsbygoogle\.js[^>]*/>", "", body)
     body = body.replace("<script src='https://cdn.jsdelivr.net/gh/abaeksite/"
                         "aros_adsense_blocker@main/aros_adsense_blocker_v7-1.js'/>", "")
+    # 테마 XML 은 따옴표를 &quot; 로 쓴다. 블로그스팟은 서빙할 때 풀어주지만
+    # 미리보기는 그대로라 JS 문법 오류가 난다 - 해당 블록을 통째로 뺀다.
+    body = re.sub(r"<script>\s*window\.redirectTarget[^<]*</script>", "", body, flags=re.S)
     body = body.replace("adClient: '" + ADSENSE_CLIENT + "'", "adClient: ''")
 
     for name, path in (("index.html", "/"), ("area.html", "/p/area.html"),

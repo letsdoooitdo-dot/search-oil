@@ -25,6 +25,7 @@ except Exception: pass
 
 import json
 import os
+import re
 import shutil
 import statistics as st
 import sys
@@ -41,6 +42,25 @@ OUT = os.path.join(ROOT, "api")
 SPREAD_BIG = 250
 SPREAD_SMALL = 60
 FUELS = (("g", "gasoline"), ("d", "diesel"))
+
+
+DONG_RE = re.compile(r"\(([^)]*?[동리가])\)")
+
+
+def dong_of(addr):
+    """주소에서 읍·면·동을 뽑는다.
+    '서울 종로구 평창문화로 135 (평창동)' -> 평창동
+    '경기 평택시 고덕면 서동대로 2796'    -> 고덕면
+    못 뽑으면 None. 약 78%에서 나온다."""
+    if not addr:
+        return None
+    m = DONG_RE.search(addr)
+    if m:
+        return m.group(1).split(",")[0].strip()
+    for t in addr.split():
+        if t.endswith(("읍", "면")) or (t.endswith("동") and len(t) >= 2 and not t[0].isdigit()):
+            return t
+    return None
 
 
 def slug(region):
@@ -73,7 +93,7 @@ def main():
         ).fetchone() or ("횡보", snap["gas"]["median"], 0.0)
 
         rows = con.execute("""
-            SELECT s.region, s.name, s.brand, s.is_self, s.lat, s.lng,
+            SELECT s.region, s.name, s.brand, s.is_self, s.lat, s.lng, s.addr,
                    p.gasoline, p.diesel, c.character
             FROM stations s
             JOIN prices p ON p.station_id = s.station_id AND p.price_date = ?
@@ -82,12 +102,16 @@ def main():
         """, (day,))
 
         by_region = {}
-        for region, name, brand, is_self, lat, lng, gas, diesel, ch in rows:
+        dongs = {}
+        for region, name, brand, is_self, lat, lng, addr, gas, diesel, ch in rows:
             by_region.setdefault(region, []).append({
                 "n": display_name(name), "b": brand, "s": 1 if is_self else 0,
                 "g": gas, "d": diesel, "c": ch or "",
                 "_lat": lat, "_lng": lng,
             })
+            d = dong_of(addr)
+            if d and lat and lng:
+                dongs.setdefault((region, d), []).append((lat, lng))
 
         # 유종별 전국 순위 (동네 중앙값 싼 순)
         rank = {}
@@ -155,12 +179,20 @@ def main():
             "spreadBig": SPREAD_BIG, "spreadSmall": SPREAD_SMALL,
         }
         total_bytes += write(os.path.join(OUT, "meta.json"), meta)
+
+        # 읍·면·동 중심 좌표 - "천안시 신당동 부근"처럼 현재 위치를 자세히 보여주는 데 쓴다.
+        # 주유소가 있는 동만 담기므로 근사치다. 화면에도 '부근'이라고 밝힌다.
+        geo = [{"r": region, "d": d,
+                "la": round(sum(p[0] for p in pts) / len(pts), 4),
+                "ln": round(sum(p[1] for p in pts) / len(pts), 4)}
+               for (region, d), pts in sorted(dongs.items())]
+        total_bytes += write(os.path.join(OUT, "geo.json"), {"date": day, "items": geo})
     finally:
         con.close()
 
     withgeo = sum(1 for s in summaries if "la" in s)
     print(f"데이터 작성: 지역 {len(summaries)}곳 (좌표 {withgeo}곳) · "
-          f"총 {total_bytes/1024:,.0f}KB · 기준일 {day}")
+          f"읍면동 {len(geo):,}곳 · 총 {total_bytes/1024:,.0f}KB · 기준일 {day}")
     print(f"경로: {OUT}")
 
 

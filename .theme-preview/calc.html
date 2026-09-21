@@ -9,12 +9,9 @@
   <!-- <meta content='여기에_네이버_인증값' name='naver-site-verification'/> -->
 
   <!-- 3. 애드센스 (자동광고: 양쪽 사이드 레일 광고도 이 코드로 표시됨) -->
-  <script async='async' crossorigin='anonymous'/>
 
   <!-- 4. 아로스 애드센스 무효트래픽 방지코드 -->
-  <script>
-    window.redirectTarget = &quot;https://letsdoooit.com&quot;;
-  </script>
+  
   
 
 <!-- Open Graph -->
@@ -278,6 +275,13 @@ button, input, select { font-family: inherit; }
 }
 .oil-prefs-hint { font-size: 11.5px; color: var(--oil-muted2); margin-top: 10px; line-height: 1.6; }
 
+/* 찾은 현위치 표시 */
+.oil-spot {
+  display: inline-block; margin-top: 8px; padding: 5px 10px; border-radius: 8px;
+  background: var(--oil-soft); border: 1px solid var(--oil-line-soft);
+  font-size: 12px; color: var(--oil-muted);
+}
+
 /* 내 위치 버튼 */
 .oil-locate {
   display: flex; align-items: center; justify-content: center; gap: 7px;
@@ -371,7 +375,7 @@ window.OIL_CONFIG = {
   reportLabelUrl: '/search/label/기름값리포트',
   dataBaseUrl: 'https://letsdoooitdo-dot.github.io/search-oil/api/',
   adClient: '',
-  adSlot: '3416081882'
+  adSlot: ''
 };
 /*@@OIL_CONFIG_END@@*/
 
@@ -612,7 +616,7 @@ window.OIL_CONFIG = {
   var VEHICLE_ORDER = ['경차', '일반', 'SUV', '화물'];
   var FUELS = { g: '휘발유', d: '경유' };
 
-  var DEFAULTS = { fuel: 'g', vehicle: '일반', home: '', work: '', last: '', visits: 0 };
+  var DEFAULTS = { fuel: 'g', vehicle: '일반', home: '', work: '', last: '', spot: '', visits: 0 };
 
   function read() {
     try {
@@ -723,16 +727,41 @@ window.OIL_CONFIG = {
     return best ? { region: best, km: bestD } : null;
   };
 
-  /* onDone(결과, 오류메시지) */
+  /* 읍·면·동까지 찾는다. 주유소가 있는 동만 데이터에 있어 근사치이므로
+     화면에는 '부근'이라고 밝힌다. */
+  function nearestDong(lat, lng) {
+    return OIL.load('geo.json').then(function (geo) {
+      var best = null, bestD = Infinity;
+      for (var i = 0; i < geo.items.length; i++) {
+        var g = geo.items[i];
+        var d = distKm(lat, lng, g.la, g.ln);
+        if (d < bestD) { bestD = d; best = g; }
+      }
+      /* 너무 멀면(15km 초과) 엉뚱한 동을 말하게 되므로 쓰지 않는다 */
+      return (best && bestD <= 15) ? { dong: best, km: bestD } : null;
+    }).catch(function () { return null; });
+  }
+
+  /* onDone(결과, 오류메시지) — 결과에 region 과 spot(읍면동)이 들어온다 */
   P.locate = function (onDone) {
     if (!navigator.geolocation) {
       onDone(null, '이 브라우저는 위치 기능을 지원하지 않습니다.');
       return;
     }
     navigator.geolocation.getCurrentPosition(function (pos) {
-      OIL.regions().then(function (reg) {
-        var hit = P.nearest(pos.coords.latitude, pos.coords.longitude, reg.items);
+      var lat = pos.coords.latitude, lng = pos.coords.longitude;
+      Promise.all([OIL.regions(), nearestDong(lat, lng)]).then(function (a) {
+        var reg = a[0], spot = a[1];
+        var hit = P.nearest(lat, lng, reg.items);
         if (!hit) { onDone(null, '가까운 동네를 찾지 못했습니다.'); return; }
+        /* 동을 찾았고 그 동이 다른 시군구에 속하면, 동 쪽 시군구를 믿는다 */
+        if (spot && spot.dong.r !== hit.region.r) {
+          for (var i = 0; i < reg.items.length; i++) {
+            if (reg.items[i].r === spot.dong.r) { hit.region = reg.items[i]; break; }
+          }
+        }
+        hit.spot = spot;
+        hit.accuracy = pos.coords.accuracy;
         onDone(hit, null);
       }).catch(function () { onDone(null, '데이터를 불러오지 못했습니다.'); });
     }, function (err) {
@@ -752,6 +781,13 @@ window.OIL_CONFIG = {
       '<div class="oil-locate-msg" id="oil-locate-msg"></div>';
   };
 
+  /* 찾은 위치를 사람이 읽을 문장으로. 예: "충남 천안시 신당동 부근" */
+  P.spotText = function (hit) {
+    if (!hit) return '';
+    if (hit.spot) return hit.spot.dong.r + ' ' + hit.spot.dong.d + ' 부근';
+    return hit.region.r + ' 부근';
+  };
+
   P.wireLocate = function () {
     var btn = document.getElementById('oil-locate');
     var msg = document.getElementById('oil-locate-msg');
@@ -761,8 +797,10 @@ window.OIL_CONFIG = {
       msg.textContent = '위치를 확인하는 중...';
       P.locate(function (hit, err) {
         if (err) { btn.disabled = false; msg.textContent = err; return; }
-        msg.textContent = hit.region.r + '(으)로 이동합니다';
+        var where = P.spotText(hit);
+        msg.textContent = where + ' — ' + hit.region.r + ' 기름값을 봅니다';
         P.set('last', hit.region.sl);
+        P.set('spot', where);      /* 동네 화면에서 "현위치"로 보여준다 */
         location.href = OIL.areaUrl(hit.region.sl);
       });
     });
@@ -964,8 +1002,10 @@ window.OIL_CONFIG = {
     var isWork = P && P.get('work') === r.sl;
 
     var html = '<div class="oil-stack">';
+    var spot = P ? P.get('spot') : '';
     html += '<div><div class="oil-kicker">우리 동네 ' + fuelName() + '</div>' +
-      '<h1 class="oil-h1">' + esc(v.head) + '</h1></div>';
+      '<h1 class="oil-h1">' + esc(v.head) + '</h1>' +
+      (spot ? '<div class="oil-spot">현위치 ' + esc(spot) + '</div>' : '') + '</div>';
 
     if (P) html += P.barHtml({ regionName: r.r });
 
