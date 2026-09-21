@@ -115,6 +115,63 @@
 .oil-field-unit { flex-shrink: 0; font-size: 12.5px; color: var(--oil-muted); }
 .oil-field-hint { font-size: 11px; color: var(--oil-muted2); margin-top: 4px; }
 
+/* 내 설정 (유종·차종) */
+.oil-prefs {
+  background: var(--oil-card); border: 1px solid var(--oil-line);
+  border-radius: 14px; overflow: hidden;
+}
+.oil-prefs-sum {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  width: 100%; padding: 12px 14px; background: none; border: 0; cursor: pointer;
+  text-align: left;
+}
+.oil-prefs-sum-t { font-size: 12.5px; font-weight: 600; color: var(--oil-ink); }
+.oil-prefs-sum-a { font-size: 12px; font-weight: 600; color: var(--oil-accent-dark); flex-shrink: 0; }
+.oil-prefs-body { display: none; padding: 0 14px 14px; }
+.oil-prefs.is-open .oil-prefs-body { display: block; }
+.oil-prefs.is-open .oil-prefs-sum-a::after { content: ' 닫기'; }
+.oil-prefs-row {
+  display: flex; align-items: flex-start; gap: 10px; padding-top: 10px;
+  border-top: 1px solid var(--oil-line-soft);
+}
+.oil-prefs-row + .oil-prefs-row { margin-top: 10px; }
+.oil-prefs-k {
+  flex-shrink: 0; width: 34px; font-size: 12px; font-weight: 600;
+  color: var(--oil-muted); padding-top: 7px;
+}
+.oil-prefs-hint { font-size: 11.5px; color: var(--oil-muted2); margin-top: 10px; line-height: 1.6; }
+
+/* 내 위치 버튼 */
+.oil-locate {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  width: 100%; padding: 13px; border-radius: 13px; cursor: pointer;
+  background: var(--oil-ink); color: #fff; border: 0;
+  font-size: 13.5px; font-weight: 700;
+}
+.oil-locate[disabled] { opacity: .6; }
+.oil-locate-msg { font-size: 12px; color: var(--oil-muted); margin-top: 8px; line-height: 1.6; }
+.oil-locate-msg:empty { display: none; }
+
+/* 저장된 우리 동네 */
+.oil-mine {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  background: var(--oil-card); border: 1px solid var(--oil-accent);
+  box-shadow: 0 0 0 3px var(--oil-accent-soft);
+  border-radius: 16px; padding: 15px 16px;
+}
+.oil-mine-k { font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--oil-accent-dark); }
+.oil-mine-r { font-size: 17px; font-weight: 900; color: var(--oil-ink); margin-top: 3px; letter-spacing: -.02em; }
+.oil-mine-s { font-size: 12px; color: var(--oil-muted); margin-top: 3px; }
+
+/* 집·회사 저장 */
+.oil-save-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.oil-save {
+  padding: 12px 0; border-radius: 12px; cursor: pointer; text-align: center;
+  background: var(--oil-card); border: 1px solid var(--oil-line);
+  font-size: 12.5px; font-weight: 600; color: var(--oil-ink2);
+}
+.oil-save.is-on { background: var(--oil-ink); color: #fff; border-color: var(--oil-ink); }
+
 /* 광고 */
 .oil-ad { margin: 2px 0; }
 .oil-ad-label {

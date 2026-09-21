@@ -93,43 +93,51 @@
     OIL.adFill();
   };
 
-  /* ── 동네 해설 (파이썬 build_area_pages 와 같은 규칙) ────── */
-  OIL.verdict = function (r, meta, total) {
+  /* ── 동네 해설 (파이썬 build_area_pages 와 같은 규칙) ──────
+     s = 지금 고른 유종의 통계 {n,lo,md,hi,sp,rk}
+     손익분기 거리는 고른 차종의 연비·주유량으로 계산한다 - 차종에 따라 2배까지 달라진다 */
+  OIL.verdict = function (r, meta, total, s, fuelName) {
+    s = s || r.g || r;
+    fuelName = fuelName || '휘발유';
     var big = (meta && meta.spreadBig) || 250;
     var small = (meta && meta.spreadSmall) || 60;
-    var won50 = r.sp * 50;
+    var car = (OIL.prefs && OIL.prefs.car()) || { kmpl: 12, usual: 30 };
+    var L = car.usual, kmpl = car.kmpl;
+    var saved = s.sp * L;
     var head, body;
 
-    if (r.sp >= big) {
+    if (s.sp >= big) {
       head = r.r + '는 주유소를 고를 가치가 큽니다';
-      body = '같은 ' + OIL.esc(r.r) + ' 안에서 최저 ' + OIL.won(r.lo) + '원, 최고 ' +
-        OIL.won(r.hi) + '원으로 <b>' + OIL.won(r.sp) + '원</b> 차이가 납니다. ' +
-        '50L를 넣는다면 한 번 주유에 <b>' + OIL.won(won50) + '원</b>이 갈립니다. ' +
+      body = '같은 ' + OIL.esc(r.r) + ' 안에서 ' + fuelName + ' 최저 ' + OIL.won(s.lo) +
+        '원, 최고 ' + OIL.won(s.hi) + '원으로 <b>' + OIL.won(s.sp) + '원</b> 차이가 납니다. ' +
+        '한 번에 ' + L + 'L를 넣는다면 <b>' + OIL.won(saved) + '원</b>이 갈립니다. ' +
         '아무 데나 들어가면 손해를 보는 동네입니다.';
-    } else if (r.sp < small) {
-      /* 제일 싼 곳까지 몇 km 더 가면 본전인지 (연비 12km/L, 50L 기준) */
-      var perKm = r.md / 12;
-      var beKm = perKm > 0 ? (r.sp * 50) / perKm : 0;
+    } else if (s.sp < small) {
+      var perKm = s.md / kmpl;
+      var beKm = perKm > 0 ? saved / perKm : 0;
       head = r.r + '는 어디서 넣어도 비슷합니다';
-      body = '동네 안에서 가장 싼 곳과 가장 비싼 곳의 차이가 <b>' + OIL.won(r.sp) +
+      body = '동네 안에서 가장 싼 곳과 가장 비싼 곳의 차이가 <b>' + OIL.won(s.sp) +
         '원</b>뿐입니다. 제일 싼 집을 찾아가더라도 <b>' + beKm.toFixed(1) +
         'km</b>만 더 돌면 아낀 돈이 기름값으로 사라집니다. 가는 길에 보이는 곳에서 넣으시면 됩니다.';
     } else {
       head = r.r + '는 조금 따져볼 만합니다';
-      body = '동네 안 가격 차이가 <b>' + OIL.won(r.sp) + '원</b>입니다. 50L면 ' +
-        OIL.won(won50) + '원 차이라, 멀리 돌아갈 정도는 아니지만 가는 길에 싼 곳이 있다면 들를 만합니다.';
+      body = '동네 안 ' + fuelName + ' 가격 차이가 <b>' + OIL.won(s.sp) + '원</b>입니다. ' +
+        L + 'L면 ' + OIL.won(saved) + '원 차이라, 멀리 돌아갈 정도는 아니지만 ' +
+        '가는 길에 싼 곳이 있다면 들를 만합니다.';
     }
 
-    var diff = r.md - (meta ? meta.gas.median : r.md);
+    var natMed = meta ? ((OIL.prefs && OIL.prefs.get('fuel') === 'd')
+      ? meta.diesel.median : meta.gas.median) : s.md;
+    var diff = s.md - natMed;
     var nat;
     if (Math.abs(diff) < 5) {
-      nat = '전국 중앙값과 거의 같은 수준입니다 (전국 ' + total + '개 시군구 중 ' + r.rk + '번째로 저렴).';
+      nat = '전국 중앙값과 거의 같은 수준입니다 (전국 ' + total + '개 시군구 중 ' + s.rk + '번째로 저렴).';
     } else if (diff < 0) {
       nat = '전국 중앙값보다 <b>' + OIL.won(-diff) + '원 저렴</b>한 동네입니다 (전국 ' +
-        total + '개 시군구 중 ' + r.rk + '번째).';
+        total + '개 시군구 중 ' + s.rk + '번째).';
     } else {
       nat = '전국 중앙값보다 <b>' + OIL.won(diff) + '원 비싼</b> 동네입니다 (전국 ' +
-        total + '개 시군구 중 ' + r.rk + '번째로 저렴).';
+        total + '개 시군구 중 ' + s.rk + '번째로 저렴).';
     }
     return { head: head, body: body, nat: nat };
   };

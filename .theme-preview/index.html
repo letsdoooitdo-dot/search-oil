@@ -248,6 +248,63 @@ button, input, select { font-family: inherit; }
 .oil-field-unit { flex-shrink: 0; font-size: 12.5px; color: var(--oil-muted); }
 .oil-field-hint { font-size: 11px; color: var(--oil-muted2); margin-top: 4px; }
 
+/* 내 설정 (유종·차종) */
+.oil-prefs {
+  background: var(--oil-card); border: 1px solid var(--oil-line);
+  border-radius: 14px; overflow: hidden;
+}
+.oil-prefs-sum {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  width: 100%; padding: 12px 14px; background: none; border: 0; cursor: pointer;
+  text-align: left;
+}
+.oil-prefs-sum-t { font-size: 12.5px; font-weight: 600; color: var(--oil-ink); }
+.oil-prefs-sum-a { font-size: 12px; font-weight: 600; color: var(--oil-accent-dark); flex-shrink: 0; }
+.oil-prefs-body { display: none; padding: 0 14px 14px; }
+.oil-prefs.is-open .oil-prefs-body { display: block; }
+.oil-prefs.is-open .oil-prefs-sum-a::after { content: ' 닫기'; }
+.oil-prefs-row {
+  display: flex; align-items: flex-start; gap: 10px; padding-top: 10px;
+  border-top: 1px solid var(--oil-line-soft);
+}
+.oil-prefs-row + .oil-prefs-row { margin-top: 10px; }
+.oil-prefs-k {
+  flex-shrink: 0; width: 34px; font-size: 12px; font-weight: 600;
+  color: var(--oil-muted); padding-top: 7px;
+}
+.oil-prefs-hint { font-size: 11.5px; color: var(--oil-muted2); margin-top: 10px; line-height: 1.6; }
+
+/* 내 위치 버튼 */
+.oil-locate {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  width: 100%; padding: 13px; border-radius: 13px; cursor: pointer;
+  background: var(--oil-ink); color: #fff; border: 0;
+  font-size: 13.5px; font-weight: 700;
+}
+.oil-locate[disabled] { opacity: .6; }
+.oil-locate-msg { font-size: 12px; color: var(--oil-muted); margin-top: 8px; line-height: 1.6; }
+.oil-locate-msg:empty { display: none; }
+
+/* 저장된 우리 동네 */
+.oil-mine {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  background: var(--oil-card); border: 1px solid var(--oil-accent);
+  box-shadow: 0 0 0 3px var(--oil-accent-soft);
+  border-radius: 16px; padding: 15px 16px;
+}
+.oil-mine-k { font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--oil-accent-dark); }
+.oil-mine-r { font-size: 17px; font-weight: 900; color: var(--oil-ink); margin-top: 3px; letter-spacing: -.02em; }
+.oil-mine-s { font-size: 12px; color: var(--oil-muted); margin-top: 3px; }
+
+/* 집·회사 저장 */
+.oil-save-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.oil-save {
+  padding: 12px 0; border-radius: 12px; cursor: pointer; text-align: center;
+  background: var(--oil-card); border: 1px solid var(--oil-line);
+  font-size: 12.5px; font-weight: 600; color: var(--oil-ink2);
+}
+.oil-save.is-on { background: var(--oil-ink); color: #fff; border-color: var(--oil-ink); }
+
 /* 광고 */
 .oil-ad { margin: 2px 0; }
 .oil-ad-label {
@@ -459,43 +516,51 @@ window.OIL_CONFIG = {
     OIL.adFill();
   };
 
-  /* ── 동네 해설 (파이썬 build_area_pages 와 같은 규칙) ────── */
-  OIL.verdict = function (r, meta, total) {
+  /* ── 동네 해설 (파이썬 build_area_pages 와 같은 규칙) ──────
+     s = 지금 고른 유종의 통계 {n,lo,md,hi,sp,rk}
+     손익분기 거리는 고른 차종의 연비·주유량으로 계산한다 - 차종에 따라 2배까지 달라진다 */
+  OIL.verdict = function (r, meta, total, s, fuelName) {
+    s = s || r.g || r;
+    fuelName = fuelName || '휘발유';
     var big = (meta && meta.spreadBig) || 250;
     var small = (meta && meta.spreadSmall) || 60;
-    var won50 = r.sp * 50;
+    var car = (OIL.prefs && OIL.prefs.car()) || { kmpl: 12, usual: 30 };
+    var L = car.usual, kmpl = car.kmpl;
+    var saved = s.sp * L;
     var head, body;
 
-    if (r.sp >= big) {
+    if (s.sp >= big) {
       head = r.r + '는 주유소를 고를 가치가 큽니다';
-      body = '같은 ' + OIL.esc(r.r) + ' 안에서 최저 ' + OIL.won(r.lo) + '원, 최고 ' +
-        OIL.won(r.hi) + '원으로 <b>' + OIL.won(r.sp) + '원</b> 차이가 납니다. ' +
-        '50L를 넣는다면 한 번 주유에 <b>' + OIL.won(won50) + '원</b>이 갈립니다. ' +
+      body = '같은 ' + OIL.esc(r.r) + ' 안에서 ' + fuelName + ' 최저 ' + OIL.won(s.lo) +
+        '원, 최고 ' + OIL.won(s.hi) + '원으로 <b>' + OIL.won(s.sp) + '원</b> 차이가 납니다. ' +
+        '한 번에 ' + L + 'L를 넣는다면 <b>' + OIL.won(saved) + '원</b>이 갈립니다. ' +
         '아무 데나 들어가면 손해를 보는 동네입니다.';
-    } else if (r.sp < small) {
-      /* 제일 싼 곳까지 몇 km 더 가면 본전인지 (연비 12km/L, 50L 기준) */
-      var perKm = r.md / 12;
-      var beKm = perKm > 0 ? (r.sp * 50) / perKm : 0;
+    } else if (s.sp < small) {
+      var perKm = s.md / kmpl;
+      var beKm = perKm > 0 ? saved / perKm : 0;
       head = r.r + '는 어디서 넣어도 비슷합니다';
-      body = '동네 안에서 가장 싼 곳과 가장 비싼 곳의 차이가 <b>' + OIL.won(r.sp) +
+      body = '동네 안에서 가장 싼 곳과 가장 비싼 곳의 차이가 <b>' + OIL.won(s.sp) +
         '원</b>뿐입니다. 제일 싼 집을 찾아가더라도 <b>' + beKm.toFixed(1) +
         'km</b>만 더 돌면 아낀 돈이 기름값으로 사라집니다. 가는 길에 보이는 곳에서 넣으시면 됩니다.';
     } else {
       head = r.r + '는 조금 따져볼 만합니다';
-      body = '동네 안 가격 차이가 <b>' + OIL.won(r.sp) + '원</b>입니다. 50L면 ' +
-        OIL.won(won50) + '원 차이라, 멀리 돌아갈 정도는 아니지만 가는 길에 싼 곳이 있다면 들를 만합니다.';
+      body = '동네 안 ' + fuelName + ' 가격 차이가 <b>' + OIL.won(s.sp) + '원</b>입니다. ' +
+        L + 'L면 ' + OIL.won(saved) + '원 차이라, 멀리 돌아갈 정도는 아니지만 ' +
+        '가는 길에 싼 곳이 있다면 들를 만합니다.';
     }
 
-    var diff = r.md - (meta ? meta.gas.median : r.md);
+    var natMed = meta ? ((OIL.prefs && OIL.prefs.get('fuel') === 'd')
+      ? meta.diesel.median : meta.gas.median) : s.md;
+    var diff = s.md - natMed;
     var nat;
     if (Math.abs(diff) < 5) {
-      nat = '전국 중앙값과 거의 같은 수준입니다 (전국 ' + total + '개 시군구 중 ' + r.rk + '번째로 저렴).';
+      nat = '전국 중앙값과 거의 같은 수준입니다 (전국 ' + total + '개 시군구 중 ' + s.rk + '번째로 저렴).';
     } else if (diff < 0) {
       nat = '전국 중앙값보다 <b>' + OIL.won(-diff) + '원 저렴</b>한 동네입니다 (전국 ' +
-        total + '개 시군구 중 ' + r.rk + '번째).';
+        total + '개 시군구 중 ' + s.rk + '번째).';
     } else {
       nat = '전국 중앙값보다 <b>' + OIL.won(diff) + '원 비싼</b> 동네입니다 (전국 ' +
-        total + '개 시군구 중 ' + r.rk + '번째로 저렴).';
+        total + '개 시군구 중 ' + s.rk + '번째로 저렴).';
     }
     return { head: head, body: body, nat: nat };
   };
@@ -520,7 +585,191 @@ window.OIL_CONFIG = {
   };
 })();
 
-/* 주유소찾기 - 홈 화면과 동네 상세 화면 */
+/* 주유소찾기 - 내 설정 (유종·차종·우리 동네)
+
+   원칙: 아무것도 안 골라도 화면이 돌아간다. 고를수록 정확해진다.
+   저장은 브라우저가 한다(로그인·서버 없음). 기록을 지우면 초기화된다.
+*/
+(function () {
+  'use strict';
+
+  var OIL = window.OIL;
+  if (!OIL) return;
+
+  var KEY = 'oil.prefs';
+
+  /* 차종별 기본값 - 파이썬 fill_amount.VEHICLE 과 같은 값 */
+  var VEHICLE = {
+    '경차':   { kmpl: 16, tank: 35, usual: 25, label: '경차' },
+    '일반':   { kmpl: 12, tank: 60, usual: 30, label: '일반 승용차' },
+    'SUV':    { kmpl: 8,  tank: 80, usual: 60, label: 'SUV' },
+    '화물':   { kmpl: 9,  tank: 60, usual: 50, label: '화물차' }
+  };
+  var VEHICLE_ORDER = ['경차', '일반', 'SUV', '화물'];
+  var FUELS = { g: '휘발유', d: '경유' };
+
+  var DEFAULTS = { fuel: 'g', vehicle: '일반', home: '', work: '', last: '', visits: 0 };
+
+  function read() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return null;
+      var o = JSON.parse(raw);
+      return (o && typeof o === 'object') ? o : null;
+    } catch (e) { return null; }   /* 사생활 보호 모드 등 - 기본값으로 간다 */
+  }
+
+  function write(o) {
+    try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) { /* 저장 못해도 동작은 한다 */ }
+  }
+
+  var saved = read();
+  var isFirst = !saved;
+  var state = {};
+  for (var k in DEFAULTS) state[k] = (saved && saved[k] != null) ? saved[k] : DEFAULTS[k];
+  if (!VEHICLE[state.vehicle]) state.vehicle = '일반';
+  if (!FUELS[state.fuel]) state.fuel = 'g';
+
+  state.visits = (state.visits || 0) + 1;
+  write(state);
+
+  var P = OIL.prefs = {
+    VEHICLE: VEHICLE,
+    FUELS: FUELS,
+    isFirstVisit: isFirst,
+    get: function (k) { return k ? state[k] : state; },
+    set: function (k, v) { state[k] = v; write(state); },
+    car: function () { return VEHICLE[state.vehicle] || VEHICLE['일반']; },
+    fuelName: function () { return FUELS[state.fuel]; },
+    /* 동네 요약에서 현재 유종의 통계를 꺼낸다 */
+    pick: function (region) { return region ? region[state.fuel] : null; }
+  };
+
+  /* ── 설정 바 ─────────────────────────────────────────────
+     첫 방문이면 펼쳐서 보여주고, 재방문이면 한 줄로 접는다. */
+  P.barHtml = function (opts) {
+    opts = opts || {};
+    var open = opts.open != null ? opts.open : isFirst;
+    var regionName = opts.regionName || '';
+
+    var fuelBtns = Object.keys(FUELS).map(function (f) {
+      return '<button type="button" class="oil-chip' + (state.fuel === f ? ' active' : '') +
+        '" data-pref="fuel" data-val="' + f + '">' + FUELS[f] + '</button>';
+    }).join('');
+
+    var carBtns = VEHICLE_ORDER.map(function (v) {
+      return '<button type="button" class="oil-chip' + (state.vehicle === v ? ' active' : '') +
+        '" data-pref="vehicle" data-val="' + v + '">' + VEHICLE[v].label + '</button>';
+    }).join('');
+
+    var summary = FUELS[state.fuel] + ' · ' + P.car().label +
+      (regionName ? ' · ' + regionName : '');
+
+    return '<div class="oil-prefs' + (open ? ' is-open' : '') + '" id="oil-prefs">' +
+      '<button type="button" class="oil-prefs-sum" id="oil-prefs-toggle">' +
+        '<span class="oil-prefs-sum-t">' + OIL.esc(summary) + '</span>' +
+        '<span class="oil-prefs-sum-a">변경</span>' +
+      '</button>' +
+      '<div class="oil-prefs-body">' +
+        '<div class="oil-prefs-row"><span class="oil-prefs-k">유종</span>' +
+          '<div class="oil-sido-tabs">' + fuelBtns + '</div></div>' +
+        '<div class="oil-prefs-row"><span class="oil-prefs-k">차종</span>' +
+          '<div class="oil-sido-tabs">' + carBtns + '</div></div>' +
+        '<div class="oil-prefs-hint">차종을 고르면 연비 ' + P.car().kmpl +
+          'km/L, 1회 주유 ' + P.car().usual + 'L 로 계산합니다</div>' +
+      '</div></div>';
+  };
+
+  /* 설정 바 동작 연결. onChange 로 다시 그리게 한다. */
+  P.wireBar = function (onChange) {
+    var box = document.getElementById('oil-prefs');
+    if (!box) return;
+    var toggle = document.getElementById('oil-prefs-toggle');
+    if (toggle) {
+      toggle.addEventListener('click', function () { box.classList.toggle('is-open'); });
+    }
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-pref]');
+      if (!b) return;
+      var key = b.getAttribute('data-pref');
+      P.set(key, b.getAttribute('data-val'));
+      if (onChange) onChange(key);
+    });
+  };
+
+  /* ── 내 위치 ─────────────────────────────────────────────
+     휴대폰이 알려준 좌표에서 가장 가까운 동네를 고른다.
+     주소는 알 수 없고 알 필요도 없다 - 시군구까지면 충분하다. */
+  function distKm(a, b, c, d) {
+    var R = 6371, rad = Math.PI / 180;
+    var dLat = (c - a) * rad, dLng = (d - b) * rad;
+    var s = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(a * rad) * Math.cos(c * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.sqrt(s));
+  }
+
+  P.nearest = function (lat, lng, items) {
+    var best = null, bestD = Infinity;
+    for (var i = 0; i < items.length; i++) {
+      var r = items[i];
+      if (r.la == null) continue;
+      var d = distKm(lat, lng, r.la, r.ln);
+      if (d < bestD) { bestD = d; best = r; }
+    }
+    return best ? { region: best, km: bestD } : null;
+  };
+
+  /* onDone(결과, 오류메시지) */
+  P.locate = function (onDone) {
+    if (!navigator.geolocation) {
+      onDone(null, '이 브라우저는 위치 기능을 지원하지 않습니다.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      OIL.regions().then(function (reg) {
+        var hit = P.nearest(pos.coords.latitude, pos.coords.longitude, reg.items);
+        if (!hit) { onDone(null, '가까운 동네를 찾지 못했습니다.'); return; }
+        onDone(hit, null);
+      }).catch(function () { onDone(null, '데이터를 불러오지 못했습니다.'); });
+    }, function (err) {
+      var msg = '위치를 가져오지 못했습니다.';
+      if (err && err.code === 1) msg = '위치 권한이 거부되었습니다. 아래에서 직접 선택해주세요.';
+      else if (err && err.code === 3) msg = '위치 확인이 오래 걸립니다. 아래에서 직접 선택해주세요.';
+      onDone(null, msg);
+    }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 });
+  };
+
+  P.locateBtnHtml = function () {
+    return '<button type="button" class="oil-locate" id="oil-locate">' +
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle>' +
+      '<path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>' +
+      '<span>내 위치로 우리 동네 찾기</span></button>' +
+      '<div class="oil-locate-msg" id="oil-locate-msg"></div>';
+  };
+
+  P.wireLocate = function () {
+    var btn = document.getElementById('oil-locate');
+    var msg = document.getElementById('oil-locate-msg');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      btn.disabled = true;
+      msg.textContent = '위치를 확인하는 중...';
+      P.locate(function (hit, err) {
+        if (err) { btn.disabled = false; msg.textContent = err; return; }
+        msg.textContent = hit.region.r + '(으)로 이동합니다';
+        P.set('last', hit.region.sl);
+        location.href = OIL.areaUrl(hit.region.sl);
+      });
+    });
+  };
+})();
+
+/* 주유소찾기 - 홈 화면과 동네 상세 화면
+
+   첫 방문:  설정이 펼쳐진 상태 + "내 위치로 찾기" 가 눈에 띄게
+   재방문:   저장해둔 우리 동네가 맨 위에, 설정은 한 줄로 접힘
+*/
 (function () {
   'use strict';
 
@@ -530,60 +779,91 @@ window.OIL_CONFIG = {
   if (mode !== 'home' && mode !== 'area') return;
 
   var esc = OIL.esc, won = OIL.won;
+  var P = OIL.prefs;
 
-  /* ── 조각 ────────────────────────────────────────────────── */
-  function stationRow(st, i) {
-    var badge = '';
-    if (st.c === '늘 최저권') badge = '<span class="oil-badge is-low">1년 내내 최저권</span>';
-    else if (st.c === '늘 최고권') badge = '<span class="oil-badge is-high">오늘만 쌈</span>';
-    var self = st.s ? '<span class="oil-tag">셀프</span>' : '';
-    return '<div class="oil-list-item">' +
-      '<span class="oil-list-name">' + esc(st.n) + self + badge + '</span>' +
-      '<span class="oil-list-price">' + won(st.g) + '원</span></div>';
-  }
+  function fuel() { return P ? P.get('fuel') : 'g'; }
+  function fuelName() { return P ? P.fuelName() : '휘발유'; }
+  /* 동네 요약에서 지금 고른 유종의 통계를 꺼낸다 (없으면 휘발유로) */
+  function st(r) { return (r && (r[fuel()] || r.g)) || null; }
+  function price(s) { return fuel() === 'd' ? s.d : s.g; }
 
   function rows(list) {
-    return '<div class="oil-rows">' + list.map(function (r, i) {
+    return '<div class="oil-rows">' + list.map(function (r) {
       return '<div class="oil-row"><span class="oil-row-k">' + esc(r[0]) + '</span>' +
         '<span class="oil-row-v' + (r[2] ? ' is-accent' : '') + '">' + r[1] + '</span></div>';
     }).join('') + '</div>';
   }
 
+  function stationRow(s) {
+    var p = price(s);
+    if (!p) return '';
+    var badge = '';
+    if (s.c === '늘 최저권') badge = '<span class="oil-badge is-low">1년 내내 최저권</span>';
+    else if (s.c === '늘 최고권') badge = '<span class="oil-badge is-high">오늘만 쌈</span>';
+    return '<div class="oil-list-item"><span class="oil-list-name">' + esc(s.n) +
+      (s.s ? '<span class="oil-tag">셀프</span>' : '') + badge + '</span>' +
+      '<span class="oil-list-price">' + won(p) + '원</span></div>';
+  }
+
   /* ── 홈 ──────────────────────────────────────────────────── */
   function renderHome(meta, reg) {
     var items = reg.items;
+    var mine = null;
+    if (P) {
+      var slugPref = P.get('home') || P.get('last');
+      if (slugPref) {
+        for (var i = 0; i < items.length; i++) {
+          if (items[i].sl === slugPref) { mine = items[i]; break; }
+        }
+      }
+    }
+
     var bySido = {};
     items.forEach(function (r) { (bySido[r.sd] = bySido[r.sd] || []).push(r); });
     var sidos = Object.keys(bySido).sort();
 
-    var topSpread = items.slice().sort(function (a, b) { return b.sp - a.sp; }).slice(0, 8);
-    var cheapest = items.slice(0, 8);
+    var withFuel = items.filter(st);
+    var topSpread = withFuel.slice().sort(function (a, b) { return st(b).sp - st(a).sp; }).slice(0, 8);
+    var cheapest = withFuel.slice().sort(function (a, b) { return st(a).md - st(b).md; }).slice(0, 8);
+
+    var natl = fuel() === 'd' ? meta.diesel : meta.gas;
 
     var html = '<div class="oil-stack">';
 
-    /* 오늘 현황 */
-    html += '<div>' +
-      '<div class="oil-kicker">전국 주유소 ' + won(meta.gas.n) + '곳 실제 판매가</div>' +
-      '<h1 class="oil-h1">우리 동네 기름값,<br>고를 가치가 있을까요</h1>' +
-      '<p class="oil-lead">같은 동네 안에서도 <b>수백 원</b> 차이가 나는 곳이 있고, ' +
-      '30원도 차이 안 나는 곳이 있습니다. 어느 쪽인지부터 확인해보세요.</p></div>';
+    /* 머리말 - 재방문이면 짧게 */
+    if (mine) {
+      html += '<a class="oil-mine" href="' + OIL.areaUrl(mine.sl) + '">' +
+        '<span><span class="oil-mine-k">우리 동네</span>' +
+        '<span class="oil-mine-r">' + esc(mine.r) + '</span>' +
+        '<span class="oil-mine-s">' + fuelName() + ' 최저 ' + won(st(mine).lo) + '원 · ' +
+        '주유소 ' + st(mine).n + '곳</span></span>' + OIL.chev(OIL.cfg.accent || '#A54A04') + '</a>';
+    } else {
+      html += '<div><div class="oil-kicker">전국 주유소 ' + won(natl.n) + '곳 실제 판매가</div>' +
+        '<h1 class="oil-h1">우리 동네 기름값,<br>고를 가치가 있을까요</h1>' +
+        '<p class="oil-lead">같은 동네 안에서도 <b>수백 원</b> 차이가 나는 곳이 있고, ' +
+        '30원도 차이 안 나는 곳이 있습니다. 어느 쪽인지부터 확인해보세요.</p></div>';
+    }
 
+    /* 내 설정 */
+    if (P) html += P.barHtml({ regionName: mine ? mine.r : '' });
+
+    /* 오늘 전국 */
     html += '<div class="oil-card">' +
-      '<div class="oil-kicker" style="color:var(--oil-muted)">오늘 전국 휘발유</div>' +
+      '<div class="oil-kicker" style="color:var(--oil-muted)">오늘 전국 ' + fuelName() + '</div>' +
       '<div style="display:flex;align-items:baseline;margin-top:5px;">' +
-      '<span class="oil-hero">' + won(meta.gas.median) + '원</span>' +
+      '<span class="oil-hero">' + won(natl.median) + '원</span>' +
       '<span class="oil-hero-unit">중앙값 · ' + esc(meta.phase) + '</span></div>' +
       rows([
-        ['가장 싼 곳 ~ 비싼 곳', won(meta.gas.low) + ' ~ ' + won(meta.gas.high) + '원'],
+        ['가장 싼 곳 ~ 비싼 곳', won(natl.low) + ' ~ ' + won(natl.high) + '원'],
         ['셀프 / 일반', won(meta['self']) + ' / ' + won(meta.full) + '원'],
-        ['동네 안 최대 격차', esc(meta.topSpread.r) + ' ' + won(meta.topSpread.sp) + '원', true]
+        ['동네 안 최대 격차', esc(topSpread[0].r) + ' ' + won(st(topSpread[0]).sp) + '원', true]
       ]) + '</div>';
 
-    /* 지역 선택 */
-    html += '<div class="oil-card">' +
-      '<div class="oil-card-title">우리 동네 찾기</div>' +
-      '<input class="oil-search" id="oil-q" type="search" placeholder="동네 이름을 입력하세요 (예: 천안)" ' +
-      'autocomplete="off" aria-label="동네 검색">' +
+    /* 동네 찾기 */
+    html += '<div class="oil-card"><div class="oil-card-title">우리 동네 찾기</div>';
+    if (P) html += P.locateBtnHtml() + '<div style="height:12px;"></div>';
+    html += '<input class="oil-search" id="oil-q" type="search" ' +
+      'placeholder="또는 동네 이름 입력 (예: 천안)" autocomplete="off" aria-label="동네 검색">' +
       '<div class="oil-suggest" id="oil-sg"></div>' +
       '<div id="oil-browse" style="margin-top:13px;">' +
       '<div class="oil-sido-tabs" id="oil-sidos">' +
@@ -595,44 +875,42 @@ window.OIL_CONFIG = {
 
     html += OIL.adHtml();
 
-    /* 격차 큰 동네 */
-    html += '<div class="oil-card is-flush">' +
-      '<div style="padding:0 16px 8px;">' +
+    html += '<div class="oil-card is-flush"><div style="padding:0 16px 8px;">' +
       '<div class="oil-card-title" style="margin:0;">주유소를 고를 가치가 큰 동네</div>' +
       '<p class="oil-p" style="font-size:12.5px;margin:5px 0 0;">동네 안 최저~최고 차이가 가장 큰 곳입니다.</p></div>' +
-      '<div class="oil-rank">' +
-      topSpread.map(function (r) {
+      '<div class="oil-rank">' + topSpread.map(function (r) {
         return '<a href="' + OIL.areaUrl(r.sl) + '"><span>' + esc(r.r) + '</span>' +
-          '<span class="v">' + won(r.sp) + '원 차이</span></a>';
+          '<span class="v">' + won(st(r).sp) + '원 차이</span></a>';
       }).join('') + '</div></div>';
 
-    /* 싼 동네 */
-    html += '<div class="oil-card is-flush">' +
-      '<div style="padding:0 16px 8px;">' +
-      '<div class="oil-card-title" style="margin:0;">오늘 기름값이 싼 동네</div></div>' +
-      '<div class="oil-rank">' +
-      cheapest.map(function (r) {
+    html += '<div class="oil-card is-flush"><div style="padding:0 16px 8px;">' +
+      '<div class="oil-card-title" style="margin:0;">오늘 ' + fuelName() + '이 싼 동네</div></div>' +
+      '<div class="oil-rank">' + cheapest.map(function (r) {
         return '<a href="' + OIL.areaUrl(r.sl) + '"><span>' + esc(r.r) + '</span>' +
-          '<span class="v">' + won(r.md) + '원</span></a>';
+          '<span class="v">' + won(st(r).md) + '원</span></a>';
       }).join('') + '</div></div>';
 
     html += '<a class="oil-btn" href="' + (OIL.cfg.calcPageUrl || '/p/calc.html') + '">' +
       '<span>연간 주유비·경차 환급 계산기</span>' + OIL.chev('#fff') + '</a>';
 
     html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
-      OIL.dateKo(meta.date) + ' 실제 판매가 · 출처 오피넷 · 매일 갱신</p>';
+      OIL.dateKo(meta.date) + ' 실제 판매가 · 출처 오피넷 · 매일 갱신</p></div>';
 
-    html += '</div>';
     OIL.render(html);
-    wireHome(items, bySido, sidos);
+    if (P) {
+      P.wireBar(function () { renderHome(meta, reg); });
+      P.wireLocate();
+    }
+    wireFind(items, bySido, sidos);
   }
 
-  function wireHome(items, bySido, sidos) {
+  function wireFind(items, bySido, sidos) {
     var grid = document.getElementById('oil-regions');
     var sidoBox = document.getElementById('oil-sidos');
     var q = document.getElementById('oil-q');
     var sg = document.getElementById('oil-sg');
     var browse = document.getElementById('oil-browse');
+    if (!grid) return;
 
     function showSido(sd) {
       grid.innerHTML = (bySido[sd] || []).slice().sort(function (a, b) {
@@ -656,40 +934,58 @@ window.OIL_CONFIG = {
       var v = q.value.trim();
       if (!v) { sg.innerHTML = ''; browse.style.display = ''; return; }
       browse.style.display = 'none';
-      var hit = items.filter(function (r) { return r.r.indexOf(v) >= 0; }).slice(0, 8);
+      var hit = items.filter(function (r) { return r.r.indexOf(v) >= 0 && st(r); }).slice(0, 8);
       sg.innerHTML = hit.length
         ? hit.map(function (r) {
             return '<a href="' + OIL.areaUrl(r.sl) + '">' + esc(r.r) +
-              '<span class="s">주유소 ' + r.n + '곳 · 최저 ' + won(r.lo) + '원</span></a>';
+              '<span class="s">주유소 ' + st(r).n + '곳 · 최저 ' + won(st(r).lo) + '원</span></a>';
           }).join('')
-        : '<a href="#" onclick="return false;">찾는 동네가 없습니다</a>';
+        : '<div style="padding:10px 12px;font-size:13px;color:#5B666A;">찾는 동네가 없습니다</div>';
     });
   }
 
   /* ── 동네 상세 ───────────────────────────────────────────── */
   function renderArea(meta, r, total) {
-    var v = OIL.verdict(r, meta, total);
-    var html = '<div class="oil-stack">';
+    var s = st(r);
+    if (!s) {
+      OIL.render('<div class="oil-error">' + esc(r.r) + '은(는) ' + fuelName() +
+        ' 자료가 없습니다.<br><a href="' + (OIL.cfg.listPageUrl || '/') + '">다른 동네 보기</a></div>');
+      return;
+    }
+    if (P) P.set('last', r.sl);
 
-    html += '<div><div class="oil-kicker">우리 동네 기름값</div>' +
+    var v = OIL.verdict(r, meta, total, s, fuelName());
+    var isHome = P && P.get('home') === r.sl;
+    var isWork = P && P.get('work') === r.sl;
+
+    var html = '<div class="oil-stack">';
+    html += '<div><div class="oil-kicker">우리 동네 ' + fuelName() + '</div>' +
       '<h1 class="oil-h1">' + esc(v.head) + '</h1></div>';
 
-    html += '<div class="oil-card">' +
-      '<p class="oil-p">' + v.body + '</p>' +
+    if (P) html += P.barHtml({ regionName: r.r });
+
+    html += '<div class="oil-card"><p class="oil-p">' + v.body + '</p>' +
       '<p class="oil-p" style="font-size:13px;">' + v.nat + '</p>' +
       rows([
-        ['주유소', r.n + '곳 (셀프 ' + r.sf + '곳)'],
-        ['최저 ~ 최고', won(r.lo) + ' ~ ' + won(r.hi) + '원'],
-        ['동네 중앙값', won(r.md) + '원', true]
+        ['주유소', s.n + '곳 (셀프 ' + r.sf + '곳)'],
+        ['최저 ~ 최고', won(s.lo) + ' ~ ' + won(s.hi) + '원'],
+        ['동네 중앙값', won(s.md) + '원', true]
       ]) + '</div>';
+
+    html += '<div class="oil-save-row">' +
+      '<button type="button" class="oil-save' + (isHome ? ' is-on' : '') + '" data-save="home">' +
+      (isHome ? '집으로 저장됨' : '집으로 저장') + '</button>' +
+      '<button type="button" class="oil-save' + (isWork ? ' is-on' : '') + '" data-save="work">' +
+      (isWork ? '회사로 저장됨' : '회사로 저장') + '</button></div>';
 
     html += OIL.adHtml();
 
-    html += '<div class="oil-card is-flush">' +
-      '<div style="padding:0 16px 10px;">' +
+    var list = (r.stations || []).filter(function (x) { return price(x); })
+      .sort(function (a, b) { return price(a) - price(b); }).slice(0, 15);
+    html += '<div class="oil-card is-flush"><div style="padding:0 16px 10px;">' +
       '<div class="oil-card-title" style="margin:0;">오늘 싼 순서</div>' +
       '<p class="oil-p" style="font-size:12.5px;margin:6px 0 0;">' + OIL.characterLine(r) + '</p></div>' +
-      (r.stations || []).slice(0, 15).map(stationRow).join('') + '</div>';
+      list.map(stationRow).join('') + '</div>';
 
     html += '<a class="oil-btn" href="' + (OIL.cfg.listPageUrl || '/') + '">' +
       '<span>다른 동네 보기</span>' + OIL.chev('#fff') + '</a>';
@@ -697,30 +993,35 @@ window.OIL_CONFIG = {
       '<span>내 연간 주유비 계산해보기</span>' + OIL.chev() + '</a>';
 
     html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
-      esc(r.r) + ' · ' + OIL.dateKo(meta.date) + ' 휘발유 실제 판매가 ' + r.n + '곳 기준 · ' +
-      '1년 성격은 최근 1년 일별 가격으로 산출 · 출처 오피넷</p>';
+      esc(r.r) + ' · ' + OIL.dateKo(meta.date) + ' ' + fuelName() + ' 실제 판매가 ' + s.n +
+      '곳 기준 · 1년 성격은 최근 1년 일별 가격으로 산출 · 출처 오피넷</p></div>';
 
-    html += '</div>';
     OIL.render(html);
+    document.title = r.r + ' 주유소 최저가 - 오늘 ' + fuelName() + ' ' + won(s.lo) + '원부터';
 
-    document.title = r.r + ' 주유소 최저가 - 오늘 기름값 ' + won(r.lo) + '원부터';
+    if (P) {
+      P.wireBar(function () { renderArea(meta, r, total); });
+      var root = OIL.root();
+      root.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-save]');
+        if (!b) return;
+        var key = b.getAttribute('data-save');
+        P.set(key, P.get(key) === r.sl ? '' : r.sl);
+        renderArea(meta, r, total);
+      });
+    }
   }
 
   /* ── 시작 ────────────────────────────────────────────────── */
   OIL.loading();
   if (mode === 'home') {
     Promise.all([OIL.meta(), OIL.regions()])
-      .then(function (a) { renderHome(a[0], a[1]); })
-      .catch(OIL.fail);
+      .then(function (a) { renderHome(a[0], a[1]); }).catch(OIL.fail);
   } else {
     var slug = OIL.param('r');
-    if (!slug) {
-      location.replace(OIL.cfg.listPageUrl || '/');
-      return;
-    }
+    if (!slug) { location.replace(OIL.cfg.listPageUrl || '/'); return; }
     Promise.all([OIL.meta(), OIL.region(slug), OIL.regions()])
-      .then(function (a) { renderArea(a[0], a[1], a[2].total); })
-      .catch(OIL.fail);
+      .then(function (a) { renderArea(a[0], a[1], a[2].total); }).catch(OIL.fail);
   }
 })();
 
@@ -755,11 +1056,17 @@ window.OIL_CONFIG = {
     var selfM = Math.round(meta['self']), fullM = Math.round(meta.full);
     var cheap = Math.round(meta.regionCheap.md), pricey = Math.round(meta.regionPricey.md);
 
+    var P = OIL.prefs;
+    var car = P ? P.car() : { kmpl: 12, usual: 30, label: '일반 승용차' };
+    var isDiesel = P && P.get('fuel') === 'd';
+    var baseP = isDiesel ? diesel : gas;
+
     var html = '<div class="oil-stack">';
     html += '<div><div class="oil-kicker">계산기</div>' +
       '<h1 class="oil-h1">기름값 계산기</h1>' +
       '<p class="oil-lead">전국 ' + won(meta.gas.n) + '곳 실제 판매가로 계산합니다. ' +
-      '일반적인 평균치가 아니라 오늘 실제로 팔리는 가격입니다.</p></div>';
+      '차종을 고르면 연비와 주유량이 자동으로 채워집니다.</p></div>';
+    if (P) html += P.barHtml({});
 
     /* 탭 */
     html += '<div class="oil-sido-tabs" id="oil-calc-tabs">' +
@@ -771,10 +1078,7 @@ window.OIL_CONFIG = {
     /* 1. 연간 주유비 */
     html += '<div class="oil-pane" data-p="0"><div class="oil-card">' +
       field('c1km', '한 달 주행거리', 1200, 'km', '출퇴근 왕복 20km × 22일이면 약 440km입니다') +
-      field('c1kmpl', '연비', 12, 'km/L', '모르시면 일반 승용차 12, 경차 16, SUV 8 정도로 넣으세요') +
-      '<div class="oil-field"><label for="c1fuel">유종</label>' +
-      '<div class="oil-field-in"><select id="c1fuel">' +
-      '<option value="g">휘발유</option><option value="d">경유</option></select></div></div>' +
+      field('c1kmpl', '연비', car.kmpl, 'km/L', car.label + ' 기본값입니다. 내 차 연비를 알면 고쳐주세요') +
       '</div>' + result('c1out') +
       '<div class="oil-card" style="margin-top:12px;">' +
       '<div class="oil-card-title">어디서 넣느냐로 갈리는 돈</div>' +
@@ -807,9 +1111,9 @@ window.OIL_CONFIG = {
     /* 3. 우회 손익분기 */
     html += '<div class="oil-pane" data-p="2" hidden><div class="oil-card">' +
       field('c3gap', '리터당 가격 차이', 50, '원', '거기가 여기보다 얼마나 싼가요') +
-      field('c3l', '넣을 양', 30, 'L', '') +
-      field('c3kmpl', '연비', 12, 'km/L', '') +
-      field('c3p', '기름값', gas, '원/L', '오늘 전국 중앙값을 넣어뒀습니다') +
+      field('c3l', '넣을 양', car.usual, 'L', car.label + ' 1회 주유량 기준') +
+      field('c3kmpl', '연비', car.kmpl, 'km/L', car.label + ' 기본값') +
+      field('c3p', '기름값', baseP, '원/L', '오늘 전국 ' + (isDiesel ? '경유' : '휘발유') + ' 중앙값') +
       '</div>' + result('c3out') +
       '<div class="oil-card" style="margin-top:12px;">' +
       '<div class="oil-card-title">계산 근거</div>' +
@@ -829,10 +1133,11 @@ window.OIL_CONFIG = {
     OIL.render(html);
     /* 블로그스팟이 "주유소찾기: calc" 로 붙이는 제목을 검색용으로 바꾼다 */
     document.title = '기름값 계산기 - 연간 주유비·경차 환급·우회 손익분기';
-    wire(gas, diesel, selfM, fullM, cheap, pricey);
+    wire(gas, diesel, selfM, fullM, cheap, pricey, isDiesel);
+    if (P) P.wireBar(function () { render(meta); });
   }
 
-  function wire(gas, diesel, selfM, fullM, cheap, pricey) {
+  function wire(gas, diesel, selfM, fullM, cheap, pricey, isDiesel) {
     var $ = function (id) { return document.getElementById(id); };
 
     var tabs = $('oil-calc-tabs');
@@ -850,7 +1155,7 @@ window.OIL_CONFIG = {
     function c1() {
       var km = parseFloat($('c1km').value) || 0;
       var kmpl = parseFloat($('c1kmpl').value) || 0;
-      var isG = $('c1fuel').value === 'g';
+      var isG = !isDiesel;
       $('c1out-k').textContent = '연간 주유비';
       if (kmpl <= 0) { $('c1out').textContent = '-'; $('c1out-s').textContent = '연비를 입력해주세요.'; return; }
       var base = isG ? gas : diesel;
@@ -897,7 +1202,7 @@ window.OIL_CONFIG = {
       $('c3cost').textContent = won(perKm) + '원';
     }
 
-    ['c1km', 'c1kmpl', 'c1fuel'].forEach(function (id) {
+    ['c1km', 'c1kmpl'].forEach(function (id) {
       $(id).addEventListener('input', c1); $(id).addEventListener('change', c1);
     });
     $('c2m').addEventListener('input', c2);

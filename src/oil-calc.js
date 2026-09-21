@@ -29,11 +29,17 @@
     var selfM = Math.round(meta['self']), fullM = Math.round(meta.full);
     var cheap = Math.round(meta.regionCheap.md), pricey = Math.round(meta.regionPricey.md);
 
+    var P = OIL.prefs;
+    var car = P ? P.car() : { kmpl: 12, usual: 30, label: '일반 승용차' };
+    var isDiesel = P && P.get('fuel') === 'd';
+    var baseP = isDiesel ? diesel : gas;
+
     var html = '<div class="oil-stack">';
     html += '<div><div class="oil-kicker">계산기</div>' +
       '<h1 class="oil-h1">기름값 계산기</h1>' +
       '<p class="oil-lead">전국 ' + won(meta.gas.n) + '곳 실제 판매가로 계산합니다. ' +
-      '일반적인 평균치가 아니라 오늘 실제로 팔리는 가격입니다.</p></div>';
+      '차종을 고르면 연비와 주유량이 자동으로 채워집니다.</p></div>';
+    if (P) html += P.barHtml({});
 
     /* 탭 */
     html += '<div class="oil-sido-tabs" id="oil-calc-tabs">' +
@@ -45,10 +51,7 @@
     /* 1. 연간 주유비 */
     html += '<div class="oil-pane" data-p="0"><div class="oil-card">' +
       field('c1km', '한 달 주행거리', 1200, 'km', '출퇴근 왕복 20km × 22일이면 약 440km입니다') +
-      field('c1kmpl', '연비', 12, 'km/L', '모르시면 일반 승용차 12, 경차 16, SUV 8 정도로 넣으세요') +
-      '<div class="oil-field"><label for="c1fuel">유종</label>' +
-      '<div class="oil-field-in"><select id="c1fuel">' +
-      '<option value="g">휘발유</option><option value="d">경유</option></select></div></div>' +
+      field('c1kmpl', '연비', car.kmpl, 'km/L', car.label + ' 기본값입니다. 내 차 연비를 알면 고쳐주세요') +
       '</div>' + result('c1out') +
       '<div class="oil-card" style="margin-top:12px;">' +
       '<div class="oil-card-title">어디서 넣느냐로 갈리는 돈</div>' +
@@ -81,9 +84,9 @@
     /* 3. 우회 손익분기 */
     html += '<div class="oil-pane" data-p="2" hidden><div class="oil-card">' +
       field('c3gap', '리터당 가격 차이', 50, '원', '거기가 여기보다 얼마나 싼가요') +
-      field('c3l', '넣을 양', 30, 'L', '') +
-      field('c3kmpl', '연비', 12, 'km/L', '') +
-      field('c3p', '기름값', gas, '원/L', '오늘 전국 중앙값을 넣어뒀습니다') +
+      field('c3l', '넣을 양', car.usual, 'L', car.label + ' 1회 주유량 기준') +
+      field('c3kmpl', '연비', car.kmpl, 'km/L', car.label + ' 기본값') +
+      field('c3p', '기름값', baseP, '원/L', '오늘 전국 ' + (isDiesel ? '경유' : '휘발유') + ' 중앙값') +
       '</div>' + result('c3out') +
       '<div class="oil-card" style="margin-top:12px;">' +
       '<div class="oil-card-title">계산 근거</div>' +
@@ -103,10 +106,11 @@
     OIL.render(html);
     /* 블로그스팟이 "주유소찾기: calc" 로 붙이는 제목을 검색용으로 바꾼다 */
     document.title = '기름값 계산기 - 연간 주유비·경차 환급·우회 손익분기';
-    wire(gas, diesel, selfM, fullM, cheap, pricey);
+    wire(gas, diesel, selfM, fullM, cheap, pricey, isDiesel);
+    if (P) P.wireBar(function () { render(meta); });
   }
 
-  function wire(gas, diesel, selfM, fullM, cheap, pricey) {
+  function wire(gas, diesel, selfM, fullM, cheap, pricey, isDiesel) {
     var $ = function (id) { return document.getElementById(id); };
 
     var tabs = $('oil-calc-tabs');
@@ -124,7 +128,7 @@
     function c1() {
       var km = parseFloat($('c1km').value) || 0;
       var kmpl = parseFloat($('c1kmpl').value) || 0;
-      var isG = $('c1fuel').value === 'g';
+      var isG = !isDiesel;
       $('c1out-k').textContent = '연간 주유비';
       if (kmpl <= 0) { $('c1out').textContent = '-'; $('c1out-s').textContent = '연비를 입력해주세요.'; return; }
       var base = isG ? gas : diesel;
@@ -171,7 +175,7 @@
       $('c3cost').textContent = won(perKm) + '원';
     }
 
-    ['c1km', 'c1kmpl', 'c1fuel'].forEach(function (id) {
+    ['c1km', 'c1kmpl'].forEach(function (id) {
       $(id).addEventListener('input', c1); $(id).addEventListener('change', c1);
     });
     $('c2m').addEventListener('input', c2);

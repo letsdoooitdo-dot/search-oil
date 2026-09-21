@@ -32,8 +32,8 @@ from ui import ADSENSE_CLIENT, ADSENSE_SLOT_INCONTENT
 DEFAULT_DATA_URL = "https://letsdoooitdo-dot.github.io/search-oil/api/"
 
 CSS_FILES = ["src/oil-shell.css", "src/oil-style.css"]
-JS_FILES = ["src/oil-blogger.js", "src/oil-core.js", "src/oil-area.js",
-            "src/oil-calc.js", "src/oil-post.js"]
+JS_FILES = ["src/oil-blogger.js", "src/oil-core.js", "src/oil-prefs.js",
+            "src/oil-area.js", "src/oil-calc.js", "src/oil-post.js"]
 
 
 def read(rel):

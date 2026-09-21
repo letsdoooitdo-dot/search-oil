@@ -7,11 +7,16 @@
 JS가 그린다. 이 파일들은 GitHub Pages 로 올라가 데이터 창고 역할만 한다.
 
   api/meta.json              기준일 + 전국 현황 + 국면
-  api/regions.json           시군구 230곳 요약 (선택 화면·검색용)
-  api/region/<슬러그>.json    동네별 주유소 목록과 해설 수치
+  api/regions.json           시군구 230곳 요약 (선택 화면·위치 찾기용)
+  api/region/<슬러그>.json    동네별 주유소 목록
 
-해설 문장은 여기서 만들지 않는다. JS가 같은 규칙으로 만든다 - 문구를 고칠 때
-데이터를 다시 만들 필요가 없도록.
+유종별로 따로 담는다. 휘발유가 싼 집이 경유도 싸다는 보장이 없어서,
+유종을 바꾸면 순위와 통계가 전부 달라져야 한다.
+
+동네마다 중심 좌표(la/ln)를 넣는다. 휴대폰이 알려준 좌표에서 가장 가까운 동네를
+찾는 데 쓴다 - 외부 지도 서비스가 필요 없다.
+
+해설 문장은 여기서 만들지 않는다. JS가 같은 규칙으로 만든다.
 """
 
 import sys as _s
@@ -21,6 +26,7 @@ except Exception: pass
 import json
 import os
 import shutil
+import statistics as st
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -32,9 +38,9 @@ from ui import display_name
 
 OUT = os.path.join(ROOT, "api")
 
-# 동네 성격을 가르는 경계 (원). build_area_pages 와 같은 값.
 SPREAD_BIG = 250
 SPREAD_SMALL = 60
+FUELS = (("g", "gasoline"), ("d", "diesel"))
 
 
 def slug(region):
@@ -48,98 +54,113 @@ def write(path, obj):
     return os.path.getsize(path)
 
 
+def stats(prices):
+    if not prices:
+        return None
+    s = sorted(prices)
+    return {"n": len(s), "lo": s[0], "md": float(st.median(s)), "hi": s[-1],
+            "sp": s[-1] - s[0]}
+
+
 def main():
     con = figures.connect()
     try:
-        s = figures.snapshot(con)
-        day = s["date"]
+        snap = figures.snapshot(con)
+        day = snap["date"]
 
         phase = con.execute(
             "SELECT phase, nat_median, trend FROM market_phase ORDER BY price_date DESC LIMIT 1"
-        ).fetchone() or ("횡보", s["gas"]["median"], 0.0)
+        ).fetchone() or ("횡보", snap["gas"]["median"], 0.0)
 
-        # ── 지역별 주유소 ──────────────────────────────────────────────
         rows = con.execute("""
-            SELECT s.region, s.station_id, s.name, s.brand, s.is_self, s.addr,
+            SELECT s.region, s.name, s.brand, s.is_self, s.lat, s.lng,
                    p.gasoline, p.diesel, c.character
             FROM stations s
             JOIN prices p ON p.station_id = s.station_id AND p.price_date = ?
             LEFT JOIN station_character c ON c.station_id = s.station_id
-            WHERE p.gasoline IS NOT NULL
+            WHERE p.gasoline IS NOT NULL OR p.diesel IS NOT NULL
         """, (day,))
 
         by_region = {}
-        for region, sid, name, brand, is_self, addr, gas, diesel, ch in rows:
+        for region, name, brand, is_self, lat, lng, gas, diesel, ch in rows:
             by_region.setdefault(region, []).append({
                 "n": display_name(name), "b": brand, "s": 1 if is_self else 0,
-                "g": gas, "d": diesel, "c": ch or "", "a": addr or "",
+                "g": gas, "d": diesel, "c": ch or "",
+                "_lat": lat, "_lng": lng,
             })
 
-        # 전국 순위 (중앙값 싼 순)
-        meds = []
-        for region, items in by_region.items():
-            g = sorted(x["g"] for x in items)
-            m = g[len(g) // 2] if len(g) % 2 else (g[len(g)//2 - 1] + g[len(g)//2]) / 2
-            meds.append((region, m))
-        meds.sort(key=lambda x: x[1])
-        rank_of = {r: i + 1 for i, (r, _) in enumerate(meds)}
-        total_regions = len(meds)
+        # 유종별 전국 순위 (동네 중앙값 싼 순)
+        rank = {}
+        for key, _col in FUELS:
+            meds = []
+            for region, items in by_region.items():
+                v = [x[key] for x in items if x[key]]
+                if v:
+                    meds.append((region, st.median(v)))
+            meds.sort(key=lambda x: x[1])
+            rank[key] = {r: i + 1 for i, (r, _) in enumerate(meds)}
 
-        # ── 파일 쓰기 ─────────────────────────────────────────────────
         if os.path.isdir(OUT):
             shutil.rmtree(OUT)
 
-        summaries = []
-        bytes_total = 0
+        summaries, total_bytes = [], 0
         for region, items in sorted(by_region.items()):
-            items.sort(key=lambda x: (x["g"], x["c"] != "늘 최저권"))
-            g = [x["g"] for x in items]
-            lo, hi = min(g), max(g)
-            sg = sorted(g)
-            med = sg[len(sg) // 2] if len(sg) % 2 else (sg[len(sg)//2 - 1] + sg[len(sg)//2]) / 2
-            always_cheap = sum(1 for x in items if x["c"] == "늘 최저권")
-            always_pricey = sum(1 for x in items if x["c"] == "늘 최고권")
-
             summary = {
-                "r": region, "sl": slug(region), "n": len(items),
-                "lo": lo, "md": med, "hi": hi, "sp": hi - lo,
-                "rk": rank_of[region], "sf": sum(x["s"] for x in items),
-                "ac": always_cheap, "ap": always_pricey,
-                "sd": region.split()[0],
+                "r": region, "sl": slug(region), "sd": region.split()[0],
+                "sf": sum(x["s"] for x in items),
+                "ac": sum(1 for x in items if x["c"] == "늘 최저권"),
+                "ap": sum(1 for x in items if x["c"] == "늘 최고권"),
             }
+            for key, _col in FUELS:
+                s = stats([x[key] for x in items if x[key]])
+                if s:
+                    s["rk"] = rank[key].get(region, 0)
+                summary[key] = s
+
+            # 동네 중심 좌표 - 휴대폰 좌표에서 가장 가까운 동네를 찾는 데 쓴다
+            pts = [(x["_lat"], x["_lng"]) for x in items if x["_lat"] and x["_lng"]]
+            if pts:
+                summary["la"] = round(sum(p[0] for p in pts) / len(pts), 4)
+                summary["ln"] = round(sum(p[1] for p in pts) / len(pts), 4)
+
             summaries.append(summary)
 
             detail = dict(summary)
-            detail["stations"] = items[:40]      # 화면에 쓰는 만큼만
-            bytes_total += write(os.path.join(OUT, "region", f"{slug(region)}.json"), detail)
+            detail["stations"] = [
+                {k: v for k, v in x.items() if not k.startswith("_")}
+                for x in sorted(items, key=lambda x: (x["g"] or 9e9, x["c"] != "늘 최저권"))[:40]
+            ]
+            total_bytes += write(os.path.join(OUT, "region", f"{slug(region)}.json"), detail)
 
-        summaries.sort(key=lambda x: x["rk"])
-        bytes_total += write(os.path.join(OUT, "regions.json"), {
-            "date": day, "total": total_regions, "items": summaries,
+        summaries.sort(key=lambda x: (x["g"] or {}).get("rk", 9999))
+        total_bytes += write(os.path.join(OUT, "regions.json"), {
+            "date": day, "total": len(summaries), "items": summaries,
         })
 
         meta = {
             "date": day,
             "phase": phase[0], "natMedian": phase[1], "trend": phase[2],
-            "gas": s["gas"], "diesel": s["diesel"],
-            "self": s["self_full"]["self"]["median"],
-            "full": s["self_full"]["full"]["median"],
-            "selfGap": s["self_full"]["gap"],
-            "regionCheap": {"r": s["region_cheap"]["region"], "md": s["region_cheap"]["median"]},
-            "regionPricey": {"r": s["region_pricey"]["region"], "md": s["region_pricey"]["median"]},
-            "topSpread": {"r": s["regions"][0]["region"], "sp": s["regions"][0]["spread"]},
-            "spreadMedian": s["region_spread_median"],
-            "weekdayGap": s["weekday_gap"],
+            "gas": snap["gas"], "diesel": snap["diesel"],
+            "self": snap["self_full"]["self"]["median"],
+            "full": snap["self_full"]["full"]["median"],
+            "selfGap": snap["self_full"]["gap"],
+            "regionCheap": {"r": snap["region_cheap"]["region"], "md": snap["region_cheap"]["median"]},
+            "regionPricey": {"r": snap["region_pricey"]["region"], "md": snap["region_pricey"]["median"]},
+            "topSpread": {"r": snap["regions"][0]["region"], "sp": snap["regions"][0]["spread"]},
+            "spreadMedian": snap["region_spread_median"],
+            "weekdayGap": snap["weekday_gap"],
             "brands": [{"b": b["brand"], "self": b["self_median"], "full": b["full_median"],
                         "gap": b["self_gap"], "nSelf": b["n_self"], "nFull": b["n_full"]}
-                       for b in s["brands"]],
+                       for b in snap["brands"]],
             "spreadBig": SPREAD_BIG, "spreadSmall": SPREAD_SMALL,
         }
-        bytes_total += write(os.path.join(OUT, "meta.json"), meta)
+        total_bytes += write(os.path.join(OUT, "meta.json"), meta)
     finally:
         con.close()
 
-    print(f"데이터 작성: 지역 {len(summaries)}곳 · 총 {bytes_total/1024:,.0f}KB · 기준일 {day}")
+    withgeo = sum(1 for s in summaries if "la" in s)
+    print(f"데이터 작성: 지역 {len(summaries)}곳 (좌표 {withgeo}곳) · "
+          f"총 {total_bytes/1024:,.0f}KB · 기준일 {day}")
     print(f"경로: {OUT}")
 
 
