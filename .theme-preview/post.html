@@ -893,7 +893,8 @@ window.OIL_CONFIG = {
       }).join('') + '</div></div>';
 
     html += '<div class="oil-card is-flush"><div style="padding:0 16px 8px;">' +
-      '<div class="oil-card-title" style="margin:0;">오늘 ' + fuelName() + '이 싼 동네</div></div>' +
+      '<div class="oil-card-title" style="margin:0;">오늘 ' + fuelName() +
+      OIL.josa(fuelName(), '이가') + ' 싼 동네</div></div>' +
       '<div class="oil-rank">' + cheapest.map(function (r) {
         return '<a href="' + OIL.areaUrl(r.sl) + '"><span>' + esc(r.r) + '</span>' +
           '<span class="v">' + won(st(r).md) + '원</span></a>';
