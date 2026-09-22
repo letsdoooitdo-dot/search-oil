@@ -53,7 +53,12 @@ try:
 except ImportError:
     NAVI_KEY = ""   # 키가 없으면 길찾기 없이 직선 어림값으로 돈다
 
-NAVI_PROXY = "https://oil-navi.letsdoooitdo.workers.dev"
+# 중계 서버는 반드시 한국에서 돌아야 한다.
+# Cloudflare Worker 무료 플랜은 한국 트래픽을 홍콩·도쿄에서 처리해서
+# 한 건에 2~7초가 걸리고 실패도 섞였다(같은 순간 카카오 직접은 0.4초).
+# Vercel 서울(icn1)로 옮기니 0.2~0.3초, 실패 0건이 됐다.
+#   옛 주소: https://oil-navi.letsdoooitdo.workers.dev  (홍콩·도쿄, 느림)
+NAVI_PROXY = "https://search-oil.vercel.app"
 
 CSS_FILES = ["src/oil-shell.css", "src/oil-style.css"]
 JS_FILES = ["src/oil-blogger.js", "src/oil-core.js", "src/oil-road.js",
