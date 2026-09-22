@@ -102,38 +102,67 @@
              L: L, kmpl: kmpl, car: car };
   };
 
-  /* 카드에 한 줄로 넣을 판정 문구. 숫자를 늘어놓지 않는다 - 근거는 상세보기로 민다.
-     kind='detour' 면 목적지 모드다. '더 간다'가 아니라 '우회한다'로 말해야 맞다. */
+  /* 카드에 넣을 판정 문구.
+     결론을 먼저 굵게 한 줄, 근거는 그 아래 작은 글씨로 붙인다.
+     "빼도 이득" 처럼 계산 과정을 말하면 한 번 더 생각해야 읽힌다 -
+     "얼마를 더 아낀다"로 먼저 말하고, 왜 그런지는 아래 줄에 둔다.
+     kind='detour' 면 목적지 모드라 '더 간다'가 아니라 '돌아간다'로 말한다. */
   OIL.tripLine = function (t, isBase, kind) {
     var off = (kind === 'detour');
+    var go = off ? '돌아가도' : '더 가도';
+    function sub(s) { return '<span class="oil-st-sub">' + s + '</span>'; }
+
     if (isBase) {
-      return { cls: 'is-base', text: off
-        ? '가는 길에서 <b>가장 덜 벗어나는 곳</b> · 비교 기준'
-        : '여기서 <b>가장 가까운 주유소</b> · 비교 기준' };
+      return { cls: 'is-base',
+               text: (off ? '가는 길에서 <b>제일 안 돌아가는 곳</b>'
+                          : '여기서 <b>제일 가까운 주유소</b>') +
+                     sub('이 집을 기준으로 나머지를 비교합니다') };
     }
-    if (t.gain === 0) {
-      return { cls: 'is-bad', text: '기준과 <b>같은 가격</b>인데 ' +
-        (off ? '더 우회합니다' : '더 멉니다') };
-    }
-    if (t.gain < 0) {
-      return { cls: 'is-bad', text: '기준보다 <b>비싼데</b> ' +
-        (off ? '더 우회하기까지 합니다' : '더 멀기까지 합니다') };
+    if (t.gain <= 0) {
+      return { cls: 'is-bad',
+               text: (t.gain === 0 ? '<b>가격이 같은데</b> ' : '<b>여기보다 비싼데</b> ') +
+                     (off ? '돌아가야 합니다' : '더 멀기까지 합니다') };
     }
     if (t.net > 0) {
-      /* 기준과 거의 같으면 "더 가는 0.0km" 라고 쓰게 되어 어색하다 */
+      /* 기준과 거의 같은 거리면 "0.0km 더 가도"라고 쓰게 되어 어색하다 */
       if (t.drive < 0.15) {
         return { cls: 'is-good',
-                 text: '기준과 거의 ' + (off ? '같은 길인데' : '같은 거리인데') +
-                       ' <b>' + OIL.won(t.net) + '원 이득</b>' };
+                 text: '<b>' + OIL.won(t.net) + '원 더 아낍니다</b>' +
+                       sub('거의 같은 거리인데 기름값이 쌉니다') };
       }
       return { cls: 'is-good',
-               text: (off ? '더 우회하는 ' : (t.round ? '왕복 ' : '') + '더 가는 ') +
-                     t.drive.toFixed(1) + 'km 기름값 빼도 <b>' +
-                     OIL.won(t.net) + '원 이득</b>' };
+               text: '<b>' + OIL.won(t.net) + '원 더 아낍니다</b>' +
+                     sub(t.drive.toFixed(1) + 'km ' + go + ', 더 드는 기름값 ' +
+                         OIL.won(t.cost) + '원을 뺀 금액입니다') };
     }
+    /* 싸긴 한데 오가는 기름값이 더 큰 경우 - 이게 우리가 잡아주는 함정이다 */
     return { cls: 'is-bad',
-             text: '<b>' + t.beKm.toFixed(1) + 'km까지만 이득</b>인데 ' +
-                   t.extra.toFixed(1) + 'km ' + (off ? '더 우회합니다' : '더 갑니다') };
+             text: '<b>' + OIL.won(-t.net) + '원 손해입니다</b>' +
+                   sub('싸게 넣어 ' + OIL.won(t.gain) + '원 아끼지만, ' +
+                       t.drive.toFixed(1) + 'km ' + (off ? '돌아가는' : '더 가는') +
+                       ' 기름값이 ' + OIL.won(t.cost) + '원입니다') };
+  };
+
+  /* ── 주유소 상표 ──────────────────────────────────────────
+     로고 그림은 상표권이 있어 쓸 수 없다. 대신 상표를 알아볼 수 있게
+     그 회사 간판 색으로 약칭 배지를 만든다. 색만 봐도 구분이 된다. */
+  var BRANDS = {
+    'SK에너지':      { s: 'SK',   bg: '#E8112D', fg: '#fff' },
+    'GS칼텍스':      { s: 'GS',   bg: '#00A94F', fg: '#fff' },
+    'HD현대오일뱅크': { s: '현대', bg: '#0F4C91', fg: '#fff' },
+    'S-OIL':        { s: 'S',    bg: '#FFD400', fg: '#1A1A1A' },
+    'NH-OIL':       { s: 'NH',   bg: '#0068B7', fg: '#fff' },
+    '알뜰주유소':     { s: '알뜰', bg: '#F47920', fg: '#fff' },
+    '알뜰(ex)':      { s: '알뜰', bg: '#00843D', fg: '#fff' },
+    '자가상표':       { s: '자가', bg: '#8494AD', fg: '#fff' }
+  };
+  var NO_BRAND = { s: '주유', bg: '#B6C2D6', fg: '#fff' };
+
+  OIL.brand = function (b) { return BRANDS[b] || NO_BRAND; };
+  OIL.brandChip = function (b, cls) {
+    var x = OIL.brand(b);
+    return '<span class="oil-bc' + (cls ? ' ' + cls : '') + '" style="background:' +
+      x.bg + ';color:' + x.fg + '" title="' + OIL.esc(b || '') + '">' + x.s + '</span>';
   };
 
   /* 찾아가기 - 카카오맵. API 키가 필요 없고 앱이 깔려 있으면 앱이 열린다. */

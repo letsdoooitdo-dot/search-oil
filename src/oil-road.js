@@ -44,14 +44,48 @@
     return h;
   }
 
+  /* 답이 늦으면 기다리지 않고 끊는다.
+     중계 서버가 느려진 날에도 화면은 떠야 한다 - 못 잰 곳은 직선으로 어림하고
+     화면에 '약'을 붙여 밝힌다. 영원히 "재는 중"으로 멈춰 있는 것보다 낫다. */
+  var TIMEOUT = 7000;
+
+  function timed(url, opt) {
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    if (ctrl) opt.signal = ctrl.signal;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, TIMEOUT);
+    return fetch(url, opt).then(function (r) {
+      clearTimeout(timer);
+      return r;
+    }, function (e) {
+      clearTimeout(timer);
+      throw e;
+    });
+  }
+
   function post(path, body) {
-    return fetch(url(path), {
+    return timed(url(path), {
       method: 'POST', headers: headers(), body: JSON.stringify(body)
     }).then(function (r) {
       if (!r.ok) throw new Error(path + ' ' + r.status);
       return r.json();
     });
   }
+
+  /* 한꺼번에 다 던지면 서로 느려진다. 몇 개씩 끊어 보낸다. */
+  function inBatches(list, size, run) {
+    var out = [], i = 0;
+    function step() {
+      if (i >= list.length) return Promise.resolve(out);
+      var group = list.slice(i, i + size);
+      i += size;
+      return Promise.all(group.map(run)).then(function (res) {
+        out = out.concat(res);
+        return step();
+      });
+    }
+    return step();
+  }
+  R.inBatches = inBatches;
 
   /* ── 거리 보관 ────────────────────────────────────────────
      차종이나 편도/왕복을 바꿔도 거리는 그대로다. 다시 묻지 않는다. */
@@ -121,7 +155,7 @@
      경로 좌표는 목적지 모드에서 '가는 길 근처'를 고르는 데 쓴다. */
   R.route = function (from, to) {
     if (!R.ready()) return Promise.reject(new Error('길찾기 설정 없음'));
-    return fetch(url('/v1/directions') +
+    return timed(url('/v1/directions') +
         '?origin=' + from.ln + ',' + from.la +
         '&destination=' + to.ln + ',' + to.la +
         '&priority=RECOMMEND', { headers: headers() })

@@ -385,29 +385,47 @@ body.oil-noscroll { overflow: hidden; }
 }
 .oil-near-n { font-size: 15px; color: var(--oil-muted); margin-left: 4px; }
 
-/* 고르는 줄 - 주변반경 · 유종 · 차종 */
+/* 고르는 줄 - 주변반경 · 유종 · 차종
+   항목 이름을 왼쪽에 크고 굵게 두고, 고른 값은 그 옆에 놓는다.
+   이름이 작으면 무엇을 고르는 줄인지 모른 채 지나친다. */
 .oil-picks { display: flex; gap: 6px; }
 .oil-pick {
-  flex: 1 1 0; min-width: 0; display: block; position: relative;
+  flex: 1 1 0; min-width: 0; position: relative;
+  display: flex; align-items: center; gap: 7px;
   background: var(--oil-card); border: 0; box-shadow: var(--oil-lift);
-  border-radius: 13px; padding: 7px 11px 8px;
+  border-radius: 13px; padding: 10px 22px 10px 12px;
 }
 .oil-pick-k {
-  display: block; font-size: 10px; font-weight: 600; letter-spacing: .04em;
-  color: var(--oil-muted2);
+  flex-shrink: 0; font-size: 12.5px; font-weight: 800;
+  letter-spacing: -0.02em; color: var(--oil-ink);
 }
 .oil-pick-s {
-  width: 100%; border: 0; background: none; padding: 1px 16px 0 0; margin: 0;
-  font-size: 13.5px; font-weight: 700; color: var(--oil-ink);
+  flex: 1 1 0; min-width: 0; border: 0; background: none; padding: 0; margin: 0;
+  font-size: 13.5px; font-weight: 700; color: var(--oil-accent-dark);
   letter-spacing: -0.02em; cursor: pointer;
   -webkit-appearance: none; appearance: none;
 }
 .oil-pick-s:focus { outline: none; }
 .oil-pick::after {
-  content: ''; position: absolute; right: 10px; bottom: 13px;
+  content: ''; position: absolute; right: 10px; top: 50%; margin-top: -4px;
   width: 6px; height: 6px; border-right: 1.6px solid var(--oil-muted);
   border-bottom: 1.6px solid var(--oil-muted); transform: rotate(45deg);
   pointer-events: none;
+}
+
+/* ── 주유소 상표 배지 ──────────────────────────────────────
+   로고 그림은 상표권이 있어 못 쓴다. 회사 간판 색에 약칭을 얹어
+   색만 봐도 어느 상표인지 알아보게 한다. */
+.oil-bc {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; min-width: 22px; height: 18px; padding: 0 5px;
+  margin-right: 5px; border-radius: 5px; vertical-align: -3px;
+  font-size: 10.5px; font-weight: 800; letter-spacing: -0.03em; line-height: 1;
+}
+/* 지도 이름표 안에서는 한 단계 작게 */
+.oil-bc.is-mk {
+  min-width: 19px; height: 15px; padding: 0 4px; margin: 0 4px 0 0;
+  font-size: 9.5px; vertical-align: 0;
 }
 
 /* ── 주유소 카드 ───────────────────────────────────────────── */
@@ -436,7 +454,12 @@ body.oil-noscroll { overflow: hidden; }
   margin-top: 10px; padding: 9px 12px; border-radius: 13px;
   font-size: 12.5px; line-height: 1.55;
 }
-.oil-st-line b { font-weight: 800; }
+.oil-st-line b { font-weight: 800; font-size: 14px; }
+/* 결론 아래 붙는 근거 한 줄. 작고 흐리게 둬야 결론이 먼저 읽힌다. */
+.oil-st-sub {
+  display: block; margin-top: 3px; font-size: 11.5px; font-weight: 500;
+  line-height: 1.5; opacity: .82;
+}
 .oil-st-line.is-good { background: var(--oil-teal-soft); color: var(--oil-teal-dark); }
 .oil-st-line.is-bad { background: var(--oil-soft); color: var(--oil-muted); }
 .oil-st-line.is-base { background: var(--oil-accent-soft); color: var(--oil-accent-dark); }
@@ -446,8 +469,34 @@ body.oil-noscroll { overflow: hidden; }
   text-align: center; font-size: 12.5px; font-weight: 600;
   background: #EFF4FB; border: 0; color: var(--oil-ink2);
 }
+/* 이 카드에서 실제로 누를 버튼. 남색은 너무 가라앉아 눈에 안 띄었다. */
 .oil-st-btn.is-go {
-  background: linear-gradient(135deg, #0E1B33, #2B3A5C); color: #fff;
+  background: linear-gradient(135deg, #38BDF8, #0284C7);
+  color: #fff; font-weight: 700;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, .28);
+}
+
+/* ── 순위 띠 (카드 맨 위) ──────────────────────────────────
+   지도 이름표와 같은 번호를 쓴다. 둘을 눈으로 이어 붙일 수 있어야 한다. */
+.oil-st-rank {
+  display: flex; align-items: center; gap: 7px;
+  margin: -3px 0 9px;
+}
+.oil-st-no {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 30px; height: 21px; padding: 0 7px; border-radius: 6px;
+  background: #E7EDF7; color: var(--oil-ink2);
+  font-size: 11.5px; font-weight: 800; letter-spacing: -0.02em;
+}
+.oil-st-rank.is-top .oil-st-no { background: var(--oil-accent); color: #fff; }
+.oil-st-why1 {
+  font-size: 11.5px; font-weight: 700; color: var(--oil-accent-dark);
+  letter-spacing: -0.02em;
+}
+/* 1위 카드는 테두리로 한 단계 띄운다 */
+.oil-st.is-top {
+  border-color: var(--oil-accent);
+  box-shadow: 0 0 0 3px var(--oil-accent-soft), var(--oil-lift);
 }
 .oil-st-detail { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--oil-line-soft); }
 .oil-st-detail .oil-rows { margin-top: 12px; }
@@ -458,22 +507,28 @@ body.oil-noscroll { overflow: hidden; }
   border: 0; border-radius: var(--oil-r); box-shadow: var(--oil-lift);
   background: var(--oil-soft);
 }
-/* 지도 위 표시. 색은 싼 순서가 아니라 '이득이 나느냐'로 칠한다 */
+/* 지도 위 이름표 - 순위 번호 · 상표 배지 · 가격 순으로 읽힌다.
+   목록에 보이는 5곳만 찍으므로 전부 이름표를 달아도 겹치지 않는다.
+   1위는 붉게, 나머지는 초록, 내 위치는 파랑 - 색 세 개로 다 말한다. */
 .oil-mk {
-  display: inline-block; padding: 3px 7px; border-radius: 7px;
+  display: inline-flex; align-items: center; padding: 3px 7px; border-radius: 8px;
   font-size: 11px; font-weight: 700; white-space: nowrap; cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, .25); border: 1px solid rgba(255, 255, 255, .65);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .3); border: 1px solid rgba(255, 255, 255, .7);
+}
+.oil-mk b { font-weight: 800; }
+.oil-mk-no {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; width: 15px; height: 15px; margin-right: 4px;
+  border-radius: 50%; background: rgba(255, 255, 255, .92);
+  font-style: normal; font-size: 9.5px; font-weight: 900; line-height: 1;
+  color: var(--oil-ink);
 }
 .oil-mk.is-good { background: var(--oil-teal); color: #fff; }
-/* 가격을 다 띄우면 겹쳐서 아무것도 못 읽는다. 위쪽 몇 곳만 가격, 나머지는 점. */
-.oil-mk.is-dot {
-  width: 11px; height: 11px; padding: 0; border-radius: 50%;
-  background: #fff; border: 2px solid var(--oil-muted2); box-shadow: none;
-}
-/* 이득은 나지만 가격표를 생략한 곳 - 점 색으로 구분한다 */
-.oil-mk.is-dot.is-win { border-color: var(--oil-teal); background: var(--oil-teal-soft); }
-.oil-mk.is-from { background: var(--oil-ink); color: #fff; cursor: default; }
-.oil-mk.is-to { background: var(--oil-accent); color: #fff; cursor: default; }
+.oil-mk.is-first { background: var(--oil-accent-dark); color: #fff; }
+.oil-mk.is-first .oil-mk-no { color: var(--oil-accent-dark); }
+/* 내 위치 - 주유소와 헷갈리지 않게 파랑으로 따로 뗀다 */
+.oil-mk.is-from { background: #1D6FE0; color: #fff; cursor: default; }
+.oil-mk.is-to { background: var(--oil-ink); color: #fff; cursor: default; }
 
 /* 지도에서 고른 카드를 잠깐 표시해준다 */
 .oil-st.is-lit {

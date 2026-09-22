@@ -21,9 +21,12 @@
   /* 반경은 사용자가 고른다(1~10km). 주유소 목록은 한 번만 받아두고,
      반경을 바꿀 때는 걸러내기만 한다(자료는 다시 받지 않는다). */
   var MAX_RADIUS = 10;    /* 카카오 다중 목적지 길찾기 한계 */
-  var NEAR_REGION = 25;   /* 시군구 경계 문제 - 중심이 이 안에 있는 동네를 함께 본다 */
+  /* 시군구 경계 문제 - 중심이 이 안에 있는 동네를 함께 본다.
+     반경은 최대 10km 인데 25km 씩 떨어진 동네까지 받으면 쓰지도 않을
+     자료를 기다리게 된다. 18km 면 경계 건너편은 그대로 들어온다. */
+  var NEAR_REGION = 18;
   var MAX_REGION = 4;
-  var SHOW = 20;
+  var SHOW = 5;           /* 5곳이면 고르기 충분하다. 더 늘어놓으면 안 읽는다 */
   var NEAREST_KEEP = 8;   /* 비교 기준을 놓치지 않게 가까운 곳은 꼭 실측한다 */
 
   function fuel() { return P ? P.get('fuel') : 'g'; }
@@ -86,9 +89,17 @@
     if (s.c === '늘 최저권') tags += '<span class="oil-badge is-low">1년 내내 최저권</span>';
     else if (s.c === '늘 최고권') tags += '<span class="oil-badge is-high">오늘만 쌈</span>';
 
-    return '<article class="oil-st">' +
+    /* 순위는 카드 맨 위에 띠로 단다. 1위만 색을 넣어 눈이 먼저 가게 한다.
+       지도 표시도 같은 번호를 쓰므로 둘을 눈으로 이어 붙일 수 있다. */
+    var rank = '<div class="oil-st-rank' + (i === 0 ? ' is-top' : '') + '">' +
+      '<span class="oil-st-no">' + (i + 1) + '위</span>' +
+      (i === 0 ? '<span class="oil-st-why1">여기가 제일 많이 아낍니다</span>' : '') +
+      '</div>';
+
+    return '<article class="oil-st' + (i === 0 ? ' is-top' : '') + '">' + rank +
       '<div class="oil-st-top">' +
-        '<span class="oil-st-name">' + esc(s.n) + '<span class="oil-st-tags">' + tags + '</span></span>' +
+        '<span class="oil-st-name">' + OIL.brandChip(s.b) + esc(s.n) +
+          '<span class="oil-st-tags">' + tags + '</span></span>' +
         '<span class="oil-st-fig">' +
           '<b class="oil-st-price">' + won(p) + '<i>원</i></b>' +
           '<span class="oil-st-km' + (s._real ? '' : ' is-guess') + '">' +
@@ -193,10 +204,12 @@
 
     var html = '<div class="oil-stack">';
 
-    /* 머리말 - 장소 이름과 찾은 개수 */
+    /* 머리말 - 괄호 안은 '찾은 개수'가 아니라 '보여주는 개수'다.
+       반경 안 15곳 중 5곳을 보여주면서 (15)라고 적으면 세어보고 어리둥절해진다. */
     html += '<div class="oil-near-head">' +
-      '<h1 class="oil-near-h1">' + esc(placeName) + ' 주변 주유소' +
-      '<span class="oil-near-n">(' + all.length + ')</span></h1></div>';
+      '<h1 class="oil-near-h1">' + (isMe ? '내 주변' : esc(placeName)) +
+      ' 다 따져서 제일 싼 주유소' +
+      '<span class="oil-near-n">(' + Math.min(all.length, SHOW) + ')</span></h1></div>';
 
     /* 고르는 줄 - 반경 · 유종 · 차종 */
     if (P) html += P.pickerHtml();
@@ -228,12 +241,15 @@
       return a._road - b._road;
     }).slice(0, SHOW);
 
+    /* 이 한 줄이 결론이다. 계산 과정("빼고도 남습니다")을 말하지 않고
+       "어디서 넣으면 얼마 이득인지"를 바로 말한다. */
     var best = list[0];
     var lead = (best._isBase || best._trip.net <= 0)
-      ? '반경 ' + rad + 'km 안에서는 <b>가장 가까운 곳</b>에서 넣는 게 낫습니다. ' +
-        '더 싼 집이 있어도 더 가는 기름값이 그보다 큽니다.'
-      : '맨 위 주유소까지 더 가는 기름값을 빼고도 <b>' + won(best._trip.net) +
-        '원</b>이 남습니다. 가격만 싼 순서가 아니라 실제로 남는 순서입니다.';
+      ? '<b>' + esc(base.n) + '</b>에서 넣는 게 제일 낫습니다. ' +
+        '더 싼 곳도 있지만, 거기까지 오가는 기름값이 아끼는 돈보다 큽니다.'
+      : '<b>' + esc(best.n) + '</b>까지 가서 넣으면 제일 가까운 ' +
+        esc(base.n) + '보다 <b>' + won(best._trip.net) + '원</b>을 아낍니다. ' +
+        '더 가는 기름값은 이미 뺀 금액입니다.';
     html += '<p class="oil-lead" style="margin-top:0;">' + lead + '</p>';
 
     /* 지도 - 목록에 보이는 곳을 그대로 찍는다 */
@@ -247,8 +263,8 @@
 
     if (all.length > list.length) {
       html += '<p class="oil-p" style="font-size:12px;color:var(--oil-muted);text-align:center;">' +
-        '반경 ' + rad + 'km 안 ' + all.length + '곳 중 남는 순서로 ' + list.length +
-        '곳을 보여드립니다</p>';
+        '반경 ' + rad + 'km 안 <b>' + all.length + '곳</b>을 전부 계산해 ' +
+        '제일 아끼는 <b>' + list.length + '곳</b>만 보여드립니다</p>';
     }
 
     html += '<a class="oil-btn" href="' + (OIL.cfg.listPageUrl || '/') + '">' +
@@ -274,10 +290,10 @@
     shown = list;
     if (OIL.map) {
       OIL.map.render(document.getElementById('oil-list-map'), {
-        from: { la: la, ln: ln, name: placeName },
+        from: { la: la, ln: ln, name: isMe ? '내 위치' : placeName },
         items: list.map(function (s, i) {
           return { la: s.la, ln: s.ln, name: s.n, label: won(price(s)),
-                   good: s._trip.net > 0, i: i };
+                   brand: s.b, rank: i + 1, good: s._trip.net > 0, i: i };
         }),
         onPick: OIL.map.focusCard
       });

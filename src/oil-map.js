@@ -60,16 +60,19 @@
         line.forEach(function (p) { bounds.extend(p); });
       }
 
-      /* 가격표를 전부 띄우면 서로 겹쳐 아무것도 못 읽는다.
-         남는 순서로 위쪽 몇 곳만 가격을 보여주고 나머지는 작은 점으로 둔다.
-         우리가 하려는 말이 "어디로 가야 이득인가"라서 이게 화면과도 맞는다. */
-      var LABELS = 3;
+      /* 목록에 보이는 곳은 5곳뿐이라 전부 이름표를 달 수 있다.
+         이름표에는 목록과 같은 순위 번호, 상표 배지, 가격을 넣는다 -
+         지도에서 본 표시를 아래 목록에서 그대로 찾을 수 있어야 한다.
+         1위만 붉게 칠해 어디로 갈지 한눈에 보이게 한다. */
       (o.items || []).forEach(function (it, n) {
         var pos = new kakao.maps.LatLng(it.la, it.ln);
         bounds.extend(pos);
-        var show = it.good && n < LABELS;
-        var el2 = show ? tag('is-good', it.label) : tag('is-dot' + (it.good ? ' is-win' : ''), '');
-        el2.title = it.name + (it.good ? ' ' + it.label + '원' : '');
+        var el2 = document.createElement('span');
+        el2.className = 'oil-mk ' + (it.rank === 1 ? 'is-first' : 'is-good');
+        el2.innerHTML = '<i class="oil-mk-no">' + (it.rank || n + 1) + '</i>' +
+          (it.brand !== undefined ? OIL.brandChip(it.brand, 'is-mk') : '') +
+          '<b>' + OIL.esc(it.label) + '</b>';
+        el2.title = it.name;
         if (o.onPick) {
           el2.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -79,8 +82,9 @@
         new kakao.maps.CustomOverlay({
           map: map, position: pos, content: el2, clickable: true,
           /* 주유소는 점 위쪽에 - 출발·도착 표시와 위아래로 갈라놓는다 */
-          yAnchor: show ? 1.35 : 0.5,
-          zIndex: show ? (100 - n) : 2
+          yAnchor: 1.35,
+          /* 1위가 다른 표시에 가리지 않게 맨 위로 올린다 */
+          zIndex: it.rank === 1 ? 150 : (100 - n)
         });
       });
 

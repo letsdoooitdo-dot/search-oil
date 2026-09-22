@@ -22,10 +22,13 @@
   var esc = OIL.esc, won = OIL.won;
   var P = OIL.prefs, PL = OIL.place;
 
-  var MAX_MEASURE = 12;   /* 진짜 우회거리를 물어볼 곳 수 (한 곳당 호출 1회) */
+  /* 진짜 우회거리를 물어볼 곳 수 (한 곳당 호출 1회).
+     8곳이면 기준이 될 '안 벗어나는 곳'과 이길 만한 '싼 곳'이 모두 들어온다.
+     12곳은 답을 별로 못 바꾸면서 기다리는 시간만 늘렸다. */
+  var MAX_MEASURE = 8;
   var MAX_REGION = 8;
   var REGION_NEAR = 20;   /* 경로에서 이 거리 안에 중심이 있는 동네를 받는다 */
-  var SHOW = 15;
+  var SHOW = 5;           /* 내 주변 화면과 같은 수 - 5곳이면 고르기 충분하다 */
 
   function fuel() { return P ? P.get('fuel') : 'g'; }
   function fuelName() { return P ? P.fuelName() : '휘발유'; }
@@ -118,13 +121,15 @@
     byPrice.forEach(add);             /* 이길 가능성이 있는 '싼 곳' */
 
     cand.forEach(function (s) { s._detour = null; });
-    return Promise.all(pick.map(function (s) {
+    /* 한 곳에 한 번씩 물어야 하는데 12개를 동시에 던지면 서로 느려진다.
+       4개씩 끊어 보내고, 늦는 건 어림값으로 넘어간다(oil-road.js 의 시간 제한). */
+    return OIL.road.inBatches(pick, 4, function (s) {
       return OIL.road.detour(origin, s, dest, baseKm).then(function (r) {
         if (r) { s._detour = r.extra; s._real = true; }
         else { s._detour = s._off * 2 * OIL.road.GUESS; s._real = false; }
         return s;
       });
-    }));
+    });
   }
 
   /* ── 카드 ────────────────────────────────────────────────── */
@@ -138,9 +143,15 @@
     if (s.c === '늘 최저권') tags += '<span class="oil-badge is-low">1년 내내 최저권</span>';
     else if (s.c === '늘 최고권') tags += '<span class="oil-badge is-high">오늘만 쌈</span>';
 
-    return '<article class="oil-st">' +
+    /* 순위 띠 - 내 주변 화면과 같은 모양, 같은 번호를 지도에도 쓴다 */
+    var rank = '<div class="oil-st-rank' + (i === 0 ? ' is-top' : '') + '">' +
+      '<span class="oil-st-no">' + (i + 1) + '위</span>' +
+      (i === 0 ? '<span class="oil-st-why1">여기가 제일 많이 아낍니다</span>' : '') +
+      '</div>';
+
+    return '<article class="oil-st' + (i === 0 ? ' is-top' : '') + '">' + rank +
       '<div class="oil-st-top">' +
-        '<span class="oil-st-name">' + esc(s.n) +
+        '<span class="oil-st-name">' + OIL.brandChip(s.b) + esc(s.n) +
           '<span class="oil-st-tags">' + tags + '</span></span>' +
         '<span class="oil-st-fig">' +
           '<b class="oil-st-price">' + won(p) + '<i>원</i></b>' +
@@ -254,11 +265,11 @@
     var best = list[0];
     html += '<p class="oil-lead" style="margin-top:0;">' +
       (best._isBase || best._trip.net <= 0
-        ? '<b>' + esc(base.n) + '</b>' + OIL.josa(base.n, '이가') +
-          ' 가는 길에서 가장 덜 벗어납니다. ' +
-          '더 싼 집이 있어도 더 우회하는 기름값이 그보다 큽니다.'
-        : '맨 위 주유소는 더 우회하는 기름값을 빼고도 <b>' + won(best._trip.net) +
-          '원</b>이 남습니다.') + '</p>';
+        ? '<b>' + esc(base.n) + '</b>에 들르는 게 제일 낫습니다. ' +
+          '더 싼 곳도 있지만, 거기까지 돌아가는 기름값이 아끼는 돈보다 큽니다.'
+        : '<b>' + esc(best.n) + '</b>에 들렀다 가면 제일 안 돌아가는 ' +
+          esc(base.n) + '보다 <b>' + won(best._trip.net) + '원</b>을 아낍니다. ' +
+          '더 돌아가는 기름값은 이미 뺀 금액입니다.') + '</p>';
 
     if (OIL.map && OIL.map.can()) html += '<div class="oil-list-map" id="oil-list-map"></div>';
 
@@ -283,7 +294,7 @@
         path: state.segPath,
         items: list.map(function (s, i) {
           return { la: s.la, ln: s.ln, name: s.n, label: won(price(s)),
-                   good: s._trip.net > 0, i: i };
+                   brand: s.b, rank: i + 1, good: s._trip.net > 0, i: i };
         }),
         onPick: OIL.map.focusCard
       });
@@ -358,7 +369,8 @@
       noOrigin(err && err.code === 1
         ? '위치 권한이 거부되어 출발지를 알 수 없습니다.'
         : '위치 확인이 오래 걸립니다.');
-    }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 300000 });
+      /* 고정밀(GPS)은 위성을 잡느라 오래 걸린다 - oil-find.js 와 같은 이유로 끈다 */
+    }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 });
   }
 
   function noOrigin(msg) {
