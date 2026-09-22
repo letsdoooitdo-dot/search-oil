@@ -45,7 +45,7 @@
 <body>
 <header class='oil-header'>
   <a class='oil-logo' expr:href='data:blog.homepageUrl'>주유소찾기</a>
-  <span class='oil-sub'>매일 최신 가격으로 업데이트 <i class='oil-sub-sep'>/</i> <b>우리 동네 최저가 바로 확인!!</b></span>
+  <span class='oil-sub'>기름값 차이 − 오가는 비용 = <b>진짜 이득</b></span>
 </header>
 
 <nav class='oil-tabs' id='oil-tabs'>

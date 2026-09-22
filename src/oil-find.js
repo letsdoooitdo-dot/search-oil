@@ -39,6 +39,21 @@
 
     var html = '<div class="oil-find">';
 
+    /* 0. 우리가 다른 곳과 뭐가 다른지.
+       검색으로 들어온 사람은 "또 하나의 최저가 사이트"로 알고 온다.
+       화면을 보는 순간 다르다는 걸 알아채게 하는 자리다.
+       질문 -> 단언 -> 숫자 -> 행동 순으로 읽힌다. */
+    if (!pickOrigin) {
+      html += '<section class="oil-pitch">' +
+        '<h1 class="oil-pitch-h">제일 싼 주유소가<br>제일 이득일까요?</h1>' +
+        '<p class="oil-pitch-p"><b>싼 주유소가 늘 이득은 아닙니다.</b><br>' +
+        '30원 싼 집이 4km 멀다면 아끼는 돈은 900원, ' +
+        '더 드는 기름값은 600원입니다.</p>' +
+        '<p class="oil-pitch-p">그래서 <b>싼 순서가 아니라 가서 남는 순서</b>로 ' +
+        '골라드립니다. 차종과 실제 도로거리까지 넣어 계산합니다.</p>' +
+        '</section>';
+    }
+
     /* 1. 목적지까지 가는 길에서 찾기 */
     html += '<section class="oil-find-sec">' +
       '<h2 class="oil-find-h">' + (pickOrigin ? '출발지를 정해주세요' : '가는 길에서 찾기') + '</h2>' +
@@ -62,7 +77,8 @@
         (d ? '<b>경유</b> ' + won(d.lo) + '원' : '') + '</span>' +
         '<span class="oil-near-where">' + esc(spot || near.r) + ' 기준</span>';
     } else {
-      sub = '<span class="oil-near-where">위치를 켜면 주변 최저가를 바로 보여드립니다</span>';
+      /* 위 문구에서 "싼 순서가 아니다"라고 해놓고 여기서 "최저가"라고 하면 말이 어긋난다 */
+      sub = '<span class="oil-near-where">위치를 켜면 가서 남는 곳부터 골라드립니다</span>';
     }
 
     html += '<section class="oil-find-sec">' +
