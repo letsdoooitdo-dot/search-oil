@@ -23,6 +23,11 @@ market_phase 규칙 (기존 1년 데이터에서 역산)
   python load_prices.py --date 2026-09-22   특정 날짜 파일 적재
 """
 
+import sys as _s
+try: _s.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception: pass
+
+
 import argparse
 import csv
 import io

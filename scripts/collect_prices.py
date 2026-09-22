@@ -18,6 +18,11 @@ POST 하면 /common/nflerror.jsp 로 쫓겨난다. 그래서 진짜 브라우저
   python collect_prices.py --show    브라우저를 띄워서 눈으로 확인
 """
 
+import sys as _s
+try: _s.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception: pass
+
+
 import argparse
 import os
 import sys
