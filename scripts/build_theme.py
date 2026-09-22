@@ -82,6 +82,8 @@ def main():
              .replace("/*@@OIL_CSS@@*/", css)
              .replace("/*@@OIL_JS@@*/", js)
              .replace("@@OIL_DATA_URL@@", data_url)
+             # 머리 띠 이미지. 데이터와 같은 폴더(api/img/)에 올려 같이 배포된다
+             .replace("@@OIL_IMG_URL@@", data_url + "img/")
              .replace("@@OIL_AD_CLIENT@@", ADSENSE_CLIENT if ADS_ON else "")
              .replace("@@OIL_AD_SLOT@@", ADSENSE_SLOT_INCONTENT if ADS_ON else "")
              .replace("@@OIL_KAKAO_KEY@@", KAKAO_KEY)
@@ -139,6 +141,8 @@ def main():
             shutil.rmtree(api_dst)
         shutil.copytree(api_src, api_dst)
         body = body.replace("dataBaseUrl: '" + data_url + "'", "dataBaseUrl: 'api/'")
+        # 머리 띠도 복사해온 폴더에서 본다 - 아직 안 올린 이미지도 확인된다
+        body = body.replace(data_url + "img/", "api/img/")
 
     for name, path in (("index.html", "/"), ("area.html", "area.html"),
                        ("calc.html", "calc.html"), ("post.html", "/2026/09/sample.html")):

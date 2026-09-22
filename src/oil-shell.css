@@ -40,39 +40,43 @@ html, body {
 a { color: var(--oil-accent-dark); text-decoration: none; }
 button, input, select { font-family: inherit; }
 
-/* 헤더 - 가운데 정렬 2줄 (제목 / 안내문구) */
+/* 헤더 - 띠 이미지 한 장.
+   화면에 고정하지 않는다. 휴대폰에서 이 띠가 150px 가까이 되는데,
+   고정해두면 스크롤 내내 화면의 5분의 1을 먹는다. 대신 아래 메뉴를 고정한다. */
 .oil-header {
-  background: linear-gradient(135deg, #FFFFFF, #EEF3FF);
-  padding: 10px 16px 9px;
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  text-align: center;
-  position: sticky; top: 0; z-index: 30;
+  background: #017A75;   /* 띠 양옆 여백 - 띠 왼쪽 바탕색과 같은 색 */
+  padding: 0;
 }
-.oil-logo {
-  font-size: 18px; font-weight: 900; letter-spacing: -0.03em; color: var(--oil-ink);
-}
-.oil-sub { font-size: 11.5px; color: var(--oil-hot); font-weight: 600; line-height: 1.5; }
-.oil-sub b { font-weight: 700; }
-.oil-sub-sep { color: var(--oil-line); font-style: normal; margin: 0 3px; }
+.oil-hero-link { display: block; max-width: var(--oil-max); margin: 0 auto; }
+/* 폭·높이를 태그에 적어둬서 이미지가 내려오기 전에도 자리를 잡는다 -
+   다 받은 뒤 화면이 툭 밀리는 걸 막는다. */
+.oil-hero-img { display: block; width: 100%; height: auto; }
 
-/* 탭도 가운데로 맞춘다 */
-.oil-tabs ul { justify-content: center; }
-
-/* 탭 - 배경 위에 그대로 얹는다. 선으로 나누지 않아도 글자만으로 충분히 읽힌다. */
+/* 메뉴 - 글자만 있는 탭이 아니라 누를 수 있는 버튼으로 보이게 한다.
+   지금 보고 있는 곳은 '내 주변' 버튼과 같은 초록-청록으로 채운다. */
 .oil-tabs {
-  background: transparent;
+  position: sticky; top: 0; z-index: 30;
+  background: var(--oil-bg);
+  padding: 10px 0 9px;
   overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.oil-tabs::-webkit-scrollbar { display: none; }
 .oil-tabs ul {
-  display: flex; gap: 2px; margin: 0 auto; padding: 0 12px;
-  max-width: var(--oil-max); list-style: none;
+  display: flex; gap: 7px; margin: 0 auto; padding: 0 14px;
+  max-width: var(--oil-max); list-style: none; justify-content: center;
 }
 .oil-tabs a {
   display: block; flex-shrink: 0; white-space: nowrap;
-  padding: 11px 10px 9px; font-size: 12.5px; font-weight: 500;
-  color: #6B7679; border-bottom: 2px solid transparent;
+  padding: 10px 14px; border-radius: 12px;
+  font-size: 12.5px; font-weight: 700; letter-spacing: -0.02em;
+  background: var(--oil-card); color: var(--oil-ink2);
+  box-shadow: var(--oil-lift);
 }
-.oil-tabs a.active { color: var(--oil-ink); font-weight: 700; border-bottom-color: var(--oil-ink); }
+.oil-tabs a.active {
+  background: linear-gradient(135deg, #10B981, #0891B2);
+  color: #fff; box-shadow: var(--oil-lift-strong);
+}
 
 /* 본문 자리 */
 #oil-root { max-width: var(--oil-max); margin: 0 auto; padding: 16px; }

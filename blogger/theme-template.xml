@@ -44,8 +44,12 @@
 
 <body>
 <header class='oil-header'>
-  <a class='oil-logo' expr:href='data:blog.homepageUrl'>주유소찾기</a>
-  <span class='oil-sub'>기름값 차이 − 오가는 비용 = <b>진짜 이득</b></span>
+  <a class='oil-hero-link' expr:href='data:blog.homepageUrl'>
+    <picture>
+      <source srcset='@@OIL_IMG_URL@@hero.webp' type='image/webp'/>
+      <img alt='주유소찾기 - 기름값과 실제 이동거리를 다 따져서 제일 싼 주유소를 찾아드립니다' class='oil-hero-img' height='452' src='@@OIL_IMG_URL@@hero.jpg' width='1200'/>
+    </picture>
+  </a>
 </header>
 
 <nav class='oil-tabs' id='oil-tabs'>
