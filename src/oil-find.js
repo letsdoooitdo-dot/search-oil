@@ -63,7 +63,8 @@
 
     /* 1. 목적지까지 가는 길에서 찾기 */
     html += '<section class="oil-find-sec">' +
-      '<h2 class="oil-find-h">' + (pickOrigin ? '출발지를 정해주세요' : '가는 길에서 찾기') + '</h2>' +
+      '<h2 class="oil-find-h">' +
+        (pickOrigin ? '출발지를 정해주세요' : '가는 길에서 남는 주유소 찾기') + '</h2>' +
       '<button type="button" class="oil-fakein" id="oil-open-search">' +
         '<span>' + (pickOrigin ? '어디서 출발하세요?' : '어디로 가세요?') + '</span>' +
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
@@ -72,13 +73,13 @@
       '</button>' +
       '<p class="oil-find-hint">' + (pickOrigin
         ? esc(OIL.param('dq')) + '까지 가는 길에서 찾아드립니다'
-        : '목적지를 넣으면 <b>가는 길에서 벗어나지 않는</b> 주유소를 찾아드립니다') +
+        : '목적지를 넣으면 가는 길에서 남는 주유소를 찾아드립니다.') +
       '</p></section>';
 
     /* 2. 내 주변. 지난번 결과가 있으면 오늘 가격으로 다시 계산해 미리 보여준다.
        자리는 먼저 잡아두고, 계산이 끝나면 채운다(기다리게 하지 않는다). */
     html += '<section class="oil-find-sec">' +
-      '<h2 class="oil-find-h">내 주변에서 찾기</h2>' +
+      '<h2 class="oil-find-h">내 주변에서 남는 주유소 찾기</h2>' +
       '<button type="button" class="oil-near-btn" id="oil-near">' +
         '<span class="oil-near-l">' + PIN +
           '<span><span class="oil-near-t">내 주변 남는 주유소 찾기</span>' +
