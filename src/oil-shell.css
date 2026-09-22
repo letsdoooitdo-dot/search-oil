@@ -84,6 +84,7 @@ button, input, select { font-family: inherit; }
 .oil-blog-wrap { max-width: var(--oil-max); margin: 0 auto; padding: 16px; }
 .oil-mode-find .oil-blog-wrap,
 .oil-mode-near .oil-blog-wrap,
+.oil-mode-dest .oil-blog-wrap,
 .oil-mode-browse .oil-blog-wrap,
 .oil-mode-area .oil-blog-wrap,
 .oil-mode-calc .oil-blog-wrap { display: none; }

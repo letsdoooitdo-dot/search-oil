@@ -31,7 +31,15 @@
      왕복 - 주유만 하러 나갔다가 제자리로 돌아온다 */
   var TRIPS = { one: '편도', round: '왕복' };
 
+  /* 목적지 모드에서만 쓴다.
+     range  - 지금 기름으로 더 갈 수 있는 거리. 이 구간 안에서만 찾는다.
+              긴 여정 전체를 뒤지면 주유소가 수천 곳이라 쓸 수도, 받을 수도 없다.
+     detour - 가는 길에서 얼마나 벗어날 용의가 있는지 */
+  var RANGE = [10, 20, 30, 50, 100];
+  var DETOUR = [1, 2, 3, 5];
+
   var DEFAULTS = { fuel: 'g', vehicle: '일반', radius: 5, trip: 'one',
+                   range: 30, detour: 2,
                    home: '', work: '', last: '', spot: '', visits: 0 };
 
   function read() {
@@ -55,6 +63,8 @@
   if (!FUELS[state.fuel]) state.fuel = 'g';
   if (RADIUS.indexOf(state.radius) < 0) state.radius = 5;
   if (!TRIPS[state.trip]) state.trip = 'one';
+  if (RANGE.indexOf(state.range) < 0) state.range = 30;
+  if (DETOUR.indexOf(state.detour) < 0) state.detour = 2;
 
   state.visits = (state.visits || 0) + 1;
   write(state);
@@ -153,6 +163,18 @@
       '</div>';
   };
 
+  /* 목적지 모드용. 반경·편도왕복 대신 주행가능거리·우회허용이 들어간다.
+     가는 길이니 편도가 당연하고, 우회는 '벗어났다 돌아오기'라 왕복이 이미 포함돼 있다. */
+  P.destPickerHtml = function () {
+    return '<div class="oil-picks">' +
+      sel('range', '더 갈 수 있는 거리', RANGE.map(function (k) { return [k, k + 'km']; })) +
+      sel('detour', '우회 허용', DETOUR.map(function (k) { return [k, k + 'km까지']; })) +
+      '</div><div class="oil-picks">' +
+      sel('fuel', '유종', Object.keys(FUELS).map(function (f) { return [f, FUELS[f]]; })) +
+      sel('vehicle', '차종', VEHICLE_ORDER.map(function (v) { return [v, VEHICLE[v].label]; })) +
+      '</div>';
+  };
+
   P.wirePicker = function (onChange) {
     var boxes = document.querySelectorAll('.oil-picks');
     for (var i = 0; i < boxes.length; i++) {
@@ -160,7 +182,8 @@
         var s = e.target.closest('[data-pref]');
         if (!s) return;
         var key = s.getAttribute('data-pref');
-        P.set(key, key === 'radius' ? parseInt(s.value, 10) : s.value);
+        var num = (key === 'radius' || key === 'range' || key === 'detour');
+        P.set(key, num ? parseInt(s.value, 10) : s.value);
         if (onChange) onChange(key);
       });
     }

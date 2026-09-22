@@ -32,17 +32,26 @@
 
   var PL = OIL.place = {};
 
-  /* ── 저장 ────────────────────────────────────────────────── */
-  PL.slot = function (name) { return store[name] || null; };          /* 'home' | 'work' */
-  PL.setSlot = function (name, p) { store[name] = p; save(); };
-  PL.clearSlot = function (name) { delete store[name]; save(); };
-
+  /* ── 저장 ──────────────────────────────────────────────────
+     최근 검색만 남긴다. 집·회사 지정은 넣었다가 뺐다 -
+     자주 가는 곳은 어차피 최근 검색 맨 위에 올라와서 따로 둘 이유가 없었다. */
   PL.recent = function () { return store.recent; };
+
+  /* 같은 곳인지는 좌표로 본다. 검색 화면은 주소까지 담고 결과 화면은 못 담아서,
+     이름·주소로 비교하면 같은 곳이 두 번 쌓인다. */
+  function samePlace(a, b) {
+    return Math.abs(a.la - b.la) < 0.0005 && Math.abs(a.ln - b.ln) < 0.0005;
+  }
+
   PL.remember = function (p) {
-    if (!p) return;
+    if (!p || p.la == null) return;
+    var old = null;
     store.recent = store.recent.filter(function (x) {
-      return !(x.n === p.n && x.a === p.a);
+      if (!samePlace(x, p)) return true;
+      old = x; return false;
     });
+    /* 주소는 있는 쪽을 살린다 */
+    if (old && !p.a && old.a) p = { n: p.n || old.n, a: old.a, la: p.la, ln: p.ln };
     store.recent.unshift(p);
     store.recent = store.recent.slice(0, MAX_RECENT);
     save();
@@ -50,8 +59,21 @@
   PL.forget = function (i) { store.recent.splice(i, 1); save(); };
   PL.clearRecent = function () { store.recent = []; save(); };
 
-  /* 고른 장소를 다음 화면으로 넘긴다 */
-  PL.url = function (p) {
+  /* 고른 곳을 목적지로 넘긴다. from 을 주면 출발지도 함께 넘긴다
+     (위치 권한을 거부해 출발지를 직접 고른 경우). */
+  PL.destUrl = function (p, from) {
+    var u = (OIL.cfg.areaPageUrl || '/p/area.html') +
+      '?dla=' + p.la.toFixed(5) + '&dln=' + p.ln.toFixed(5) +
+      '&dq=' + encodeURIComponent(p.n);
+    if (from) {
+      u += '&ola=' + from.la.toFixed(5) + '&oln=' + from.ln.toFixed(5) +
+           '&oq=' + encodeURIComponent(from.n);
+    }
+    return u;
+  };
+
+  /* 어떤 지점 '주변'을 볼 때 (내 주변 찾기) */
+  PL.nearUrl = function (p) {
     return (OIL.cfg.areaPageUrl || '/p/area.html') +
       '?la=' + p.la.toFixed(5) + '&ln=' + p.ln.toFixed(5) +
       '&q=' + encodeURIComponent(p.n);

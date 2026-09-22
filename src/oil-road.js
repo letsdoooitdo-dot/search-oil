@@ -143,8 +143,18 @@
       });
   };
 
-  /* 들렀다 가면 얼마나 더 가는가. 이게 진짜 우회거리다. */
+  /* 들렀다 가면 얼마나 더 가는가. 이게 진짜 우회거리다.
+     우회 허용을 바꿔도 이미 잰 곳은 값이 같으므로 다시 묻지 않는다. */
   R.detour = function (from, via, to, baseKm) {
+    var k = key(from, via) + '>' + to.la.toFixed(5) + ',' + to.ln.toFixed(5);
+    if (cache[k]) return Promise.resolve(cache[k]);
+    return detourCall(from, via, to, baseKm).then(function (r) {
+      if (r) cache[k] = r;
+      return r;
+    });
+  };
+
+  function detourCall(from, via, to, baseKm) {
     return post('/v1/waypoints/directions', {
       origin: { x: from.ln, y: from.la },
       destination: { x: to.ln, y: to.la },
@@ -156,5 +166,5 @@
       var total = r.summary.distance / 1000;
       return { total: total, extra: Math.max(0, total - baseKm), real: true };
     }).catch(function () { return null; });
-  };
+  }
 })();

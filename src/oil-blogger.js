@@ -24,7 +24,8 @@
   var mode = 'blog';
   if (path === '/' || path === '/index.html') mode = 'find';
   else if (path === areaPath) {
-    if (qs.get('la') && qs.get('ln')) mode = 'near';
+    if (qs.get('dla') && qs.get('dln')) mode = 'dest';   /* 목적지까지 가는 길 */
+    else if (qs.get('la') && qs.get('ln')) mode = 'near';
     else if (qs.get('r')) mode = 'area';
     else mode = 'browse';
   } else if (path === calcPath) mode = 'calc';
@@ -39,7 +40,7 @@
     ['계산기', cfg.calcPageUrl || '/p/calc.html'],
     ['기름값 이야기', (cfg.reportLabelUrl || '/search/label/기름값리포트')]
   ];
-  var ACTIVE = { find: 0, near: 0, area: 1, browse: 1, calc: 2, blog: 3 };
+  var ACTIVE = { find: 0, near: 0, dest: 0, area: 1, browse: 1, calc: 2, blog: 3 };
   var nav = document.getElementById('oil-tabs');
   if (nav) {
     var active = ACTIVE[mode];

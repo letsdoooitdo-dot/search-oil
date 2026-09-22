@@ -252,10 +252,6 @@ body.oil-noscroll { overflow: hidden; }
 .oil-sheet-in::-webkit-search-cancel-button { display: none; }
 .oil-sheet-body { flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 30px; }
 
-.oil-sheet-note {
-  padding: 11px 16px; font-size: 12.5px; font-weight: 600;
-  background: var(--oil-accent-soft); color: var(--oil-accent-dark);
-}
 .oil-sheet-head {
   display: flex; align-items: center; justify-content: space-between;
   padding: 15px 16px 8px; font-size: 12.5px; font-weight: 700; color: var(--oil-ink);
@@ -269,25 +265,6 @@ body.oil-noscroll { overflow: hidden; }
   line-height: 1.7;
 }
 .oil-sheet-empty span { font-size: 11.5px; color: var(--oil-muted2); }
-
-/* 집 / 회사 */
-.oil-slots { display: flex; flex-wrap: wrap; gap: 7px; padding: 14px 16px 2px; }
-.oil-slot {
-  display: inline-flex; align-items: center; border-radius: 10px;
-  border: 1px solid var(--oil-line); background: var(--oil-card); overflow: hidden;
-}
-.oil-slot.is-empty {
-  padding: 9px 13px; cursor: pointer; font-size: 12.5px; color: var(--oil-muted2);
-}
-.oil-slot-go {
-  background: none; border: 0; cursor: pointer; padding: 9px 4px 9px 13px;
-  font-size: 12.5px; font-weight: 600; color: var(--oil-ink);
-  max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.oil-slot-x {
-  background: none; border: 0; cursor: pointer; padding: 9px 11px 9px 7px;
-  font-size: 11px; color: var(--oil-muted2);
-}
 
 /* 검색 결과 · 최근 검색 목록 */
 .oil-hits { background: var(--oil-card); border-top: 1px solid var(--oil-line-soft); }
@@ -313,6 +290,27 @@ body.oil-noscroll { overflow: hidden; }
   flex-shrink: 0; background: none; border: 0; cursor: pointer;
   padding: 13px 16px; font-size: 11px; color: var(--oil-muted2);
 }
+
+/* ── 목적지: 출발 → 도착 ───────────────────────────────────── */
+.oil-route {
+  background: var(--oil-card); border: 1px solid var(--oil-line);
+  border-radius: 14px; padding: 13px 15px;
+}
+.oil-route-row { display: flex; align-items: baseline; gap: 10px; }
+.oil-route-row + .oil-route-row { margin-top: 6px; }
+.oil-route-k {
+  flex-shrink: 0; width: 28px; font-size: 11px; font-weight: 700;
+  color: var(--oil-muted2); letter-spacing: .04em;
+}
+.oil-route-v {
+  font-size: 14.5px; font-weight: 800; color: var(--oil-ink);
+  letter-spacing: -0.02em; line-height: 1.4; min-width: 0;
+}
+.oil-route-sum {
+  margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--oil-line-soft);
+  font-size: 12px; color: var(--oil-muted);
+}
+.oil-route-sum b { color: var(--oil-ink); font-weight: 700; }
 
 /* ── 주변 주유소 목록 ──────────────────────────────────────── */
 .oil-near-head { display: flex; align-items: baseline; }

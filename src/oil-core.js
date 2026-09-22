@@ -102,30 +102,38 @@
              L: L, kmpl: kmpl, car: car };
   };
 
-  /* 카드에 한 줄로 넣을 판정 문구. 숫자를 늘어놓지 않는다 - 근거는 상세보기로 민다. */
-  OIL.tripLine = function (t, isBase) {
+  /* 카드에 한 줄로 넣을 판정 문구. 숫자를 늘어놓지 않는다 - 근거는 상세보기로 민다.
+     kind='detour' 면 목적지 모드다. '더 간다'가 아니라 '우회한다'로 말해야 맞다. */
+  OIL.tripLine = function (t, isBase, kind) {
+    var off = (kind === 'detour');
     if (isBase) {
-      return { cls: 'is-base', text: '여기서 <b>가장 가까운 주유소</b> · 비교 기준' };
+      return { cls: 'is-base', text: off
+        ? '가는 길에서 <b>가장 덜 벗어나는 곳</b> · 비교 기준'
+        : '여기서 <b>가장 가까운 주유소</b> · 비교 기준' };
     }
     if (t.gain === 0) {
-      return { cls: 'is-bad', text: '가까운 곳과 <b>같은 가격</b>인데 더 멉니다' };
+      return { cls: 'is-bad', text: '기준과 <b>같은 가격</b>인데 ' +
+        (off ? '더 우회합니다' : '더 멉니다') };
     }
     if (t.gain < 0) {
-      return { cls: 'is-bad', text: '가까운 곳보다 <b>비싼데</b> 더 멀기까지 합니다' };
+      return { cls: 'is-bad', text: '기준보다 <b>비싼데</b> ' +
+        (off ? '더 우회하기까지 합니다' : '더 멀기까지 합니다') };
     }
     if (t.net > 0) {
-      /* 기준과 거의 같은 거리면 "더 가는 0.0km" 라고 쓰게 되어 어색하다 */
+      /* 기준과 거의 같으면 "더 가는 0.0km" 라고 쓰게 되어 어색하다 */
       if (t.drive < 0.15) {
         return { cls: 'is-good',
-                 text: '기준과 거의 같은 거리인데 <b>' + OIL.won(t.net) + '원 이득</b>' };
+                 text: '기준과 거의 ' + (off ? '같은 길인데' : '같은 거리인데') +
+                       ' <b>' + OIL.won(t.net) + '원 이득</b>' };
       }
       return { cls: 'is-good',
-               text: (t.round ? '왕복 ' : '') + '더 가는 ' + t.drive.toFixed(1) +
-                     'km 기름값 빼도 <b>' + OIL.won(t.net) + '원 이득</b>' };
+               text: (off ? '더 우회하는 ' : (t.round ? '왕복 ' : '') + '더 가는 ') +
+                     t.drive.toFixed(1) + 'km 기름값 빼도 <b>' +
+                     OIL.won(t.net) + '원 이득</b>' };
     }
     return { cls: 'is-bad',
              text: '<b>' + t.beKm.toFixed(1) + 'km까지만 이득</b>인데 ' +
-                   t.extra.toFixed(1) + 'km 더 갑니다' };
+                   t.extra.toFixed(1) + 'km ' + (off ? '더 우회합니다' : '더 갑니다') };
   };
 
   /* 찾아가기 - 카카오맵. API 키가 필요 없고 앱이 깔려 있으면 앱이 열린다. */

@@ -17,6 +17,9 @@
   var esc = OIL.esc, won = OIL.won;
   var P = OIL.prefs, PL = OIL.place;
 
+  /* 목적지 화면에서 "출발지를 정해주세요"로 되돌아온 경우 */
+  var pickOrigin = OIL.param('pick') === 'origin' && OIL.param('dla') && OIL.param('dln');
+
   var PIN = '<svg class="oil-pin" width="15" height="15" viewBox="0 0 24 24" fill="none" ' +
     'stroke="currentColor" stroke-width="1.8" aria-hidden="true">' +
     '<path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"></path>' +
@@ -24,7 +27,7 @@
 
   /* ── 첫 화면 ─────────────────────────────────────────────── */
   function renderFind(meta, reg) {
-    /* 전에 위치를 찾아둔 적이 있으면 그 동네 가격을 미리 보여준다 */
+    /* 전에 내 위치를 찾아둔 적이 있으면 그 동네 가격을 미리 보여준다 */
     var lastSlug = P ? P.get('last') : '';
     var spot = P ? P.get('spot') : '';
     var near = null;
@@ -36,17 +39,19 @@
 
     var html = '<div class="oil-find">';
 
-    /* 1. 장소명 검색 */
+    /* 1. 목적지까지 가는 길에서 찾기 */
     html += '<section class="oil-find-sec">' +
-      '<h2 class="oil-find-h">장소명으로 찾기</h2>' +
+      '<h2 class="oil-find-h">' + (pickOrigin ? '출발지를 정해주세요' : '가는 길에서 찾기') + '</h2>' +
       '<button type="button" class="oil-fakein" id="oil-open-search">' +
-        '<span>장소명을 검색해 주세요</span>' +
+        '<span>' + (pickOrigin ? '어디서 출발하세요?' : '어디로 가세요?') + '</span>' +
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
         'stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle>' +
         '<path d="M20 20l-3.5-3.5"></path></svg>' +
       '</button>' +
-      '<p class="oil-find-hint">회사·아파트·역 이름으로 찾을 수 있습니다</p>' +
-      '</section>';
+      '<p class="oil-find-hint">' + (pickOrigin
+        ? esc(OIL.param('dq')) + '까지 가는 길에서 찾아드립니다'
+        : '목적지를 넣으면 <b>가는 길에서 벗어나지 않는</b> 주유소를 찾아드립니다') +
+      '</p></section>';
 
     /* 2. 내 주변 */
     var sub;
@@ -108,11 +113,9 @@
 
   /* ── 검색 화면 ───────────────────────────────────────────── */
   var sheet = null, input = null, body = null;
-  var pending = '';       /* '집으로 지정' 같은 상태. 'home' | 'work' | '' */
   var timer = null, seq = 0;
 
-  function openSheet(slot) {
-    pending = slot || '';
+  function openSheet() {
     if (!sheet) buildSheet();
     sheet.classList.add('is-open');
     document.body.classList.add('oil-noscroll');
@@ -127,7 +130,6 @@
     if (!sheet || !sheet.classList.contains('is-open')) return;
     sheet.classList.remove('is-open');
     document.body.classList.remove('oil-noscroll');
-    pending = '';
     if (!fromPop) {
       try { if (history.state && history.state.oilSheet) history.back(); } catch (e) { }
     }
@@ -171,27 +173,9 @@
     body.addEventListener('click', onBodyClick);
   }
 
-  function slotChip(name, label) {
-    var p = PL.slot(name);
-    if (!p) {
-      return '<button type="button" class="oil-slot is-empty" data-setslot="' + name + '">' +
-        '＋ ' + label + '</button>';
-    }
-    return '<span class="oil-slot"><button type="button" class="oil-slot-go" data-go=\'' +
-      esc(JSON.stringify(p)) + '\'>' + label + ' · ' + esc(p.n) + '</button>' +
-      '<button type="button" class="oil-slot-x" data-delslot="' + name +
-      '" aria-label="' + label + ' 해제">✕</button></span>';
-  }
-
-  /* 검색어가 없을 때 - 집·회사·최근 검색 */
+  /* 검색어가 없을 때 - 최근 검색만 보여준다 */
   function drawIdle() {
     var html = '';
-    if (pending) {
-      html += '<div class="oil-sheet-note">' +
-        (pending === 'home' ? '집' : '회사') + '으로 지정할 장소를 검색해주세요</div>';
-    }
-    html += '<div class="oil-slots">' + slotChip('home', '집') + slotChip('work', '회사') + '</div>';
-
     var rec = PL.recent();
     html += '<div class="oil-sheet-head"><span>최근 검색</span>' +
       (rec.length ? '<button type="button" class="oil-sheet-clearall" id="oil-clearall">' +
@@ -239,19 +223,19 @@
     var forget = t.closest('[data-forget]');
     if (forget) { PL.forget(+forget.getAttribute('data-forget')); drawIdle(); return; }
 
-    var setSlot = t.closest('[data-setslot]');
-    if (setSlot) { pending = setSlot.getAttribute('data-setslot'); drawIdle(); input.focus(); return; }
-
-    var delSlot = t.closest('[data-delslot]');
-    if (delSlot) { PL.clearSlot(delSlot.getAttribute('data-delslot')); drawIdle(); return; }
-
     var go = t.closest('[data-go]');
     if (go) {
       var p;
       try { p = JSON.parse(go.getAttribute('data-go')); } catch (err) { return; }
-      if (pending) { PL.setSlot(pending, p); pending = ''; }
+      if (pickOrigin) {
+        /* 고른 곳은 목적지가 아니라 출발지다 */
+        location.href = PL.destUrl(
+          { la: parseFloat(OIL.param('dla')), ln: parseFloat(OIL.param('dln')),
+            n: OIL.param('dq') }, p);
+        return;
+      }
       PL.remember(p);
-      location.href = PL.url(p);
+      location.href = PL.destUrl(p);
     }
   }
 
