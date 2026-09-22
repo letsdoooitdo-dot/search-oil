@@ -210,6 +210,23 @@
 }
 .oil-pitch-p:last-child { margin-bottom: 0; }
 .oil-pitch-p b { font-weight: 700; color: var(--oil-ink); }
+
+/* 아끼는 돈과 드는 돈을 나란히 놓는다. 이 대비가 문구의 전부다. */
+.oil-pitch-calc {
+  margin: 11px 0 13px; background: var(--oil-card);
+  border: 1px solid var(--oil-line); border-radius: 12px; overflow: hidden;
+}
+.oil-pitch-row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  padding: 11px 14px; font-size: 13px; color: var(--oil-ink2);
+}
+.oil-pitch-row + .oil-pitch-row { border-top: 1px solid var(--oil-line-soft); }
+.oil-pitch-row b {
+  flex-shrink: 0; font-size: 16px; font-weight: 900;
+  letter-spacing: -0.02em; color: var(--oil-teal-dark);
+}
+.oil-pitch-row.is-cost { background: var(--oil-soft); }
+.oil-pitch-row.is-cost b { color: var(--oil-accent-dark); }
 .oil-find-h {
   margin: 0 0 9px; font-size: 14px; font-weight: 800;
   letter-spacing: -0.02em; color: var(--oil-ink);

@@ -44,13 +44,20 @@
        화면을 보는 순간 다르다는 걸 알아채게 하는 자리다.
        질문 -> 단언 -> 숫자 -> 행동 순으로 읽힌다. */
     if (!pickOrigin) {
+      /* 여기 숫자는 우리 계산기에 그대로 넣어도 같은 답이 나와야 한다.
+         리터당 30원 싸고 10km 더 가는 경우는 경차·일반·SUV·화물 모두 손해다
+         (기름값이 리터당 1,080원 아래로 떨어지지 않는 한 뒤집히지 않는다). */
       html += '<section class="oil-pitch">' +
         '<h1 class="oil-pitch-h">제일 싼 주유소가<br>제일 이득일까요?</h1>' +
-        '<p class="oil-pitch-p"><b>싼 주유소가 늘 이득은 아닙니다.</b><br>' +
-        '30원 싼 집이 4km 멀다면 아끼는 돈은 900원, ' +
-        '더 드는 기름값은 600원입니다.</p>' +
-        '<p class="oil-pitch-p">그래서 <b>싼 순서가 아니라 가서 남는 순서</b>로 ' +
-        '골라드립니다. 차종과 실제 도로거리까지 넣어 계산합니다.</p>' +
+        '<p class="oil-pitch-p">리터당 <b>30원 싼 집</b>이 <b>10km</b> 멀다면,</p>' +
+        '<div class="oil-pitch-calc">' +
+          '<div class="oil-pitch-row"><span>싼 집 가서 아끼는 돈</span>' +
+            '<b>900원</b></div>' +
+          '<div class="oil-pitch-row is-cost"><span>더 멀리 가느라 드는 돈</span>' +
+            '<b>1,500원</b></div>' +
+        '</div>' +
+        '<p class="oil-pitch-p">가격과 실제 도로거리, 차종까지 계산해서 ' +
+        '<b>가서 남는 주유소</b>를 골라드립니다.</p>' +
         '</section>';
     }
 
