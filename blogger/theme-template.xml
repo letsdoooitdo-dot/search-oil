@@ -3,11 +3,13 @@
 <html b:version='2' class='v2' expr:dir='data:blog.languageDirection' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
 <head>
 
-  <!-- 1. 구글 서치 콘솔 설정값 (이 블로그용으로 새로 받아 넣어야 합니다) -->
-  <!-- <meta content='여기에_구글_인증값' name='google-site-verification'/> -->
+  <!-- 1. 구글 서치 콘솔 소유확인 (2026-09-23 확인 완료)
+       ★ 지우지 마세요. 이 줄이 없으면 서치콘솔이 소유확인을 잃고,
+         색인 상태·검색어 통계를 더 이상 볼 수 없게 됩니다. -->
+  <meta content='T5-b2O5_rlIeXmMY3Y5mZFBKYJjL62T3-csS10KZMuE' name='google-site-verification'/>
 
-  <!-- 2. 네이버 서치 어드바이저 설정값 (이 블로그용으로 새로 받아 넣어야 합니다) -->
-  <!-- <meta content='여기에_네이버_인증값' name='naver-site-verification'/> -->
+  <!-- 2. 네이버 서치 어드바이저 소유확인 (2026-09-23 확인 완료) ★ 지우지 마세요 -->
+  <meta content='f342bc4bc835c10355787bcbc737a96283d5b2ac' name='naver-site-verification'/>
 
   <!-- 3. 애드센스 (자동광고: 양쪽 사이드 레일 광고도 이 코드로 표시됨) -->
   <script async='async' crossorigin='anonymous' expr:src='&quot;https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=@@OIL_AD_CLIENT@@&quot;'/>
