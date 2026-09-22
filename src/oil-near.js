@@ -96,19 +96,22 @@
         '<a class="oil-st-btn is-go" href="' + OIL.mapUrl(s) + '" ' +
           'target="_blank" rel="noopener">찾아가기</a>' +
       '</div>' +
-      '<div class="oil-st-detail" id="oil-det-' + i + '" hidden>' + detail(s, baseName) + '</div>' +
+      '<div class="oil-st-detail" id="oil-det-' + i + '" hidden>' + detail(s, i, baseName) + '</div>' +
       '</article>';
   }
 
-  function detail(s, baseName) {
+  function detail(s, i, baseName) {
     var t = s._trip;
+    /* 지도는 상세보기를 누를 때 그린다. 안 누른 사람은 내려받지 않는다. */
+    var map = (PL && PL.hasKakao() && s.la != null)
+      ? '<div class="oil-st-map" id="oil-map-' + i + '"></div>' : '';
     var fuels = [];
     if (s.g) fuels.push(['휘발유', s.g]);
     if (s.d) fuels.push(['경유', s.d]);
     if (s.p) fuels.push(['고급휘발유', s.p]);
     if (s.k) fuels.push(['실내등유', s.k]);
 
-    var html = '<div class="oil-rows">';
+    var html = map + '<div class="oil-rows">';
     fuels.forEach(function (f) {
       html += '<div class="oil-row"><span class="oil-row-k">' + f[0] + '</span>' +
         '<span class="oil-row-v">' + won(f[1]) + '원</span></div>';
@@ -220,15 +223,68 @@
     OIL.render(html);
     document.title = placeName + ' 주변 주유소 최저가 - 주유소찾기';
 
+    shown = list;
     if (P) P.wirePicker(function () { render(meta, data); });
+    wireDetail();
+  }
 
+  /* ── 상세보기 펼치기 · 지도 ────────────────────────────────── */
+  var shown = [];
+  var wired = false;
+
+  function wireDetail() {
+    if (wired) return;          /* 다시 그릴 때마다 붙이면 한 번 눌러 두 번 열린다 */
+    wired = true;
     OIL.root().addEventListener('click', function (e) {
       var b = e.target.closest('[data-detail]');
       if (!b) return;
-      var box = document.getElementById('oil-det-' + b.getAttribute('data-detail'));
+      var i = b.getAttribute('data-detail');
+      var box = document.getElementById('oil-det-' + i);
       if (!box) return;
       box.hidden = !box.hidden;
       b.textContent = box.hidden ? '상세보기' : '접기';
+      if (!box.hidden) drawMap(i);
+    });
+  }
+
+  /* 출발한 곳과 그 주유소를 한 지도에 같이 찍는다.
+     "어느 방향으로 얼마나 더 가는지"가 눈에 보여야 판정이 납득된다. */
+  function drawMap(i) {
+    var el = document.getElementById('oil-map-' + i);
+    var s = shown[i];
+    if (!el || !s || el.getAttribute('data-ready')) return;
+    el.setAttribute('data-ready', '1');
+    el.innerHTML = '<div class="oil-st-map-msg">지도를 불러오는 중...</div>';
+
+    PL.sdk().then(function (kakao) {
+      el.innerHTML = '';
+      var from = new kakao.maps.LatLng(la, ln);
+      var to = new kakao.maps.LatLng(s.la, s.ln);
+      var map = new kakao.maps.Map(el, { center: from, level: 5 });
+      map.setZoomable(false);        /* 목록 안이라 손가락 확대는 막는다 */
+
+      var bounds = new kakao.maps.LatLngBounds();
+      bounds.extend(from);
+      bounds.extend(to);
+      map.setBounds(bounds, 46, 30, 46, 30);
+
+      new kakao.maps.Polyline({
+        map: map, path: [from, to], strokeWeight: 3,
+        strokeColor: '#D96206', strokeOpacity: 0.9, strokeStyle: 'shortdash'
+      });
+      new kakao.maps.Marker({ map: map, position: to });
+      new kakao.maps.CustomOverlay({
+        map: map, position: from, yAnchor: 0.5,
+        content: '<span class="oil-map-tag is-from">' + esc(placeName) + '</span>'
+      });
+      new kakao.maps.CustomOverlay({
+        map: map, position: to, yAnchor: 2.3,
+        content: '<span class="oil-map-tag is-to">' + esc(s.n) + '</span>'
+      });
+      /* 접혀 있던 자리에 그리면 크기를 잘못 잡는 경우가 있다 */
+      setTimeout(function () { map.relayout(); map.setBounds(bounds, 46, 30, 46, 30); }, 60);
+    }).catch(function () {
+      el.innerHTML = '<div class="oil-st-map-msg">지도를 불러오지 못했습니다</div>';
     });
   }
 

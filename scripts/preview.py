@@ -24,7 +24,6 @@ except Exception: pass
 
 import http.server
 import os
-import socketserver
 import webbrowser
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -52,8 +51,9 @@ def main():
     if not os.path.isdir(ROOT):
         raise SystemExit("먼저 python build_theme.py 를 실행하세요 (.theme-preview 가 없습니다)")
 
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("127.0.0.1", PORT), Handler) as srv:
+    # 한 번에 하나씩 처리하면 브라우저가 파일 여러 개를 동시에 달라고 할 때 멈춘다.
+    http.server.ThreadingHTTPServer.allow_reuse_address = True
+    with http.server.ThreadingHTTPServer(("127.0.0.1", PORT), Handler) as srv:
         url = f"http://localhost:{PORT}/"
         print(f"미리보기 서버 시작 - {url}")
         print("  홈        " + url)

@@ -82,6 +82,7 @@
   }
 
   PL.hasKakao = function () { return !!OIL.cfg.kakaoKey; };
+  PL.sdk = loadSdk;     /* 지도를 그릴 때도 같은 SDK 를 쓴다 - 한 번만 받는다 */
 
   /* ── 검색 ────────────────────────────────────────────────── */
   function fromKakao(q) {
