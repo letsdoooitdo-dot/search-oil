@@ -84,6 +84,23 @@
     return '#';
   }
 
+  /* 목록에 보여줄 한 줄 요약.
+     태그만 지우면 <style> 안의 CSS 가 글자로 남아 목록에
+     "@media (prefers-color-scheme: dark) { .cw-dark-text {" 이 찍힌다.
+     실제로 그렇게 나왔다 - style·script 는 내용까지 통째로 들어낸다.
+     그다음 가장 긴 문단을 고른다. 글 맨 앞은 제목·홍보 상자·버튼이라
+     앞에서부터 자르면 정작 무슨 글인지가 안 나온다. */
+  function summarize(html) {
+    var clean = String(html).replace(/<(style|script)[\s\S]*?<\/\1>/gi, ' ');
+    var best = '', m, re = /<p\b[^>]*>([\s\S]*?)<\/p>/gi;
+    while ((m = re.exec(clean))) {
+      var t = m[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (t.length > best.length) best = t;
+    }
+    if (!best) best = clean.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    return best.slice(0, 95);
+  }
+
   function renderFeed(entries, single) {
     var wrap = document.querySelector('.oil-blog-wrap');
     if (!wrap) return;
@@ -98,7 +115,7 @@
         return '<div class="post"><h1 class="post-title">' + OIL.esc(title) + '</h1>' +
           '<div class="post-body">' + body + '</div></div>';
       }
-      var text = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 95);
+      var text = summarize(body);
       return '<a class="post" href="' + entryUrl(e) + '" style="display:block;">' +
         '<div class="post-title" style="margin-bottom:8px;">' + OIL.esc(title) + '</div>' +
         '<div style="font-size:13px;line-height:1.7;color:#5B666A;">' + OIL.esc(text) + '...</div></a>';
