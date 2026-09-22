@@ -105,6 +105,20 @@
     }).join('');
   }
 
+  /* 글 맨 위 광고. 본문에 <div class="oil-ad-here"> 를 안 넣은 글에도
+     빠짐없이 들어가도록 여기서 끼운다 - 글마다 손으로 넣지 않아도 된다.
+     광고를 꺼둔 동안에도 같은 크기의 빈 상자가 자리를 잡아,
+     나중에 켤 때 글이 아래로 밀리지 않는다. */
+  function topAd() {
+    var wrap = document.querySelector('.oil-blog-wrap');
+    if (!wrap || wrap.querySelector('.oil-ad-top')) return;
+    var box = document.createElement('div');
+    box.className = 'oil-ad-top';
+    box.innerHTML = OIL.adSlotHtml();
+    wrap.insertBefore(box, wrap.firstChild);
+    OIL.adFill();
+  }
+
   function loadFromFeed() {
     var single = /\.html$/.test(location.pathname) &&
                  !/^\/search\//.test(location.pathname);
@@ -112,6 +126,7 @@
       .then(function (r) { return r.json(); })
       .then(function (js) {
         renderFeed((js.feed && js.feed.entry) || [], single);
+        topAd();        /* 피드로 그렸을 때도 맨 위에 붙인다 */
         fillAds();
         return OIL.meta().then(fillNumbers);
       })
@@ -124,6 +139,7 @@
       loadFromFeed();
       return;
     }
+    topAd();
     fillAds();
     if (!document.querySelector('.post-body [data-oil]')) return;
     OIL.meta().then(fillNumbers).catch(function () { /* 숫자는 못 채워도 글은 읽힌다 */ });

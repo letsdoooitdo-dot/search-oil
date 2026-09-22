@@ -102,8 +102,18 @@ button, input, select { font-family: inherit; }
   background: var(--oil-card); border-radius: var(--oil-r);
   box-shadow: var(--oil-lift); padding: 22px; margin: 0 0 16px;
 }
+/* 글 제목은 어느 경우에도 먹색이다.
+   목록에서는 제목이 <a> 안에 들어가는데, 'a 가 자식일 때'만 색을 정해두면
+   전역 링크색(붉은색)이 그대로 상속돼 제목이 빨갛게 나온다. 둘 다 잡는다. */
 .oil-blog-wrap .post-title { font-size: 21px; font-weight: 800; margin: 0 0 14px; letter-spacing: -0.02em; }
-.oil-blog-wrap .post-title a { color: var(--oil-ink); }
+.oil-blog-wrap .post-title,
+.oil-blog-wrap .post-title a,
+.oil-blog-wrap a.post { color: var(--oil-ink); }
+
+/* 글 최상단 광고 자리. 글마다 빠짐없이 들어간다(oil-post.js 가 끼워 넣는다).
+   광고를 꺼둔 동안에도 같은 크기의 빈 상자가 자리를 잡아, 나중에 켜도
+   글이 아래로 밀리지 않는다. */
+.oil-ad-top { margin: 0 0 16px; }
 .oil-blog-wrap .post-body { font-size: 16px; line-height: 1.8; color: var(--oil-ink2); }
 .oil-blog-wrap .post-body img { max-width: 100%; height: auto; border-radius: 10px; }
 .oil-blog-wrap .post-body h2 { font-size: 19px; margin: 26px 0 10px; color: var(--oil-ink); }
