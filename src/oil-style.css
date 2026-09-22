@@ -234,29 +234,37 @@
 .oil-pitch-row.is-cost b { color: var(--oil-accent-dark); }
 
 /* 우리가 해주는 일. 문구의 결론이라 본문보다 크고 진하게 둔다.
-   이득을 뜻하는 초록을 써서 아래 '내 주변' 버튼과도 색이 이어진다. */
+   앞줄은 짙은 먹색, 결론인 '다 따져서 제일 싼 주유소'만 붉게 띄운다.
+   바로 위 '드는 돈'도 붉은 숫자라 뜻이 겹칠 수 있어, 이쪽은 연한 붉은
+   형광펜을 깔아 형태를 다르게 했다 - 손해 금액과 헷갈리지 않는다. */
 .oil-pitch-say {
   margin: 0; font-size: 15.5px; font-weight: 700; line-height: 1.6;
-  letter-spacing: -0.02em; color: var(--oil-teal-dark);
+  letter-spacing: -0.02em; color: var(--oil-ink2);
 }
 .oil-pitch-say b {
-  font-weight: 900;
-  box-shadow: inset 0 -10px 0 var(--oil-teal-soft);
+  font-weight: 900; color: var(--oil-accent-dark);
+  box-shadow: inset 0 -10px 0 var(--oil-accent-soft);
 }
-/* 두 기능이 '메뉴'로 보이게 한다. 앞의 짧은 막대가 항목 표시 역할을 한다. */
+/* 두 기능이 '메뉴'로 보이게 한다. 앞의 짧은 막대가 항목 표시 역할을 한다.
+   메뉴 이름에서도 핵심 구절만 붉게 둔다 - 결론 문구와 같은 말, 같은 색. */
 .oil-find-h {
   display: flex; align-items: center; gap: 8px;
   margin: 0 0 10px; font-size: 16.5px; font-weight: 900;
   letter-spacing: -0.03em; color: var(--oil-ink); line-height: 1.35;
 }
+/* 글은 통째로 한 조각이어야 한다. 막대와 글을 바로 flex 로 나란히 두면
+   '가는 길에서' 와 붉은 구절이 별개 조각이 되어 사이가 8px 벌어진다. */
+.oil-find-h > span { min-width: 0; }
+.oil-find-h b { font-weight: 900; color: var(--oil-accent-dark); }
 .oil-find-h::before {
   content: ''; flex-shrink: 0; width: 4px; height: 15px; border-radius: 2px;
-  background: var(--oil-teal);
+  background: var(--oil-accent);
 }
-/* 한 줄로 유지한다. 문구가 길어 크기를 화면 너비에 맞춰 줄인다. */
+/* 따지는 항목을 적는 줄. 목록이라 두 줄로 나누고 <br> 로 끊는다.
+   한 줄에 욱여넣으면 글자가 10px 아래로 내려가 읽을 수가 없다. */
 .oil-find-hint {
-  margin: 8px 2px 0; white-space: nowrap;
-  font-size: clamp(10px, 3.2vw, 13px); color: var(--oil-muted);
+  margin: 9px 2px 0; line-height: 1.55;
+  font-size: clamp(11px, 3.1vw, 12.5px); color: var(--oil-muted);
 }
 
 /* 진짜 입력칸이 아니라 검색 화면을 여는 버튼이다 */

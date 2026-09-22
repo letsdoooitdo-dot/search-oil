@@ -56,39 +56,47 @@
           '<div class="oil-pitch-row is-cost"><span>더 멀리 가느라 드는 돈</span>' +
             '<b>1,500원</b></div>' +
         '</div>' +
-        '<p class="oil-pitch-say">가격과 실제 도로거리, 차종까지 계산해서<br>' +
-        '<b>가서 남는 주유소</b>를 골라드립니다.</p>' +
+        '<p class="oil-pitch-say">기름값부터 실제 이동거리, 차종과 연비까지<br>' +
+        '<b>다 따져서 제일 싼 주유소</b>를 골라드립니다.</p>' +
         '</section>';
     }
 
     /* 1. 목적지까지 가는 길에서 찾기 */
     html += '<section class="oil-find-sec">' +
-      '<h2 class="oil-find-h">' +
-        (pickOrigin ? '출발지를 정해주세요' : '가는 길에서 남는 주유소 찾기') + '</h2>' +
+      '<h2 class="oil-find-h"><span>' +
+        (pickOrigin ? '출발지를 정해주세요'
+                    : '가는 길에서 <b>다 따져서 제일 싼 주유소</b>') + '</span></h2>' +
       '<button type="button" class="oil-fakein" id="oil-open-search">' +
         '<span>' + (pickOrigin ? '어디서 출발하세요?' : '어디로 가세요?') + '</span>' +
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
         'stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle>' +
         '<path d="M20 20l-3.5-3.5"></path></svg>' +
       '</button>' +
+      /* 무엇을 따지는지 그대로 적는다. 이 목록이 우리가 다른 점 전부다.
+         두 메뉴의 목록이 다른 건, 가는 길은 '우회거리'를 재고
+         내 주변은 '편도/왕복'을 묻기 때문이다 - 없는 걸 적으면 안 된다. */
       '<p class="oil-find-hint">' + (pickOrigin
         ? esc(OIL.param('dq')) + '까지 가는 길에서 찾아드립니다'
-        : '목적지를 넣으면 가는 길에서 남는 주유소를 찾아드립니다.') +
+        : '따지는 항목 : 기름값 · 실제 이동거리 · 우회거리<br>' +
+          '차종별 연비와 1회 주유량까지 따져서 계산합니다') +
       '</p></section>';
 
     /* 2. 내 주변. 지난번 결과가 있으면 오늘 가격으로 다시 계산해 미리 보여준다.
        자리는 먼저 잡아두고, 계산이 끝나면 채운다(기다리게 하지 않는다). */
     html += '<section class="oil-find-sec">' +
-      '<h2 class="oil-find-h">내 주변에서 남는 주유소 찾기</h2>' +
+      '<h2 class="oil-find-h"><span>내 주변에서 ' +
+        '<b>다 따져서 제일 싼 주유소</b></span></h2>' +
       '<button type="button" class="oil-near-btn" id="oil-near">' +
         '<span class="oil-near-l">' + PIN +
-          '<span><span class="oil-near-t">내 주변 남는 주유소 찾기</span>' +
+          '<span><span class="oil-near-t">내 주변 다 따져서 제일 싼 주유소</span>' +
           '<span id="oil-near-sub"><span class="oil-near-where">' +
           (spot ? esc(spot) + ' 기준으로 찾아드립니다'
-                : '위치를 켜면 가서 남는 곳부터 골라드립니다') +
+                : '위치를 켜면 바로 찾아드립니다') +
           '</span></span></span></span>' +
         OIL.chev('#fff') +
       '</button>' +
+      '<p class="oil-find-hint">따지는 항목 : 기름값 · 실제 이동거리 · 편도/왕복<br>' +
+        '차종별 연비와 1회 주유량까지 따져서 계산합니다</p>' +
       '<div class="oil-locate-msg" id="oil-locate-msg"></div>' +
       '</section>';
     void near;
@@ -139,7 +147,7 @@
       var t = OIL.calcTrip(tp, bp, last.top.km, last.base.km, P && P.isRound());
       box.innerHTML = t.net > 0
         ? '<span class="oil-near-price"><b>' + esc(top.n) + '</b> ' +
-          won(t.net) + '원 남음</span>' +
+          won(t.net) + '원 이득</span>' +
           '<span class="oil-near-where">' + esc(last.place) + ' 기준 · ' +
           last.top.km.toFixed(1) + 'km · 지난번 결과</span>'
         : '<span class="oil-near-price">오늘은 <b>가까운 곳</b>이 낫습니다</span>' +
