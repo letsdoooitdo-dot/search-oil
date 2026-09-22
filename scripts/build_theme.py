@@ -31,6 +31,8 @@ sys.path.insert(0, HERE)
 from ui import ADSENSE_CLIENT, ADSENSE_SLOT_INCONTENT
 
 DEFAULT_DATA_URL = "https://letsdoooitdo-dot.github.io/search-oil/api/"
+# 그림은 데이터와 다른 폴더에 둔다 - api/ 는 매일 지워지고 다시 만들어진다
+IMG_URL = "https://letsdoooitdo-dot.github.io/search-oil/img/"
 
 # 광고 스위치. 개발 중에는 꺼두고, 화면·기능이 정리되면 True 로 바꾼다.
 # False 면 테마의 애드센스 로더와 설정값이 모두 빠져서 자동광고까지 함께 멈춘다.
@@ -87,8 +89,10 @@ def main():
              .replace("/*@@OIL_CSS@@*/", css)
              .replace("/*@@OIL_JS@@*/", js)
              .replace("@@OIL_DATA_URL@@", data_url)
-             # 머리 띠 이미지. 데이터와 같은 폴더(api/img/)에 올려 같이 배포된다
-             .replace("@@OIL_IMG_URL@@", data_url + "img/")
+             # 머리 띠·공유 이미지. ★ api/ 안에 두면 안 된다 -
+             # build_data.py 가 매일 api/ 를 통째로 지우고 새로 만들어서
+             # 다음 갱신 때 그림이 사라진다(2026-09-23 실제로 겪었다).
+             .replace("@@OIL_IMG_URL@@", IMG_URL)
              .replace("@@OIL_AD_CLIENT@@", ADSENSE_CLIENT if ADS_ON else "")
              .replace("@@OIL_AD_SLOT@@", ADSENSE_SLOT_INCONTENT if ADS_ON else "")
              .replace("@@OIL_KAKAO_KEY@@", KAKAO_KEY)
@@ -146,8 +150,14 @@ def main():
             shutil.rmtree(api_dst)
         shutil.copytree(api_src, api_dst)
         body = body.replace("dataBaseUrl: '" + data_url + "'", "dataBaseUrl: 'api/'")
-        # 머리 띠도 복사해온 폴더에서 본다 - 아직 안 올린 이미지도 확인된다
-        body = body.replace(data_url + "img/", "api/img/")
+    # 미리보기에서도 그림이 보이게 img/ 를 통째로 복사한다
+    img_src = os.path.join(ROOT, "img")
+    if os.path.isdir(img_src):
+        img_dst = os.path.join(prev_dir, "img")
+        if os.path.isdir(img_dst):
+            shutil.rmtree(img_dst)
+        shutil.copytree(img_src, img_dst)
+        body = body.replace(IMG_URL, "img/")
 
     for name, path in (("index.html", "/"), ("area.html", "area.html"),
                        ("calc.html", "calc.html"), ("post.html", "/2026/09/sample.html")):

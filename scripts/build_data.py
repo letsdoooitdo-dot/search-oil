@@ -135,6 +135,9 @@ def main():
             meds.sort(key=lambda x: x[1])
             rank[key] = {r: i + 1 for i, (r, _) in enumerate(meds)}
 
+        # ★ 이 폴더는 통째로 지워졌다가 다시 만들어진다.
+        #   그림 같은 고정 파일을 api/ 안에 두면 다음 갱신 때 사라진다.
+        #   띠·공유 이미지가 img/ 에 따로 있는 이유다.
         if os.path.isdir(OUT):
             shutil.rmtree(OUT)
 
