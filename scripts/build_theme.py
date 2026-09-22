@@ -57,7 +57,7 @@ NAVI_PROXY = ""     # 예: https://oil-navi.<계정>.workers.dev
 
 CSS_FILES = ["src/oil-shell.css", "src/oil-style.css"]
 JS_FILES = ["src/oil-blogger.js", "src/oil-core.js", "src/oil-road.js",
-            "src/oil-prefs.js", "src/oil-place.js", "src/oil-find.js",
+            "src/oil-prefs.js", "src/oil-place.js", "src/oil-map.js", "src/oil-find.js",
             "src/oil-near.js", "src/oil-dest.js", "src/oil-area.js", "src/oil-calc.js",
             "src/oil-post.js"]
 

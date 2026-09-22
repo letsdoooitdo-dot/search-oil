@@ -260,6 +260,8 @@
         : '맨 위 주유소는 더 우회하는 기름값을 빼고도 <b>' + won(best._trip.net) +
           '원</b>이 남습니다.') + '</p>';
 
+    if (OIL.map && OIL.map.can()) html += '<div class="oil-list-map" id="oil-list-map"></div>';
+
     html += OIL.adSlotHtml();
     html += '<div class="oil-sts">' + list.map(function (s, i) {
       return card(s, i, base.n);
@@ -274,6 +276,18 @@
     OIL.render(html);
     document.title = destName + ' 가는 길 주유소 - 주유소찾기';
     shown = list;
+    if (OIL.map) {
+      OIL.map.render(document.getElementById('oil-list-map'), {
+        from: { la: origin.la, ln: origin.ln, name: originName },
+        to: { la: dest.la, ln: dest.ln, name: destName },
+        path: state.segPath,
+        items: list.map(function (s, i) {
+          return { la: s.la, ln: s.ln, name: s.n, label: won(price(s)),
+                   good: s._trip.net > 0, i: i };
+        }),
+        onPick: OIL.map.focusCard
+      });
+    }
     if (P) P.wirePicker(onChange);
     wireDetail();
   }
@@ -314,7 +328,7 @@
       return Promise.all([OIL.meta(), OIL.regions()]).then(function (a) {
         return collect(a[1], seg.path).then(function (cand) {
           state = { baseKm: route.km, cutKm: Math.min(seg.km, route.km),
-                    cand: cand, date: a[0].date };
+                    segPath: seg.path, cand: cand, date: a[0].date };
           if (!cand.length) { draw(); return; }
           OIL.loading('우회 거리를 재는 중... (' +
             Math.min(cand.length, MAX_MEASURE) + '곳)');
