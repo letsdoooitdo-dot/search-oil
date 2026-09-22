@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["icn1"],
+  "rewrites": [
+    { "source": "/v1/directions", "destination": "/api/navi?k=one" },
+    { "source": "/v1/destinations/directions", "destination": "/api/navi?k=many" },
+    { "source": "/v1/waypoints/directions", "destination": "/api/navi?k=via" }
+  ]
+}
