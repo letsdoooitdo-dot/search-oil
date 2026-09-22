@@ -53,7 +53,7 @@ try:
 except ImportError:
     NAVI_KEY = ""   # 키가 없으면 길찾기 없이 직선 어림값으로 돈다
 
-NAVI_PROXY = ""     # 예: https://oil-navi.<계정>.workers.dev
+NAVI_PROXY = "https://oil-navi.letsdoooitdo.workers.dev"
 
 CSS_FILES = ["src/oil-shell.css", "src/oil-style.css"]
 JS_FILES = ["src/oil-blogger.js", "src/oil-core.js", "src/oil-road.js",
