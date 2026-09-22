@@ -366,6 +366,9 @@ body.oil-noscroll { overflow: hidden; }
 }
 .oil-st-price i { font-style: normal; font-size: 12px; font-weight: 600; margin-left: 2px; }
 .oil-st-km { display: block; font-size: 12px; color: var(--oil-muted); margin-top: 2px; }
+/* 길찾기가 안 돼 직선으로 어림한 거리 */
+.oil-st-km.is-guess { color: var(--oil-muted2); }
+.oil-picks + .oil-picks { margin-top: 6px; }
 .oil-st-line {
   margin-top: 9px; padding: 8px 11px; border-radius: 9px;
   font-size: 12.5px; line-height: 1.55;

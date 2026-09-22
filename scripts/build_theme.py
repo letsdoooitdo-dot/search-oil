@@ -44,10 +44,22 @@ ADS_ON = False
 # 등록한 주소 밖에서는 동작하지 않으므로 테마에 들어가도 안전하다.
 KAKAO_KEY = "f0e3cf8d7eda3f38469d8ab719daed3c"
 
+# 길찾기(실제 도로거리)용 카카오 REST 키.
+# ★ 이 키는 JavaScript 키와 달리 도메인 제한을 걸 수 없다. 공개되면 남이 그대로 쓴다.
+#   그래서 저장소에 넣지 않고 scripts/local_keys.py(깃 제외)에서 읽는다.
+#   공개 전에는 NAVI_PROXY(중계 서버)를 채운다 - 그러면 키가 테마에 들어가지 않는다.
+try:
+    from local_keys import NAVI_KEY
+except ImportError:
+    NAVI_KEY = ""   # 키가 없으면 길찾기 없이 직선 어림값으로 돈다
+
+NAVI_PROXY = ""     # 예: https://oil-navi.<계정>.workers.dev
+
 CSS_FILES = ["src/oil-shell.css", "src/oil-style.css"]
-JS_FILES = ["src/oil-blogger.js", "src/oil-core.js", "src/oil-prefs.js",
-            "src/oil-place.js", "src/oil-find.js", "src/oil-near.js",
-            "src/oil-area.js", "src/oil-calc.js", "src/oil-post.js"]
+JS_FILES = ["src/oil-blogger.js", "src/oil-core.js", "src/oil-road.js",
+            "src/oil-prefs.js", "src/oil-place.js", "src/oil-find.js",
+            "src/oil-near.js", "src/oil-area.js", "src/oil-calc.js",
+            "src/oil-post.js"]
 
 
 def read(rel):
@@ -72,7 +84,14 @@ def main():
              .replace("@@OIL_DATA_URL@@", data_url)
              .replace("@@OIL_AD_CLIENT@@", ADSENSE_CLIENT if ADS_ON else "")
              .replace("@@OIL_AD_SLOT@@", ADSENSE_SLOT_INCONTENT if ADS_ON else "")
-             .replace("@@OIL_KAKAO_KEY@@", KAKAO_KEY))
+             .replace("@@OIL_KAKAO_KEY@@", KAKAO_KEY)
+             .replace("@@OIL_NAVI_PROXY@@", NAVI_PROXY)
+             # 중계 서버를 쓰면 키는 서버가 들고 있으므로 테마에 넣지 않는다
+             .replace("@@OIL_NAVI_KEY@@", "" if NAVI_PROXY else NAVI_KEY))
+
+    if NAVI_KEY and not NAVI_PROXY:
+        print("  [주의] 길찾기 REST 키가 테마에 그대로 들어갑니다.")
+        print("         블로그에 올리기 전에 NAVI_PROXY 를 채워주세요.")
 
     if not ADS_ON:
         # 애드센스 로더 자체를 빼야 자동광고(사이드 레일)도 함께 멈춘다

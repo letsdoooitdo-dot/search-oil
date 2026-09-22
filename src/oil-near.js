@@ -18,16 +18,18 @@
   var esc = OIL.esc, won = OIL.won;
   var P = OIL.prefs, PL = OIL.place;
 
-  /* 반경은 사용자가 고른다(1~20km). 자료는 가장 넓은 경우에 맞춰 한 번만 받아두고
-     반경을 바꿀 때는 다시 받지 않고 걸러내기만 한다. */
-  var MAX_RADIUS = 20;
-  var NEAR_REGION = 35;   /* 시군구 경계 문제 - 중심이 이 안에 있는 동네를 함께 본다 */
+  /* 반경은 사용자가 고른다(1~10km). 주유소 목록은 한 번만 받아두고,
+     반경을 바꿀 때는 걸러내기만 한다(자료는 다시 받지 않는다). */
+  var MAX_RADIUS = 10;    /* 카카오 다중 목적지 길찾기 한계 */
+  var NEAR_REGION = 25;   /* 시군구 경계 문제 - 중심이 이 안에 있는 동네를 함께 본다 */
   var MAX_REGION = 4;
   var SHOW = 20;
+  var NEAREST_KEEP = 8;   /* 비교 기준을 놓치지 않게 가까운 곳은 꼭 실측한다 */
 
   function fuel() { return P ? P.get('fuel') : 'g'; }
   function fuelName() { return P ? P.fuelName() : '휘발유'; }
   function radius() { return P ? P.get('radius') : 5; }
+  function isRound() { return P ? P.isRound() : false; }
   function price(s) { return fuel() === 'd' ? s.d : s.g; }
 
   var la = parseFloat(OIL.param('la'));
@@ -59,9 +61,11 @@
         if (!detail) return;
         (detail.stations || []).forEach(function (s) {
           if (s.la == null) return;
+          /* 직선거리는 후보를 고를 때만 쓴다. 도로거리는 직선보다 항상 기니까
+             직선 10km 안에서 뽑으면 도로 10km 안의 주유소는 하나도 안 빠진다. */
           var km = OIL.distKm(la, ln, s.la, s.ln);
           if (km > MAX_RADIUS) return;
-          s._km = km;
+          s._straight = km;
           s._region = near[i].r.r;
           out.push(s);
         });
@@ -87,7 +91,8 @@
         '<span class="oil-st-name">' + esc(s.n) + '<span class="oil-st-tags">' + tags + '</span></span>' +
         '<span class="oil-st-fig">' +
           '<b class="oil-st-price">' + won(p) + '<i>원</i></b>' +
-          '<span class="oil-st-km">약 ' + t.road.toFixed(1) + 'km</span>' +
+          '<span class="oil-st-km' + (s._real ? '' : ' is-guess') + '">' +
+            (s._real ? '' : '약 ') + t.km.toFixed(1) + 'km</span>' +
         '</span>' +
       '</div>' +
       '<div class="oil-st-line ' + line.cls + '">' + line.text + '</div>' +
@@ -129,15 +134,16 @@
 
     /* 왜 이런 판정이 나왔는지 - 숨기지 않고 밝힌다 */
     html += '<p class="oil-st-why">' +
-      '여기서 직선 ' + t.km.toFixed(1) + 'km → 도로 약 ' + t.road.toFixed(1) + 'km' +
+      '여기서 <b>' + t.km.toFixed(1) + 'km</b> (실제 도로 기준)' +
       (s._isBase
         ? '<br>가장 가까운 주유소라 이곳을 비교 기준으로 씁니다.'
-        : '<br>기준(' + esc(baseName) + ')보다 <b>' + t.extraRoad.toFixed(1) + 'km 더</b> 갑니다' +
+        : '<br>기준(' + esc(baseName) + ')보다 <b>' + t.extra.toFixed(1) + 'km 더</b> 갑니다' +
+          (t.round ? ' · 왕복이라 ' + t.drive.toFixed(1) + 'km' : '') +
           '<br>' + t.car.label + ' ' + t.kmpl + 'km/L · ' + t.L + 'L 주유 기준<br>' +
           '아끼는 돈 ' + won(t.gain) + '원 − 더 가는 기름값 ' + won(t.cost) + '원 = ' +
           '<b>' + (t.net >= 0 ? '+' : '') + won(t.net) + '원</b>') +
-      '<br><span class="oil-st-caveat">직선거리에 1.3배를 곱한 어림값입니다. ' +
-      '실제 길은 더 돌 수 있습니다.</span></p>';
+      (s._real ? '' : '<br><span class="oil-st-caveat">이 주유소는 길찾기가 안 돼 ' +
+        '직선거리로 어림했습니다.</span>') + '</p>';
 
     if (s.c === '늘 최저권') {
       html += '<p class="oil-st-why">이 주유소는 최근 1년 동안 동네 최저권을 지켰습니다. ' +
@@ -150,13 +156,43 @@
   }
 
   /* ── 화면 ────────────────────────────────────────────────── */
+  /* 실제 도로거리를 재둔다. 한 번에 30곳까지만 물어볼 수 있으므로
+     '이길 가능성이 있는 곳'을 고른다 - 싼 곳들과, 비교 기준이 될 가까운 곳들.
+     나머지는 직선 어림값으로 채우고 화면에 '약'을 붙여 밝힌다. */
+  function measure(cand) {
+    var byNear = cand.slice().sort(function (a, b) { return a._straight - b._straight; });
+    var byPrice = cand.slice().sort(function (a, b) { return price(a) - price(b); });
+
+    var pick = [], seen = {};
+    function add(s) {
+      var k = s.n + '|' + s.a;
+      if (seen[k] || pick.length >= OIL.road.MAX_DEST) return;
+      seen[k] = 1; pick.push(s);
+    }
+    byNear.slice(0, NEAREST_KEEP).forEach(add);
+    byPrice.forEach(add);
+
+    return OIL.road.matrix({ la: la, ln: ln }, pick).then(function (res) {
+      pick.forEach(function (s, i) { s._road = res[i].km; s._real = res[i].real; });
+      cand.forEach(function (s) {
+        if (s._road == null) { s._road = s._straight * OIL.road.GUESS; s._real = false; }
+      });
+    });
+  }
+
   function render(meta, data) {
     var rad = radius();
-    /* 고른 반경은 화면에 보여주는 거리(도로 어림)와 같은 잣대여야 한다.
-       직선거리로 거르면 "5km 선택"인데 목록에 "약 6.5km"가 나와 어긋난다. */
-    var all = data.stations.filter(function (s) {
-      return price(s) && s._km * OIL.ROAD <= rad;
+    /* 도로거리는 직선거리보다 항상 기니까, 직선 R 안에서 후보를 뽑으면
+       도로 R 안의 주유소는 하나도 빠지지 않는다 */
+    var cand = data.stations.filter(function (s) {
+      return price(s) && s._straight <= rad;
     });
+    OIL.loading('실제 도로거리를 재는 중...');
+    measure(cand).then(function () { draw(meta, data, cand, rad); });
+  }
+
+  function draw(meta, data, cand, rad) {
+    var all = cand.filter(function (s) { return s._road <= rad; });
 
     var html = '<div class="oil-stack">';
 
@@ -176,21 +212,23 @@
         '<span>다른 장소로 찾기</span>' + OIL.chev('#fff') + '</a></div>';
       OIL.render(html);
       if (P) P.wirePicker(function () { render(meta, data); });
+      wireDetail();
       return;
     }
 
-    /* 기준 = 여기서 가장 가까운 주유소. 아무것도 안 따지면 갔을 곳이다. */
-    var base = all.reduce(function (a, b) { return b._km < a._km ? b : a; });
+    /* 기준 = 여기서 가장 가까운 주유소(도로 기준). 아무것도 안 따지면 갔을 곳이다. */
+    var base = all.reduce(function (a, b) { return b._road < a._road ? b : a; });
     var basePrice = price(base);
+    var round = isRound();
 
     all.forEach(function (s) {
       s._isBase = (s === base);
-      s._trip = OIL.calcTrip(price(s), basePrice, s._km, base._km);
+      s._trip = OIL.calcTrip(price(s), basePrice, s._road, base._road, round);
     });
 
     var list = all.slice().sort(function (a, b) {
       if (b._trip.net !== a._trip.net) return b._trip.net - a._trip.net;
-      return a._km - b._km;
+      return a._road - b._road;
     }).slice(0, SHOW);
 
     var best = list[0];
@@ -218,7 +256,7 @@
 
     html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
       OIL.dateKo(meta.date) + ' ' + fuelName() + ' 실제 판매가 · 출처 오피넷 · ' +
-      '거리는 직선거리에 1.3배를 곱한 어림값입니다</p></div>';
+      '거리는 카카오맵 길찾기의 실제 도로거리입니다</p></div>';
 
     OIL.render(html);
     document.title = placeName + ' 주변 주유소 최저가 - 주유소찾기';

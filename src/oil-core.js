@@ -68,15 +68,8 @@
 
   /* ── 거리와 손익분기 ─────────────────────────────────────────
      우리 서비스의 핵심이다. "싼 집이 항상 이득은 아니다" 를 숫자로 보여준다.
-
-     주의할 점 두 가지
-       1) 좌표로 재면 직선거리다. 실제 도로는 보통 1.3배쯤 된다 - ROAD 로 보정하고
-          화면에도 어림값이라고 밝힌다.
-       2) 목적지가 없으면 '우회'가 아니라 '일부러 갔다 오는 것'이다. 그래서 왕복으로 센다.
-          목적지 기준 진짜 우회 계산은 2차에서 붙인다.
-  */
-  var ROAD = 1.3;
-  OIL.ROAD = ROAD;
+     거리는 전부 카카오 길찾기의 실제 도로거리다(oil-road.js). 직선거리는
+     후보를 고를 때만 쓴다. */
 
   OIL.distKm = function (lat1, lng1, lat2, lng2) {
     var R = 6371, rad = Math.PI / 180;
@@ -88,23 +81,23 @@
 
   /* price  이 주유소 가격
      base   기준 주유소 가격 (여기서 가장 가까운 집 - 아무것도 안 따지면 갔을 곳)
-     km     출발지에서 이 주유소까지 직선거리
-     baseKm 출발지에서 기준 주유소까지 직선거리
+     km     출발지 → 이 주유소 실제 도로거리
+     baseKm 출발지 → 기준 주유소 실제 도로거리
+     round  왕복이면 true (주유만 하러 갔다 돌아옴)
 
      기준 주유소도 어차피 가야 하므로, 무는 것은 '더 가는 거리'뿐이다.
-     출발지에서의 전체 거리를 물리면 가까운 집이 공짜가 되어 늘 이긴다.
-     주유하고 가던 길을 계속 간다고 보고 편도로 센다. */
-  OIL.calcTrip = function (price, base, km, baseKm) {
+     출발지에서의 전체 거리를 물리면 가까운 집이 공짜가 되어 늘 이긴다. */
+  OIL.calcTrip = function (price, base, km, baseKm, round) {
     var car = (OIL.prefs && OIL.prefs.car()) || { kmpl: 12, usual: 30, label: '일반 승용차' };
     var L = car.usual, kmpl = car.kmpl;
-    var road = km * ROAD;                        /* 화면에 보여줄 도로거리(어림) */
-    var extra = Math.max(0, km - (baseKm || 0)); /* 기준보다 더 가는 직선거리 */
-    var extraRoad = extra * ROAD;
-    var cost = extraRoad / kmpl * price;         /* 더 가느라 쓰는 기름값 */
-    var gain = (base - price) * L;               /* 싸게 넣어 아끼는 돈 */
-    /* 손익분기: 기준보다 몇 km 더 가는 데까지 본전인가 (도로거리) */
-    var beKm = price > 0 ? gain * kmpl / price : 0;
-    return { km: km, road: road, extra: extra, extraRoad: extraRoad,
+    var mult = round ? 2 : 1;
+    var extra = Math.max(0, km - (baseKm || 0));   /* 기준보다 더 가는 도로거리 */
+    var drive = extra * mult;                      /* 왕복이면 두 배 */
+    var cost = drive / kmpl * price;               /* 더 가느라 쓰는 기름값 */
+    var gain = (base - price) * L;                 /* 싸게 넣어 아끼는 돈 */
+    /* 손익분기: 기준보다 몇 km 더 가는 데까지 본전인가 */
+    var beKm = price > 0 ? gain * kmpl / (price * mult) : 0;
+    return { km: km, extra: extra, drive: drive, round: !!round,
              cost: cost, gain: gain, net: gain - cost, beKm: beKm,
              L: L, kmpl: kmpl, car: car };
   };
@@ -121,13 +114,18 @@
       return { cls: 'is-bad', text: '가까운 곳보다 <b>비싼데</b> 더 멀기까지 합니다' };
     }
     if (t.net > 0) {
+      /* 기준과 거의 같은 거리면 "더 가는 0.0km" 라고 쓰게 되어 어색하다 */
+      if (t.drive < 0.15) {
+        return { cls: 'is-good',
+                 text: '기준과 거의 같은 거리인데 <b>' + OIL.won(t.net) + '원 이득</b>' };
+      }
       return { cls: 'is-good',
-               text: '더 가는 ' + t.extraRoad.toFixed(1) + 'km 기름값 빼도 <b>' +
-                     OIL.won(t.net) + '원 이득</b>' };
+               text: (t.round ? '왕복 ' : '') + '더 가는 ' + t.drive.toFixed(1) +
+                     'km 기름값 빼도 <b>' + OIL.won(t.net) + '원 이득</b>' };
     }
     return { cls: 'is-bad',
              text: '<b>' + t.beKm.toFixed(1) + 'km까지만 이득</b>인데 ' +
-                   t.extraRoad.toFixed(1) + 'km 더 갑니다' };
+                   t.extra.toFixed(1) + 'km 더 갑니다' };
   };
 
   /* 찾아가기 - 카카오맵. API 키가 필요 없고 앱이 깔려 있으면 앱이 열린다. */

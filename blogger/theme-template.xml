@@ -124,7 +124,11 @@ window.OIL_CONFIG = {
   adSlot: '@@OIL_AD_SLOT@@',
   /* 카카오맵 장소검색. 비어 있으면 우리 데이터(읍면동·시군구·주유소 이름)로만 찾는다.
      SDK 는 검색창을 실제로 쓸 때 그때 불러온다 - 안 쓰는 사람은 내려받지 않는다. */
-  kakaoKey: '@@OIL_KAKAO_KEY@@'
+  kakaoKey: '@@OIL_KAKAO_KEY@@',
+  /* 길찾기(실제 도로거리). naviProxy 가 있으면 그쪽으로 보내고 키는 담지 않는다.
+     REST 키는 도메인 제한을 걸 수 없어, 공개 전에는 반드시 naviProxy 를 채워야 한다. */
+  naviProxy: '@@OIL_NAVI_PROXY@@',
+  naviKey: '@@OIL_NAVI_KEY@@'
 };
 /*@@OIL_CONFIG_END@@*/
 //]]>

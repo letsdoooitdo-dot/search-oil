@@ -21,10 +21,17 @@
   var VEHICLE_ORDER = ['경차', '일반', 'SUV', '화물'];
   var FUELS = { g: '휘발유', d: '경유' };
 
-  /* radius - 주변 주유소를 몇 km 안에서 찾을지. 사용자가 직접 고른다. */
-  var RADIUS = [1, 2, 3, 4, 5, 10, 15, 20];
+  /* radius - 주변 주유소를 몇 km 안에서 찾을지. 사용자가 직접 고른다. 도로거리 기준.
+     10km 까지인 이유: 카카오 다중 목적지 길찾기가 반경 10km 를 넘지 못한다.
+     그리고 20km 떨어진 집은 리터당 100원이 싸도 오가는 기름값이 더 커서
+     어차피 이득이 날 수가 없다 - 빼도 잃는 게 없다. */
+  var RADIUS = [1, 2, 3, 5, 7, 10];
 
-  var DEFAULTS = { fuel: 'g', vehicle: '일반', radius: 5,
+  /* 편도 - 주유하고 가던 길을 계속 간다 (대부분 이쪽)
+     왕복 - 주유만 하러 나갔다가 제자리로 돌아온다 */
+  var TRIPS = { one: '편도', round: '왕복' };
+
+  var DEFAULTS = { fuel: 'g', vehicle: '일반', radius: 5, trip: 'one',
                    home: '', work: '', last: '', spot: '', visits: 0 };
 
   function read() {
@@ -47,6 +54,7 @@
   if (!VEHICLE[state.vehicle]) state.vehicle = '일반';
   if (!FUELS[state.fuel]) state.fuel = 'g';
   if (RADIUS.indexOf(state.radius) < 0) state.radius = 5;
+  if (!TRIPS[state.trip]) state.trip = 'one';
 
   state.visits = (state.visits || 0) + 1;
   write(state);
@@ -55,6 +63,8 @@
     VEHICLE: VEHICLE,
     FUELS: FUELS,
     RADIUS: RADIUS,
+    TRIPS: TRIPS,
+    isRound: function () { return state.trip === 'round'; },
     isFirstVisit: isFirst,
     get: function (k) { return k ? state[k] : state; },
     set: function (k, v) { state[k] = v; write(state); },
@@ -132,24 +142,28 @@
       }).join('') + '</select></label>';
   }
 
+  /* 네 개는 한 줄에 안 들어간다. 두 줄로 나눈다. */
   P.pickerHtml = function () {
     return '<div class="oil-picks">' +
       sel('radius', '주변반경', RADIUS.map(function (k) { return [k, k + 'km']; })) +
       sel('fuel', '유종', Object.keys(FUELS).map(function (f) { return [f, FUELS[f]]; })) +
+      '</div><div class="oil-picks">' +
       sel('vehicle', '차종', VEHICLE_ORDER.map(function (v) { return [v, VEHICLE[v].label]; })) +
+      sel('trip', '이동', Object.keys(TRIPS).map(function (t) { return [t, TRIPS[t]]; })) +
       '</div>';
   };
 
   P.wirePicker = function (onChange) {
-    var box = document.querySelector('.oil-picks');
-    if (!box) return;
-    box.addEventListener('change', function (e) {
-      var s = e.target.closest('[data-pref]');
-      if (!s) return;
-      var key = s.getAttribute('data-pref');
-      P.set(key, key === 'radius' ? parseInt(s.value, 10) : s.value);
-      if (onChange) onChange(key);
-    });
+    var boxes = document.querySelectorAll('.oil-picks');
+    for (var i = 0; i < boxes.length; i++) {
+      boxes[i].addEventListener('change', function (e) {
+        var s = e.target.closest('[data-pref]');
+        if (!s) return;
+        var key = s.getAttribute('data-pref');
+        P.set(key, key === 'radius' ? parseInt(s.value, 10) : s.value);
+        if (onChange) onChange(key);
+      });
+    }
   };
 
   /* ── 내 위치 ─────────────────────────────────────────────
