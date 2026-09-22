@@ -75,28 +75,22 @@
         : '목적지를 넣으면 <b>가는 길에서 벗어나지 않는</b> 주유소를 찾아드립니다') +
       '</p></section>';
 
-    /* 2. 내 주변 */
-    var sub;
-    if (near) {
-      var g = near.g, d = near.d;
-      sub = '<span class="oil-near-price">' +
-        (g ? '<b>휘발유</b> ' + won(g.lo) + '원' : '') +
-        (d ? '<b>경유</b> ' + won(d.lo) + '원' : '') + '</span>' +
-        '<span class="oil-near-where">' + esc(spot || near.r) + ' 기준</span>';
-    } else {
-      /* 위 문구에서 "싼 순서가 아니다"라고 해놓고 여기서 "최저가"라고 하면 말이 어긋난다 */
-      sub = '<span class="oil-near-where">위치를 켜면 가서 남는 곳부터 골라드립니다</span>';
-    }
-
+    /* 2. 내 주변. 지난번 결과가 있으면 오늘 가격으로 다시 계산해 미리 보여준다.
+       자리는 먼저 잡아두고, 계산이 끝나면 채운다(기다리게 하지 않는다). */
     html += '<section class="oil-find-sec">' +
       '<h2 class="oil-find-h">내 주변에서 찾기</h2>' +
       '<button type="button" class="oil-near-btn" id="oil-near">' +
         '<span class="oil-near-l">' + PIN +
-          '<span><span class="oil-near-t">내 주변 주유소 찾기</span>' + sub + '</span></span>' +
+          '<span><span class="oil-near-t">내 주변 남는 주유소 찾기</span>' +
+          '<span id="oil-near-sub"><span class="oil-near-where">' +
+          (spot ? esc(spot) + ' 기준으로 찾아드립니다'
+                : '위치를 켜면 가서 남는 곳부터 골라드립니다') +
+          '</span></span></span></span>' +
         OIL.chev('#fff') +
       '</button>' +
       '<div class="oil-locate-msg" id="oil-locate-msg"></div>' +
       '</section>';
+    void near;
 
     /* 3. 광고 자리 */
     html += OIL.adSlotHtml();
@@ -110,6 +104,46 @@
       .addEventListener('click', function () { openSheet(); });
     document.getElementById('oil-near')
       .addEventListener('click', goNear);
+    showLastPick();
+  }
+
+  /* 지난번에 찾은 주유소를 오늘 가격으로 다시 계산해 버튼에 보여준다.
+     길찾기는 부르지 않는다 - 거리는 그때 재둔 값을 그대로 쓴다.
+     가격이 바뀌어 오늘은 손해라면 그렇게 말한다. 지난번 숫자를 그대로
+     보여주면 들어가서 다른 답을 보게 된다. */
+  function showLastPick() {
+    var box = document.getElementById('oil-near-sub');
+    var last = PL && PL.last();
+    if (!box || !last || !last.top || !last.base) return;
+
+    var slugs = last.top.sl === last.base.sl ? [last.top.sl] : [last.top.sl, last.base.sl];
+    Promise.all(slugs.map(function (sl) { return OIL.region(sl); })).then(function (regs) {
+      function find(want) {
+        for (var i = 0; i < regs.length; i++) {
+          var list = regs[i].stations || [];
+          for (var j = 0; j < list.length; j++) {
+            if (list[j].n === want.n) return list[j];
+          }
+        }
+        return null;
+      }
+      var top = find(last.top), base = find(last.base);
+      if (!top || !base) return;      /* 문 닫았거나 이름이 바뀌었다 */
+
+      var f = P ? P.get('fuel') : 'g';
+      var tp = f === 'd' ? top.d : top.g;
+      var bp = f === 'd' ? base.d : base.g;
+      if (!tp || !bp) return;         /* 오늘 그 유종을 안 판다 */
+
+      var t = OIL.calcTrip(tp, bp, last.top.km, last.base.km, P && P.isRound());
+      box.innerHTML = t.net > 0
+        ? '<span class="oil-near-price"><b>' + esc(top.n) + '</b> ' +
+          won(t.net) + '원 남음</span>' +
+          '<span class="oil-near-where">' + esc(last.place) + ' 기준 · ' +
+          last.top.km.toFixed(1) + 'km · 지난번 결과</span>'
+        : '<span class="oil-near-price">오늘은 <b>가까운 곳</b>이 낫습니다</span>' +
+          '<span class="oil-near-where">' + esc(last.place) + ' 기준 · 지난번 결과</span>';
+    }).catch(function () { /* 못 불러오면 원래 안내문 그대로 둔다 */ });
   }
 
   /* 내 주변 - 위치를 새로 받아서 결과 화면으로 */

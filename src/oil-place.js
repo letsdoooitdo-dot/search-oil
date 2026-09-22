@@ -59,6 +59,13 @@
   PL.forget = function (i) { store.recent.splice(i, 1); save(); };
   PL.clearRecent = function () { store.recent = []; save(); };
 
+  /* ── 지난번에 찾은 결과 ────────────────────────────────────
+     첫 화면에서 "지난번엔 여기가 남았습니다"를 보여주는 데 쓴다.
+     가격은 매일 바뀌므로 담아두지 않는다. 주유소 이름과 도로거리만 담고,
+     첫 화면에서 오늘 가격으로 다시 계산한다 - 길찾기를 또 부를 필요가 없다. */
+  PL.saveLast = function (o) { store.last = o; save(); };
+  PL.last = function () { return store.last || null; };
+
   /* 고른 곳을 목적지로 넘긴다. from 을 주면 출발지도 함께 넘긴다
      (위치 권한을 거부해 출발지를 직접 고른 경우). */
   PL.destUrl = function (p, from) {

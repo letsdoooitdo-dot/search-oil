@@ -261,6 +261,16 @@
     OIL.render(html);
     document.title = placeName + ' 주변 주유소 최저가 - 주유소찾기';
 
+    /* 첫 화면에서 다시 보여주려고 남겨둔다. 가격은 매일 바뀌니 담지 않는다 -
+       이름과 도로거리만 있으면 오늘 가격으로 다시 계산할 수 있다. */
+    if (PL && isMe && base._region && best._region) {
+      PL.saveLast({
+        place: placeName,
+        top: { n: best.n, km: best._road, sl: best._region.replace(/ /g, '-') },
+        base: { n: base.n, km: base._road, sl: base._region.replace(/ /g, '-') }
+      });
+    }
+
     shown = list;
     if (OIL.map) {
       OIL.map.render(document.getElementById('oil-list-map'), {
