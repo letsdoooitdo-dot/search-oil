@@ -19,7 +19,7 @@
 
 **버튼 이미지 추가시**
 
-버튼 텍스트(10개 문구 중 본문과 어울리는 것 선택): "이런 정보 매일 정리함. 바로 가서 확인해 보세요 🔍"
+버튼 텍스트(10개 문구 중 본문과 어울리는 것 선택): "지금 내 주변, 진짜 남는 주유소 찾아보기 ⛽"
 링크: https://16story-003.letsdoooit.com/?m=0
 이 버튼은 FAQ 섹션 바로 위에 이미 자동으로 삽입되어 있습니다(코드(블로그스팟용).html·코드(티스토리용).html 모두 포함).
 
@@ -29,19 +29,19 @@
 <!-- 1. 새빨간 배경 + 둥근 모서리 버튼 -->
 <div style="text-align: center; margin: 30px 0;">
   <a href="https://16story-003.letsdoooit.com/?m=0" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #ff0000; color: #ffffff; font-size: 18px; font-weight: bold; padding: 15px 35px; border-radius: 10px; text-decoration: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;">
-    이런 정보 매일 정리함. 바로 가서 확인해 보세요 🔍
+    지금 내 주변, 진짜 남는 주유소 찾아보기 ⛽
   </a>
 </div>
 <!-- 2. 새빨간 배경 + 완전 둥근 모서리 + 빨간 그림자 버튼 -->
 <div style="text-align: center; margin: 35px 0;">
   <a href="https://16story-003.letsdoooit.com/?m=0" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #ff0000; color: #ffffff; font-size: 18px; font-weight: bold; padding: 16px 40px; border-radius: 50px; text-decoration: none; box-shadow: 0 8px 20px rgba(255, 0, 0, 0.4); transition: all 0.3s ease;">
-    이런 정보 매일 정리함. 바로 가서 확인해 보세요 🔍
+    지금 내 주변, 진짜 남는 주유소 찾아보기 ⛽
   </a>
 </div>
 <!-- 3. 새파란 배경 + 둥근 모서리 버튼 -->
 <div style="text-align: center; margin: 30px 0;">
   <a href="https://16story-003.letsdoooit.com/?m=0" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #0056b3; color: #ffffff; font-size: 18px; font-weight: bold; padding: 15px 35px; border-radius: 10px; text-decoration: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;">
-    이런 정보 매일 정리함. 바로 가서 확인해 보세요 🔍
+    지금 내 주변, 진짜 남는 주유소 찾아보기 ⛽
   </a>
 </div>
 ```

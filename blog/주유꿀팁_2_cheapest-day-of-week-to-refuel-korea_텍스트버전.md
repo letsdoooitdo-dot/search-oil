@@ -19,7 +19,7 @@
 
 **버튼 이미지 추가시**
 
-버튼 텍스트(10개 문구 중 본문과 어울리는 것 선택): "놓치기 아까운 지원금. 지금 바로 확인해 보세요 👆🏻"
+버튼 텍스트(10개 문구 중 본문과 어울리는 것 선택): "요일보다 33배 큰 차이. 내 주변에서 확인하기 🔍"
 링크: https://16story-003.letsdoooit.com/?m=0
 이 버튼은 FAQ 섹션 바로 위에 이미 자동으로 삽입되어 있습니다(코드(블로그스팟용).html·코드(티스토리용).html 모두 포함).
 
@@ -29,19 +29,19 @@
 <!-- 1. 새빨간 배경 + 둥근 모서리 버튼 -->
 <div style="text-align: center; margin: 30px 0;">
   <a href="https://16story-003.letsdoooit.com/?m=0" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #ff0000; color: #ffffff; font-size: 18px; font-weight: bold; padding: 15px 35px; border-radius: 10px; text-decoration: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;">
-    놓치기 아까운 지원금. 지금 바로 확인해 보세요 👆🏻
+    요일보다 33배 큰 차이. 내 주변에서 확인하기 🔍
   </a>
 </div>
 <!-- 2. 새빨간 배경 + 완전 둥근 모서리 + 빨간 그림자 버튼 -->
 <div style="text-align: center; margin: 35px 0;">
   <a href="https://16story-003.letsdoooit.com/?m=0" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #ff0000; color: #ffffff; font-size: 18px; font-weight: bold; padding: 16px 40px; border-radius: 50px; text-decoration: none; box-shadow: 0 8px 20px rgba(255, 0, 0, 0.4); transition: all 0.3s ease;">
-    놓치기 아까운 지원금. 지금 바로 확인해 보세요 👆🏻
+    요일보다 33배 큰 차이. 내 주변에서 확인하기 🔍
   </a>
 </div>
 <!-- 3. 새파란 배경 + 둥근 모서리 버튼 -->
 <div style="text-align: center; margin: 30px 0;">
   <a href="https://16story-003.letsdoooit.com/?m=0" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #0056b3; color: #ffffff; font-size: 18px; font-weight: bold; padding: 15px 35px; border-radius: 10px; text-decoration: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;">
-    놓치기 아까운 지원금. 지금 바로 확인해 보세요 👆🏻
+    요일보다 33배 큰 차이. 내 주변에서 확인하기 🔍
   </a>
 </div>
 ```
@@ -51,7 +51,7 @@
 
 요일 골라서 넣으면 정말 기름값을 아낄 수 있을까요?
 
-**[확인] 내가 대상자인지 지금 바로 확인해보세요! - 요일 따지느라 놓치고 있는 게 따로 있습니다!**
+**[확인] 진짜 아끼는 방법이 뭔지 지금 확인해보세요! - 요일 따지는 동안 33배 큰 걸 놓치고 있습니다!**
 
 '기름은 화요일에 넣어야 싸다', '주말 직전에 올린다' 같은 말을 한 번쯤 들어보셨을 겁니다. 저도 한동안 화요일을 기다렸다가 주유한 적이 있습니다. 그런데 막상 넣고 나면 지난주랑 별 차이가 없는 것 같아서, 이게 진짜인지 아니면 그냥 느낌인지 늘 찜찜했습니다.
 
