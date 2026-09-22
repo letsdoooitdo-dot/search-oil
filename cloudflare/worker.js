@@ -84,22 +84,45 @@ export default {
       }
     }
 
+    /* POST 본문은 미리 다 읽어서 길이까지 붙여 보낸다.
+       읽지 않은 채로 넘기면 길이를 모르는 상태(chunked)로 나가는데,
+       카카오 쪽이 그걸 다 받을 때까지 기다리느라 한 건에 30~140초가 걸렸다.
+       (같은 서버인데 GET 은 0.3초였다 - POST 만 느렸던 이유가 이것이다) */
+    let sendBody;
+    if (request.method === 'POST') {
+      sendBody = await request.text();
+      headers['Content-Length'] = String(new TextEncoder().encode(sendBody).length);
+    }
+
+    /* 답이 없으면 붙잡고 있지 않는다. 브라우저도 7초에 끊으므로 그 전에 놓아준다 */
+    const stop = new AbortController();
+    const timer = setTimeout(() => stop.abort(), 6000);
+
+    const t0 = Date.now();
     let res;
     try {
       res = await fetch(target, {
         method: request.method,
         headers,
-        body: request.method === 'POST' ? await request.text() : undefined,
+        body: sendBody,
+        signal: stop.signal,
       });
     } catch (e) {
+      clearTimeout(timer);
       return new Response('길찾기 서버에 닿지 못했습니다',
         { status: 502, headers: cors(origin) });
     }
+    clearTimeout(timer);
 
     const body = await res.text();
     const out = new Response(body, {
       status: res.status,
-      headers: { 'Content-Type': 'application/json; charset=utf-8', ...cors(origin) },
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        /* 카카오까지 왕복에 걸린 시간 - 느려지면 여기부터 본다 */
+        'X-Oil-Ms': String(Date.now() - t0),
+        ...cors(origin),
+      },
     });
 
     if (request.method === 'GET' && res.ok) {
