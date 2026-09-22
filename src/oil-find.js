@@ -49,13 +49,15 @@
          리터당 30원 싸고 10km 더 가는 경우는 경차·일반·SUV·화물 모두 손해다
          (기름값이 리터당 1,080원 아래로 떨어지지 않는 한 뒤집히지 않는다). */
       html += '<section class="oil-pitch">' +
-        '<h1 class="oil-pitch-p">리터당 <b>30원 싼 집</b>이 <b>10km</b> 멀다면,</h1>' +
+        '<h1 class="oil-pitch-q">리터당 <b>30원 싼 집</b>이 <b>10km</b> 멀다면,<br>' +
+          '가는 게 맞을까요?</h1>' +
         '<div class="oil-pitch-calc">' +
           '<div class="oil-pitch-row"><span>싼 집 가서 아끼는 돈</span>' +
             '<b>900원</b></div>' +
           '<div class="oil-pitch-row is-cost"><span>더 멀리 가느라 드는 돈</span>' +
             '<b>1,500원</b></div>' +
         '</div>' +
+        '<p class="oil-pitch-say"><b>다 따져서 제일 싼 주유소</b> 찾아드립니다.</p>' +
         '</section>';
     }
 

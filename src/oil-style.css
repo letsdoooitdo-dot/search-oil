@@ -199,22 +199,29 @@
 /* ── 첫 화면 (장소 검색 / 내 주변) ─────────────────────────── */
 .oil-find { display: flex; flex-direction: column; gap: 26px; }
 
-/* 머리 띠의 주장을 숫자로 받는 자리. 카드로 감싸지 않는다 -
-   상자에 넣으면 '알림'처럼 보여서 읽고 넘기게 된다. */
-.oil-pitch { margin-bottom: -4px; }
-/* h1 이지만 크게 쓰지 않는다. 큰 제목은 띠가 이미 달고 있고,
-   이 줄이 할 일은 바로 아래 표를 읽게 만드는 것뿐이다. */
-.oil-pitch-p {
-  margin: 0 0 9px; font-size: 13.5px; font-weight: 400; line-height: 1.75;
-  color: var(--oil-ink2);
+/* 우리가 무슨 말을 하는 사이트인지 한 상자에 담는다.
+   아래 '내 주변' 민트 버튼과 같은 형태(그라데이션·모서리·짙은 그림자)에
+   색만 보라로 간다. 흰 카드로 두면 머리 띠 바로 아래라 묻히고,
+   민트로 두면 눌러야 하는 버튼과 헷갈린다 - 이건 읽는 자리다. */
+.oil-pitch {
+  background: linear-gradient(135deg, #A855F7, #7C3AED);
+  color: #fff; border-radius: var(--oil-r);
+  box-shadow: 0 8px 22px rgba(124, 58, 237, .30);
+  padding: 17px 16px 16px;
 }
-.oil-pitch-p:last-child { margin-bottom: 0; }
-.oil-pitch-p b { font-weight: 700; color: var(--oil-ink); }
+/* 이 화면의 h1. 띠가 이미지라 검색엔진이 못 읽으므로 제목은 여기 있어야 한다. */
+.oil-pitch-q {
+  margin: 0 0 12px; font-size: 15.5px; font-weight: 800; line-height: 1.55;
+  letter-spacing: -0.02em; color: #fff;
+}
+/* 띠가 노란색으로 강조한 방식을 그대로 이어받는다 */
+.oil-pitch-q b { font-weight: 900; color: #FDE047; }
 
-/* 아끼는 돈과 드는 돈을 나란히 놓는다. 이 대비가 문구의 전부다. */
+/* 아끼는 돈과 드는 돈을 나란히 놓는다. 이 대비가 문구의 전부다.
+   보라 위에 흰 카드로 올려 숫자만 또렷하게 남긴다. */
 .oil-pitch-calc {
-  margin: 11px 0 13px; background: var(--oil-card);
-  border-radius: 14px; overflow: hidden; box-shadow: var(--oil-lift);
+  margin: 0 0 12px; background: var(--oil-card);
+  border-radius: 13px; overflow: hidden;
 }
 .oil-pitch-row {
   display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
@@ -227,6 +234,13 @@
 }
 .oil-pitch-row.is-cost { background: var(--oil-soft); }
 .oil-pitch-row.is-cost b { color: var(--oil-accent-dark); }
+
+/* 상자의 결론. 보라 바탕이라 붉은 강조는 안 보인다 - 여기서는 노랑이 그 역할. */
+.oil-pitch-say {
+  margin: 0; font-size: 14px; font-weight: 700; line-height: 1.55;
+  letter-spacing: -0.02em; color: #fff;
+}
+.oil-pitch-say b { font-weight: 900; color: #FDE047; }
 
 /* 두 기능이 '메뉴'로 보이게 한다. 앞의 짧은 막대가 항목 표시 역할을 한다.
    메뉴 이름에서 핵심 구절만 붉게 둔다 - 머리 띠가 노랗게 강조한 그 말이다. */
