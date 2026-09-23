@@ -50,8 +50,9 @@
   function fillAds() {
     var spots = document.querySelectorAll('.post-body .oil-ad-here');
     if (!spots.length) return;
-    var html = OIL.adHtml();
-    if (!html) return;
+    /* 광고를 꺼둔 동안에도 같은 크기의 빈 상자를 넣는다. adHtml() 로 두면
+       자리가 통째로 사라져, 나중에 켤 때 글이 아래로 밀린다. */
+    var html = OIL.adSlotHtml();
     for (var i = 0; i < spots.length; i++) {
       if (spots[i].getAttribute('data-done')) continue;
       spots[i].innerHTML = html;

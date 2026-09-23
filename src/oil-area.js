@@ -63,6 +63,9 @@
 
     var html = '<div class="oil-stack">';
 
+    /* 맨 위 광고 - 계산기·글 화면과 같은 자리 */
+    html += OIL.adSlotHtml();
+
     /* 머리말 - 재방문이면 짧게.
        "우리 동네"라는 딱지는 뺐다(2026-09-23). 바로 아래 줄에 동네 이름이
        그대로 있어서 같은 말을 두 번 하는 셈이고, 위치를 잡아 들어온 사람에게
@@ -114,7 +117,10 @@
       }).join('') +
       '</div><div class="oil-region-grid" id="oil-regions"></div></div></div>';
 
-    html += OIL.adHtml();
+    /* adHtml() 은 광고를 꺼두면 빈 문자열이라 자리가 통째로 사라진다.
+       adSlotHtml() 은 같은 크기의 빈 상자를 남겨서, 나중에 광고를 켜도
+       화면이 아래로 밀리지 않는다. 다른 화면과 맞춘다(2026-09-23). */
+    html += OIL.adSlotHtml();
 
     html += '<div class="oil-card is-flush"><div style="padding:0 16px 8px;">' +
       '<div class="oil-card-title" style="margin:0;">주유소를 고를 가치가 큰 동네</div>' +
@@ -198,6 +204,10 @@
     var v = OIL.verdict(r, meta, total, s, fuelName());
 
     var html = '<div class="oil-stack">';
+
+    /* 맨 위 광고 - 계산기·글 화면과 같은 자리 */
+    html += OIL.adSlotHtml();
+
     var spot = P ? P.get('spot') : '';
     /* "우리 동네"가 아니라 실제 동네 이름을 적는다. 목록에서 눌러 들어온
        동네는 우리 동네가 아닐 수도 있어서, 그렇게 쓰면 틀린 말이 된다. */
@@ -222,7 +232,7 @@
 
     /* 집·회사 저장 버튼은 뺐다(2026-09-23). 위치를 잡으면 마지막 동네가
        자동으로 남아서, 손으로 저장할 일이 없다. */
-    html += OIL.adHtml();
+    html += OIL.adSlotHtml();
 
     var list = (r.stations || []).filter(function (x) { return price(x); })
       .sort(function (a, b) { return price(a) - price(b); }).slice(0, 15);
