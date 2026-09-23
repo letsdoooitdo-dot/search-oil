@@ -34,15 +34,19 @@
   window.OIL_MODE = mode;
 
   /* 탭 표시 */
+  /* 첫 칸은 사이트 이름을 그대로 쓴다 - 여기가 우리 간판이다.
+     대신 나머지 셋을 붙여 써서 자리를 벌었다(우리 동네->동네, 주유 꿀팁->주유꿀팁).
+     360px 폰에서 네 개가 딱 한 줄에 들어가는 것을 재서 확인했다(2026-09-23).
+     ★ 여기 글자를 늘리려면 먼저 재볼 것. 넘치면 탭 줄이 옆으로 밀리는데,
+       가운데 정렬이라 왼쪽으로 밀려난 칸은 손가락으로 끌어와지지도 않는다. */
   var tabs = [
-    ['주유소 찾기', cfg.listPageUrl || '/'],
-    ['우리 동네', cfg.areaPageUrl || '/p/area.html'],
+    ['다따져 주유소찾기', cfg.listPageUrl || '/'],
+    ['동네기름값?', cfg.areaPageUrl || '/p/area.html'],
     ['계산기', cfg.calcPageUrl || '/p/calc.html'],
     /* "이야기"는 읽을거리라는 뜻뿐이라 누를 이유를 못 준다.
        "꿀팁"은 무엇을 얻는지 바로 보이고, 실제로 검색되는 말이기도 하다.
-       탭이 네 개라 짧아야 하는 자리이기도 하다(5자).
        주소의 라벨(기름값리포트)은 글에 붙여둔 이름이라 건드리지 않는다. */
-    ['주유 꿀팁', (cfg.reportLabelUrl || '/search/label/기름값리포트')]
+    ['주유꿀팁', (cfg.reportLabelUrl || '/search/label/기름값리포트')]
   ];
   var ACTIVE = { find: 0, near: 0, dest: 0, area: 1, browse: 1, calc: 2, blog: 3 };
   var nav = document.getElementById('oil-tabs');

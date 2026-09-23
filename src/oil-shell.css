@@ -78,12 +78,15 @@ button, input, select { font-family: inherit; }
 }
 .oil-tabs::-webkit-scrollbar { display: none; }
 .oil-tabs ul {
-  display: flex; gap: 7px; margin: 0 auto; padding: 0 14px;
+  /* 칸 사이와 버튼 여백은 화면 폭을 따라간다. 네 칸이 한 줄에 들어가야 하는데
+     탭 줄은 가운데 정렬이라, 넘치면 왼쪽으로 밀린 칸을 끌어올 수가 없다.
+     고정값으로 맞춰두면 폰 하나 바뀔 때마다 다시 재야 한다. */
+  display: flex; gap: clamp(4px, 1.6vw, 7px); margin: 0 auto; padding: 0 8px;
   max-width: var(--oil-max); list-style: none; justify-content: center;
 }
 .oil-tabs a {
   display: block; flex-shrink: 0; white-space: nowrap;
-  padding: 10px 14px; border-radius: 12px;
+  padding: 10px clamp(7px, 2.5vw, 14px); border-radius: 12px;
   font-size: 12.5px; font-weight: 700; letter-spacing: -0.02em;
   background: var(--oil-card); color: var(--oil-ink2);
   box-shadow: var(--oil-lift);
@@ -91,6 +94,13 @@ button, input, select { font-family: inherit; }
 .oil-tabs a.active {
   background: linear-gradient(135deg, #10B981, #0891B2);
   color: #fff; box-shadow: var(--oil-lift-strong);
+}
+/* 아주 좁은 옛날 폰(320px 급)에서는 네 칸이 안 들어간다. 옆으로 밀리게 두면
+   가운데 정렬 탓에 왼쪽으로 넘어간 칸은 끌어와지지도 않으므로, 여기서만
+   글씨와 여백을 줄여 네 칸을 화면 안에 붙잡아 둔다. */
+@media (max-width: 359px) {
+  .oil-tabs ul { gap: 4px; padding: 0 8px; }
+  .oil-tabs a { padding: 9px 7px; font-size: 11px; }
 }
 
 /* 본문 자리 */
