@@ -115,6 +115,15 @@
 }
 .oil-field-unit { flex-shrink: 0; font-size: 12.5px; color: var(--oil-muted); }
 .oil-field-hint { font-size: 11px; color: var(--oil-muted2); margin-top: 4px; }
+/* 계산기 맨 아래 출처. '다른 화면 보기' 버튼을 빼고 이 줄이 그 자리를 물려받았다.
+   계산기까지 온 사람을 다른 데로 보내는 건 흐름을 끊는 일이고,
+   대신 이 숫자가 어디서 왔는지는 읽을 만한 크기여야 한다(11.5px -> 13px). */
+.oil-calc-note {
+  margin: 4px 0 0; padding: 15px 16px;
+  background: var(--oil-card); border-radius: var(--oil-r);
+  box-shadow: var(--oil-lift);
+  font-size: 13px; line-height: 1.7; color: var(--oil-ink2); text-align: center;
+}
 
 /* 내 설정 (유종·차종) */
 .oil-prefs {
@@ -141,6 +150,10 @@
   color: var(--oil-muted); padding-top: 7px;
 }
 .oil-prefs-hint { font-size: 11.5px; color: var(--oil-muted2); margin-top: 10px; line-height: 1.6; }
+/* 항상 펼쳐두는 모양(계산기). 접는 버튼이 없으니 위 여백을 대신 주고,
+   첫 줄의 구분선을 지운다 - 위에 아무것도 없는데 선만 떠 있으면 어색하다. */
+.oil-prefs.is-fixed .oil-prefs-body { padding-top: 14px; }
+.oil-prefs.is-fixed .oil-prefs-row:first-child { border-top: 0; padding-top: 0; }
 
 /* 찾은 현위치 표시 */
 .oil-spot {

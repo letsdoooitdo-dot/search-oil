@@ -104,11 +104,18 @@
     var summary = FUELS[state.fuel] + ' · ' + P.car().label +
       (regionName ? ' · ' + regionName : '');
 
-    return '<div class="oil-prefs' + (open ? ' is-open' : '') + '" id="oil-prefs">' +
-      '<button type="button" class="oil-prefs-sum" id="oil-prefs-toggle">' +
-        '<span class="oil-prefs-sum-t">' + OIL.esc(summary) + '</span>' +
-        '<span class="oil-prefs-sum-a">변경</span>' +
-      '</button>' +
+    /* fixed - 접는 기능 없이 항상 펼쳐둔다.
+       계산기 화면에서는 유종·차종을 바꾸는 게 계산의 일부라, 접혀 있으면
+       무엇을 고를 수 있는지조차 모르고 지나친다. */
+    var fixed = !!opts.fixed;
+
+    return '<div class="oil-prefs' + (fixed ? ' is-fixed is-open' : (open ? ' is-open' : '')) +
+      '" id="oil-prefs">' +
+      (fixed ? '' :
+        '<button type="button" class="oil-prefs-sum" id="oil-prefs-toggle">' +
+          '<span class="oil-prefs-sum-t">' + OIL.esc(summary) + '</span>' +
+          '<span class="oil-prefs-sum-a">변경</span>' +
+        '</button>') +
       '<div class="oil-prefs-body">' +
         '<div class="oil-prefs-row"><span class="oil-prefs-k">유종</span>' +
           '<div class="oil-sido-tabs">' + fuelBtns + '</div></div>' +
