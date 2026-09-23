@@ -130,6 +130,23 @@
 </div>
 
 <footer class='oil-footer'>
+  <!-- 함께 보는 사이트. 모든 화면 맨 아래에 붙는다.
+       ★ 그림을 못 받아오면 그 칸이 스스로 사라진다(onerror). 깨진 그림과
+         덩그러니 남은 링크를 보여주는 것보다 아예 없는 편이 낫다.
+       그림은 scripts/build_images.py 가 assets/ 원본에서 만든다. -->
+  <div class='oil-sister'>
+    <div class='oil-sister-t'>함께 보면 좋은 사이트</div>
+    <div class='oil-sister-row'>
+      <a class='oil-sister-a' href='https://16story-003.letsdoooit.com/?m=0' rel='noopener' target='_blank'>
+        <img alt='정부지원금찾기 - 못 받은 지원금이 있는지 확인해보세요' onerror='this.parentNode.remove()' src='@@OIL_IMG_URL@@promo-gov.jpg'/>
+        <span>못 받은 정부지원금 찾기</span>
+      </a>
+      <a class='oil-sister-a' href='https://16story-004.letsdoooit.com' rel='noopener' target='_blank'>
+        <img alt='24시 심야약국찾기 - 지금 문 연 약국을 찾아보세요' onerror='this.parentNode.remove()' src='@@OIL_IMG_URL@@promo-pharm.jpg'/>
+        <span>지금 문 연 24시 약국 찾기</span>
+      </a>
+    </div>
+  </div>
   <div><b>주유소찾기</b>한국석유공사 오피넷이 공개하는 전국 주유소 판매가격을 바탕으로 정보 제공을 목적으로 운영됩니다.<br/>
   실제 판매가는 주유소 사정에 따라 다를 수 있으니 방문 전 확인하시기 바랍니다.</div>
 </footer>

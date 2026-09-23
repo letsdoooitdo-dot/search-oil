@@ -38,6 +38,13 @@ ROOT = os.path.dirname(HERE)
 SRC = os.path.join(ROOT, "assets", "hero-src.png")
 OUT = os.path.join(ROOT, "img")
 
+# 모든 페이지 맨 아래에 붙는 형제 사이트 배너.
+# 원본이 1.7MB 짜리 그림이라 그대로 쓰면 모든 페이지가 3MB 씩 무거워진다.
+# 둘을 나란히 놓으면 휴대폰에서 한 장이 190px 이라 600px 이면 넉넉하다.
+PROMO = [("정부지원금찾기-최종2.png", "promo-gov.jpg"),
+         ("24시 심야약국.png", "promo-pharm.jpg")]
+PROMO_W = 600
+
 HERO_W = 1200                 # 머리 띠 가로 (휴대폰에서 2배로 봐도 충분하다)
 OG_W, OG_H = 1200, 630        # 카톡 큰 카드 규격 (1.91:1)
 # 띠가 카드 폭에서 차지하는 비율. 나머지가 여백이 된다.
@@ -95,9 +102,22 @@ def main():
     og = edge_extend(art, OG_W, OG_H)
     save_jpg(og, os.path.join(OUT, "og.jpg"))
 
+    # ── 형제 사이트 배너 ────────────────────────────────────
+    made = ["hero.webp", "hero.jpg", "og.jpg"]
+    for src_name, out_name in PROMO:
+        src_path = os.path.join(ROOT, "assets", src_name)
+        if not os.path.exists(src_path):
+            print(f"  [건너뜀] assets/{src_name} 가 없습니다")
+            continue
+        im = Image.open(src_path).convert("RGB")
+        w = PROMO_W
+        im = im.resize((w, round(w * im.height / im.width)), Image.LANCZOS)
+        save_jpg(im, os.path.join(OUT, out_name), quality=80)
+        made.append(out_name)
+
     side = (OG_W - art_w) // 2
     print("만든 그림")
-    for name in ("hero.webp", "hero.jpg", "og.jpg"):
+    for name in made:
         p = os.path.join(OUT, name)
         im = Image.open(p)
         print(f"  {name:10s} {im.size[0]}x{im.size[1]}  "

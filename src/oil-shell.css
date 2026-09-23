@@ -105,6 +105,28 @@ button, input, select { font-family: inherit; }
 }
 .oil-footer b { color: var(--oil-ink); margin-right: 6px; }
 
+/* 함께 보는 사이트 - 모든 화면 맨 아래.
+   둘을 나란히 둔다. 세로로 쌓으면 16:9 배너 두 장이 화면 한 장을 통째로
+   먹어서, 정작 우리 내용을 다 읽은 사람을 광고판 앞에 세워두는 꼴이 된다. */
+.oil-sister { margin: 0 0 20px; }
+.oil-sister-t {
+  font-size: 11.5px; font-weight: 700; letter-spacing: -0.02em;
+  color: var(--oil-ink2); margin: 0 0 8px;
+}
+.oil-sister-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.oil-sister-a { display: block; }
+.oil-sister-a img {
+  display: block; width: 100%; height: auto;
+  border-radius: 12px; box-shadow: var(--oil-lift);
+}
+/* 배너 안 글씨는 폭이 좁아지면 작아진다. 무엇을 누르는 건지는
+   이 한 줄이 책임진다 - 그림이 안 읽혀도 뜻은 전해져야 한다. */
+.oil-sister-a span {
+  display: block; margin-top: 6px; text-align: center;
+  font-size: 11.5px; font-weight: 700; line-height: 1.45;
+  letter-spacing: -0.02em; color: var(--oil-ink2);
+}
+
 /* 일반 블로그 글 (앱 화면에서는 숨김) */
 .oil-blog-wrap { max-width: var(--oil-max); margin: 0 auto; padding: 16px; }
 .oil-mode-find .oil-blog-wrap,
