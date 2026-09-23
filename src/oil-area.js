@@ -117,11 +117,8 @@
       }).join('') +
       '</div><div class="oil-region-grid" id="oil-regions"></div></div></div>';
 
-    /* adHtml() 은 광고를 꺼두면 빈 문자열이라 자리가 통째로 사라진다.
-       adSlotHtml() 은 같은 크기의 빈 상자를 남겨서, 나중에 광고를 켜도
-       화면이 아래로 밀리지 않는다. 다른 화면과 맞춘다(2026-09-23). */
-    html += OIL.adSlotHtml();
-
+    /* 중간 광고는 뺐다(2026-09-23). 이 화면은 맨 위 광고 하나만 둔다 -
+       동네 목록·순위를 훑어 내려가는 중에 광고가 끼면 읽던 흐름이 끊긴다. */
     html += '<div class="oil-card is-flush"><div style="padding:0 16px 8px;">' +
       '<div class="oil-card-title" style="margin:0;">주유소를 고를 가치가 큰 동네</div>' +
       '<p class="oil-p" style="font-size:12.5px;margin:5px 0 0;">동네 안 최저~최고 차이가 가장 큰 곳입니다.</p></div>' +
@@ -231,8 +228,8 @@
       ]) + '</div>';
 
     /* 집·회사 저장 버튼은 뺐다(2026-09-23). 위치를 잡으면 마지막 동네가
-       자동으로 남아서, 손으로 저장할 일이 없다. */
-    html += OIL.adSlotHtml();
+       자동으로 남아서, 손으로 저장할 일이 없다.
+       중간 광고도 뺐다 - 이 화면은 맨 위 광고 하나만 둔다. */
 
     var list = (r.stations || []).filter(function (x) { return price(x); })
       .sort(function (a, b) { return price(a) - price(b); }).slice(0, 15);
