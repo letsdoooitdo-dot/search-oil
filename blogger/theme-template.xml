@@ -11,8 +11,10 @@
   <!-- 2. 네이버 서치 어드바이저 소유확인 (2026-09-23 확인 완료) ★ 지우지 마세요 -->
   <meta content='f342bc4bc835c10355787bcbc737a96283d5b2ac' name='naver-site-verification'/>
 
-  <!-- 3. 애드센스 (자동광고: 양쪽 사이드 레일 광고도 이 코드로 표시됨) -->
-  <script async='async' crossorigin='anonymous' expr:src='&quot;https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=@@OIL_AD_CLIENT@@&quot;'/>
+  <!-- 3. 애드센스 (자동광고: 양쪽 사이드 레일 광고도 이 코드로 표시됨)
+       주소가 고정이라 expr:src 가 아니라 그냥 src 로 쓴다 - 사용자가 건네준
+       코드와 글자 그대로 같아야 나중에 비교하기 쉽다. -->
+  <script async='async' crossorigin='anonymous' src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=@@OIL_AD_CLIENT@@'/>
 
   <!-- 4. 아로스 애드센스 무효트래픽 방지코드 -->
   <script>

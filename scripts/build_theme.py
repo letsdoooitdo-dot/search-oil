@@ -36,7 +36,9 @@ IMG_URL = "https://letsdoooitdo-dot.github.io/search-oil/img/"
 
 # 광고 스위치. 개발 중에는 꺼두고, 화면·기능이 정리되면 True 로 바꾼다.
 # False 면 테마의 애드센스 로더와 설정값이 모두 빠져서 자동광고까지 함께 멈춘다.
-ADS_ON = False
+# 2026-09-23 켰다. 화면마다 자리가 잡혀 있어(adSlotHtml) 켜도 내용이 밀리지 않는다.
+# 미리보기(preview.py)는 아래에서 로더와 adClient 를 따로 빼므로 그대로 광고가 없다.
+ADS_ON = True
 
 # 카카오맵 JavaScript 키 ("장소명 검색"에 쓴다).
 # developers.kakao.com 에서 앱을 만들고 [앱 키] → JavaScript 키를 여기 넣는다.
@@ -118,6 +120,12 @@ def main():
     os.makedirs(prev_dir, exist_ok=True)
 
     body = theme
+    # ★ 광고 로더는 제일 먼저 지운다. 아래에서 expr:src 를 털어내고 나면
+    #   주소가 사라져 'adsbygoogle.js' 로는 더 이상 못 찾고, 빈
+    #   <script async='async'/> 껍데기가 남는다. HTML 에서 <script/> 는
+    #   자기가 안 닫혀서 뒤 내용을 통째로 삼키고, 미리보기 전체가 죽는다
+    #   (2026-09-23 ADS_ON 을 켜자마자 실제로 그렇게 됐다).
+    body = re.sub(r"<script async='async'[^>]*adsbygoogle\.js[^>]*/>", "", body)
     body = re.sub(r"<b:skin><!\[CDATA\[(.*?)\]\]></b:skin>",
                   lambda m: "<style>" + m.group(1) + "</style>", body, flags=re.S)
     body = re.sub(r"<b:section.*?</b:section>", "", body, flags=re.S)
@@ -128,8 +136,9 @@ def main():
     body = re.sub(r"<title><data:blog.pageTitle/></title>", "<title>주유소찾기</title>", body)
     body = body.replace("<html b:version='2' class='v2'", "<html lang='ko'")
     body = re.sub(r"\sxmlns:[a-z]+='[^']*'", "", body)
-    # 미리보기에서는 실제 광고를 부르지 않는다
-    body = re.sub(r"<script async='async'[^>]*adsbygoogle\.js[^>]*/>", "", body)
+    # 미리보기에서는 실제 광고를 부르지 않는다 (로더는 위에서 이미 지웠다).
+    # 혹시 남은 빈 껍데기가 있으면 여기서 막는다 - 하나만 남아도 화면이 죽는다.
+    body = re.sub(r"<script async='async'[^>]*/>", "", body)
     body = body.replace("<script src='https://cdn.jsdelivr.net/gh/abaeksite/"
                         "aros_adsense_blocker@main/aros_adsense_blocker_v7-1.js'/>", "")
     # 테마 XML 은 따옴표를 &quot; 로 쓴다. 블로그스팟은 서빙할 때 풀어주지만

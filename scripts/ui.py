@@ -91,7 +91,11 @@ def site_nav(active_href: str):
 # 애드센스 - 정부지원금찾기와 같은 계정을 쓴다.
 # 사이드 광고는 코드로 넣지 않는다. 계정의 자동광고(사이드 레일)가 처리한다.
 ADSENSE_CLIENT = "ca-pub-5167405501174218"
-ADSENSE_SLOT_INCONTENT = "3416081882"   # 지원금찾기의 '중간' 단위를 재사용
+# 이 사이트 전용 광고 단위. [디스플레이, 사각, 반응형] "최상단 고정 광고"
+# ★ 사용자가 직접 만들어 건네준 번호다(2026-09-23). 전에는 지원금찾기의
+#   '중간' 단위(3416081882)를 빌려 쓰고 있었는데, 그러면 수익 보고서에서
+#   어느 사이트가 번 돈인지 갈라볼 수가 없다.
+ADSENSE_SLOT_INCONTENT = "6633800886"
 
 ADSENSE_LOADER = (f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
                   f'?client={ADSENSE_CLIENT}" crossorigin="anonymous"></script>')
