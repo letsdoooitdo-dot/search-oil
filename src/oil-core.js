@@ -221,28 +221,32 @@
     fuelName = fuelName || '휘발유';
     var big = (meta && meta.spreadBig) || 250;
     var small = (meta && meta.spreadSmall) || 60;
-    var car = (OIL.prefs && OIL.prefs.car()) || { kmpl: 12, usual: 30 };
+    var car = (OIL.prefs && OIL.prefs.car()) || { kmpl: 12, usual: 30, label: '일반 승용차' };
     var L = car.usual, kmpl = car.kmpl;
     var saved = s.sp * L;
     var head, body;
+    /* 동네 화면에는 차종 고르개가 없다(계산기·주유소 목록에서 고른다).
+       그래도 아래 숫자는 차종을 타므로, 어느 차 기준인지 문장에 밝혀둔다.
+       안 밝히면 "30L는 어디서 나온 숫자지?" 하고 걸린다. */
+    var by = (car.label || '일반 승용차') + ' 기준 ';
 
     if (s.sp >= big) {
       head = r.r + '는 주유소를 고를 가치가 큽니다';
       body = '같은 ' + OIL.esc(r.r) + ' 안에서 ' + fuelName + ' 최저 ' + OIL.won(s.lo) +
         '원, 최고 ' + OIL.won(s.hi) + '원으로 <b>' + OIL.won(s.sp) + '원</b> 차이가 납니다. ' +
-        '한 번에 ' + L + 'L를 넣는다면 <b>' + OIL.won(saved) + '원</b>이 갈립니다. ' +
+        by + '한 번에 ' + L + 'L를 넣는다면 <b>' + OIL.won(saved) + '원</b>이 갈립니다. ' +
         '아무 데나 들어가면 손해를 보는 동네입니다.';
     } else if (s.sp < small) {
       var perKm = s.md / kmpl;
       var beKm = perKm > 0 ? saved / perKm : 0;
       head = r.r + '는 어디서 넣어도 비슷합니다';
       body = '동네 안에서 가장 싼 곳과 가장 비싼 곳의 차이가 <b>' + OIL.won(s.sp) +
-        '원</b>뿐입니다. 제일 싼 집을 찾아가더라도 <b>' + beKm.toFixed(1) +
+        '원</b>뿐입니다. ' + by + '제일 싼 집을 찾아가더라도 <b>' + beKm.toFixed(1) +
         'km</b>만 더 돌면 아낀 돈이 기름값으로 사라집니다. 가는 길에 보이는 곳에서 넣으시면 됩니다.';
     } else {
       head = r.r + '는 조금 따져볼 만합니다';
       body = '동네 안 ' + fuelName + ' 가격 차이가 <b>' + OIL.won(s.sp) + '원</b>입니다. ' +
-        L + 'L면 ' + OIL.won(saved) + '원 차이라, 멀리 돌아갈 정도는 아니지만 ' +
+        by + L + 'L면 ' + OIL.won(saved) + '원 차이라, 멀리 돌아갈 정도는 아니지만 ' +
         '가는 길에 싼 곳이 있다면 들를 만합니다.';
     }
 

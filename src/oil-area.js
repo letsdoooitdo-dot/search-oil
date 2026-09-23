@@ -204,8 +204,12 @@
       '<h1 class="oil-h1">' + esc(v.head) + '</h1>' +
       (spot ? '<div class="oil-spot">현위치 ' + esc(spot) + '</div>' : '') + '</div>';
 
-    /* 설정은 접지 않는다 - 아래 숫자가 전부 여기서 고른 유종·차종 기준이다 */
-    if (P) html += P.barHtml({ regionName: r.r, fixed: true });
+    /* 설정은 접지 않고, 유종만 둔다(2026-09-23).
+       이 화면에서 차종이 바꾸는 건 해설 문장 속 "한 번에 몇 L" 하나뿐이다.
+       그 한 줄 때문에 버튼 네 개를 늘어놓는 것보다, 차종은 그게 계산의
+       중심인 곳(계산기·주유소 목록)에서 고르게 하는 편이 낫다.
+       여기서는 고른 차종을 그대로 가져다 쓰되, 어느 차 기준인지 문장에 밝힌다. */
+    if (P) html += P.barHtml({ regionName: r.r, fixed: true, noCar: true });
 
     html += '<div class="oil-card"><p class="oil-p">' + v.body + '</p>' +
       '<p class="oil-p" style="font-size:13px;">' + v.nat + '</p>' +
