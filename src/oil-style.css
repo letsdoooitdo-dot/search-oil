@@ -199,7 +199,12 @@
    "우리 동네" 딱지를 뺀 뒤 실제로 그렇게 나왔다(2026-09-23). */
 .oil-mine-r {
   display: block; font-size: 17px; font-weight: 900; color: var(--oil-ink);
-  letter-spacing: -.02em;
+  letter-spacing: -.02em; line-height: 1.35;
+}
+/* "우리 동네 OOO 기름값은?" - 동네 이름만 크게 두고 앞뒤 말은 한 단계 낮춘다.
+   전부 같은 크기로 두면 무엇을 누르는 건지가 아니라 문장이 먼저 읽힌다. */
+.oil-mine-r i {
+  font-style: normal; font-size: 13.5px; font-weight: 700; color: var(--oil-ink2);
 }
 .oil-mine-s { display: block; font-size: 12px; color: var(--oil-muted); margin-top: 4px; }
 

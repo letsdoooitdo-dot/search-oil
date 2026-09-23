@@ -69,7 +69,8 @@
        필요한 건 '어디로 잡혔는지'뿐이다. */
     if (mine) {
       html += '<a class="oil-mine" href="' + OIL.areaUrl(mine.sl) + '">' +
-        '<span><span class="oil-mine-r">' + esc(mine.r) + '</span>' +
+        '<span><span class="oil-mine-r"><i>우리 동네</i> ' + esc(mine.r) +
+          ' <i>기름값은?</i></span>' +
         '<span class="oil-mine-s">' + fuelName() + ' 최저 ' + won(st(mine).lo) + '원 · ' +
         '주유소 ' + st(mine).n + '곳</span></span>' + OIL.chev(OIL.cfg.accent || '#A54A04') + '</a>';
     } else {
