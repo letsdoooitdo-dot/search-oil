@@ -109,20 +109,30 @@
        무엇을 고를 수 있는지조차 모르고 지나친다. */
     var fixed = !!opts.fixed;
 
+    /* noCar - 차종 줄을 뺀다. 그 화면의 숫자가 차종과 아무 상관이 없을 때만 쓴다.
+       바꿔도 아무것도 안 바뀌는 선택지를 놔두면, 고른 사람은 뭔가 반영됐다고
+       믿게 된다. 동네 목록 화면이 그랬다 - 차종을 바꿔도 바뀌는 글자가
+       설정 상자 자기 설명 한 줄뿐이었다(2026-09-23 실측). */
+    var noCar = !!opts.noCar;
+
+    var summaryText = noCar ? FUELS[state.fuel] + (regionName ? ' · ' + regionName : '')
+                            : summary;
+
     return '<div class="oil-prefs' + (fixed ? ' is-fixed is-open' : (open ? ' is-open' : '')) +
       '" id="oil-prefs">' +
       (fixed ? '' :
         '<button type="button" class="oil-prefs-sum" id="oil-prefs-toggle">' +
-          '<span class="oil-prefs-sum-t">' + OIL.esc(summary) + '</span>' +
+          '<span class="oil-prefs-sum-t">' + OIL.esc(summaryText) + '</span>' +
           '<span class="oil-prefs-sum-a">변경</span>' +
         '</button>') +
       '<div class="oil-prefs-body">' +
         '<div class="oil-prefs-row"><span class="oil-prefs-k">유종</span>' +
           '<div class="oil-sido-tabs">' + fuelBtns + '</div></div>' +
-        '<div class="oil-prefs-row"><span class="oil-prefs-k">차종</span>' +
-          '<div class="oil-sido-tabs">' + carBtns + '</div></div>' +
-        '<div class="oil-prefs-hint">차종을 고르면 연비 ' + P.car().kmpl +
-          'km/L, 1회 주유 ' + P.car().usual + 'L 로 계산합니다</div>' +
+        (noCar ? '' :
+          '<div class="oil-prefs-row"><span class="oil-prefs-k">차종</span>' +
+            '<div class="oil-sido-tabs">' + carBtns + '</div></div>' +
+          '<div class="oil-prefs-hint">차종을 고르면 연비 ' + P.car().kmpl +
+            'km/L, 1회 주유 ' + P.car().usual + 'L 로 계산합니다</div>') +
       '</div></div>';
   };
 
