@@ -28,7 +28,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
-from ui import ADSENSE_CLIENT, ADSENSE_SLOT_INCONTENT
+from ui import ADSENSE_CLIENT, ADSENSE_SLOT_INCONTENT, ADSENSE_SLOT_TOP
 
 DEFAULT_DATA_URL = "https://letsdoooitdo-dot.github.io/search-oil/api/"
 # 그림은 데이터와 다른 폴더에 둔다 - api/ 는 매일 지워지고 다시 만들어진다
@@ -96,6 +96,7 @@ def main():
              # 다음 갱신 때 그림이 사라진다(2026-09-23 실제로 겪었다).
              .replace("@@OIL_IMG_URL@@", IMG_URL)
              .replace("@@OIL_AD_CLIENT@@", ADSENSE_CLIENT if ADS_ON else "")
+             .replace("@@OIL_AD_SLOT_TOP@@", ADSENSE_SLOT_TOP if ADS_ON else "")
              .replace("@@OIL_AD_SLOT@@", ADSENSE_SLOT_INCONTENT if ADS_ON else "")
              .replace("@@OIL_KAKAO_KEY@@", KAKAO_KEY)
              .replace("@@OIL_NAVI_PROXY@@", NAVI_PROXY)

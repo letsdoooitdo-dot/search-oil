@@ -71,7 +71,7 @@
     var html = '<div class="oil-stack">';
 
     /* 맨 위 광고 - 글 화면과 같은 자리 */
-    html += OIL.adSlotHtml();
+    html += OIL.adSlotHtml('top');
 
     /* 제목 위에 "계산기"라는 딱지를 붙이지 않는다(2026-09-23). 탭에서 이미
        계산기를 누르고 들어온 사람에게 한 번 더 알려줄 필요가 없고, 붉은 글씨는

@@ -64,7 +64,7 @@
     var html = '<div class="oil-stack">';
 
     /* 맨 위 광고 - 계산기·글 화면과 같은 자리 */
-    html += OIL.adSlotHtml();
+    html += OIL.adSlotHtml('top');
 
     /* 머리말 - 재방문이면 짧게.
        "우리 동네"라는 딱지는 뺐다(2026-09-23). 바로 아래 줄에 동네 이름이
@@ -206,7 +206,7 @@
     var html = '<div class="oil-stack">';
 
     /* 맨 위 광고 - 계산기·글 화면과 같은 자리 */
-    html += OIL.adSlotHtml();
+    html += OIL.adSlotHtml('top');
 
     var spot = P ? P.get('spot') : '';
     /* "우리 동네"가 아니라 실제 동네 이름을 적는다. 목록에서 눌러 들어온

@@ -178,19 +178,26 @@
     return 'https://map.kakao.com/link/search/' + encodeURIComponent(name);
   };
 
-  /* ── 광고 ────────────────────────────────────────────────── */
-  OIL.adHtml = function () {
-    if (!CFG.adClient || !CFG.adSlot) return '';
+  /* ── 광고 ──────────────────────────────────────────────────
+     자리마다 광고 단위 번호를 나눈다.
+       kind='top'  화면 맨 위      (adSlotTop)
+       그 외        내용 중간       (adSlot)
+     모양 때문이 아니다 - 둘 다 format=auto 라 애드센스가 폭을 보고 알아서
+     고른다. 나누는 실익은 수익 보고서에서 어느 자리가 돈이 되는지
+     갈라 보는 것이다. */
+  OIL.adHtml = function (kind) {
+    var slot = (kind === 'top' && CFG.adSlotTop) ? CFG.adSlotTop : CFG.adSlot;
+    if (!CFG.adClient || !slot) return '';
     return '<div class="oil-ad"><div class="oil-ad-label">광고</div>' +
       '<ins class="adsbygoogle" style="display:block"' +
       ' data-ad-client="' + CFG.adClient + '"' +
-      ' data-ad-slot="' + CFG.adSlot + '"' +
+      ' data-ad-slot="' + slot + '"' +
       ' data-ad-format="auto" data-full-width-responsive="true"></ins></div>';
   };
   /* 광고 자리. 개발 중(ADS_ON=False)에도 자리는 남겨둬야 나중에 광고를 켤 때
      화면이 밀리지 않는다. 그래서 빈 상자를 같은 크기로 그려둔다. */
-  OIL.adSlotHtml = function () {
-    var ad = OIL.adHtml();
+  OIL.adSlotHtml = function (kind) {
+    var ad = OIL.adHtml(kind);
     if (ad) return ad;
     return '<div class="oil-ad is-empty"><span>광고 영역</span></div>';
   };

@@ -66,7 +66,7 @@
 
     /* 광고는 첫 상자 바로 다음에 둔다. 맨 아래에 두면 두 기능을 다 보고
        내려간 사람만 만나는데, 그 사람은 이미 화면을 떠난 뒤다. */
-    if (!pickOrigin) html += OIL.adSlotHtml();
+    if (!pickOrigin) html += OIL.adSlotHtml('top');
 
     /* 1. 내 주변. 지난번 결과가 있으면 오늘 가격으로 다시 계산해 미리 보여준다.
        자리는 먼저 잡아두고, 계산이 끝나면 채운다(기다리게 하지 않는다).
@@ -115,7 +115,7 @@
       '</p></section>';
 
     /* 출발지를 고르러 온 화면에는 위에 상자가 없으니 광고를 여기 둔다 */
-    if (pickOrigin) html += OIL.adSlotHtml();
+    if (pickOrigin) html += OIL.adSlotHtml('top');
 
     html += '</div>';
 

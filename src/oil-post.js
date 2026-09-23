@@ -132,7 +132,7 @@
     if (!wrap || wrap.querySelector('.oil-ad-top')) return;
     var box = document.createElement('div');
     box.className = 'oil-ad-top';
-    box.innerHTML = OIL.adSlotHtml();
+    box.innerHTML = OIL.adSlotHtml('top');
     wrap.insertBefore(box, wrap.firstChild);
     OIL.adFill();
   }

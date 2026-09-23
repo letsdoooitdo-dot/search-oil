@@ -163,6 +163,9 @@ window.OIL_CONFIG = {
   reportLabelUrl: '/search/label/기름값리포트',
   dataBaseUrl: '@@OIL_DATA_URL@@',
   adClient: '@@OIL_AD_CLIENT@@',
+  /* 광고 단위를 자리별로 나눈다 - adSlotTop 은 화면 맨 위, adSlot 은 중간.
+     수익 보고서에서 어느 자리가 돈이 되는지 갈라 보려는 것이다. */
+  adSlotTop: '@@OIL_AD_SLOT_TOP@@',
   adSlot: '@@OIL_AD_SLOT@@',
   /* 카카오맵 장소검색. 비어 있으면 우리 데이터(읍면동·시군구·주유소 이름)로만 찾는다.
      SDK 는 검색창을 실제로 쓸 때 그때 불러온다 - 안 쓰는 사람은 내려받지 않는다. */
