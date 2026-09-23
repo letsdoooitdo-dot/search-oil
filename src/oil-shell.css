@@ -81,12 +81,12 @@ button, input, select { font-family: inherit; }
   /* 칸 사이와 버튼 여백은 화면 폭을 따라간다. 네 칸이 한 줄에 들어가야 하는데
      탭 줄은 가운데 정렬이라, 넘치면 왼쪽으로 밀린 칸을 끌어올 수가 없다.
      고정값으로 맞춰두면 폰 하나 바뀔 때마다 다시 재야 한다. */
-  display: flex; gap: clamp(4px, 1.6vw, 7px); margin: 0 auto; padding: 0 8px;
+  display: flex; gap: clamp(4px, 1.4vw, 7px); margin: 0 auto; padding: 0 6px;
   max-width: var(--oil-max); list-style: none; justify-content: center;
 }
 .oil-tabs a {
   display: block; flex-shrink: 0; white-space: nowrap;
-  padding: 10px clamp(7px, 2.5vw, 14px); border-radius: 12px;
+  padding: 10px clamp(6px, 2.2vw, 14px); border-radius: 12px;
   font-size: 12.5px; font-weight: 700; letter-spacing: -0.02em;
   background: var(--oil-card); color: var(--oil-ink2);
   box-shadow: var(--oil-lift);

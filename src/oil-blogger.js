@@ -40,7 +40,7 @@
      ★ 여기 글자를 늘리려면 먼저 재볼 것. 넘치면 탭 줄이 옆으로 밀리는데,
        가운데 정렬이라 왼쪽으로 밀려난 칸은 손가락으로 끌어와지지도 않는다. */
   var tabs = [
-    ['다따져 주유소찾기', cfg.listPageUrl || '/'],
+    ['다 따져서 주유소찾기', cfg.listPageUrl || '/'],
     ['동네기름값?', cfg.areaPageUrl || '/p/area.html'],
     ['계산기', cfg.calcPageUrl || '/p/calc.html'],
     /* "이야기"는 읽을거리라는 뜻뿐이라 누를 이유를 못 준다.
