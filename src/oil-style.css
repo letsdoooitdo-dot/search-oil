@@ -105,6 +105,20 @@
 .oil-btn svg { flex-shrink: 0; }
 
 /* 계산기 */
+/* 입력칸을 두 칸씩 나란히. 숫자 하나 넣는 칸이 한 줄을 통째로 쓰면
+   여섯 줄이 되어, 정작 답인 결과 카드가 화면 밖으로 밀려난다.
+   맨 아래 칸이 홀로 남아도 반 폭을 지키게 둔다 - 혼자 넓어지면 어색하다. */
+/* ★ 1fr 이 아니라 minmax(0,1fr) 이어야 한다. 1fr 은 '내용 최소폭 아래로는
+   안 줄인다'는 뜻인데, type=number 입력칸의 기본 폭이 200px 라 칸이
+   화면 밖으로 190px 밀려났다. min-width:0 도 같은 이유로 함께 둔다. */
+.oil-fields2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 10px; }
+.oil-fields2 .oil-field { min-width: 0; }
+.oil-fields2 .oil-field:nth-last-child(-n+2) { margin-bottom: 0; }
+/* 좁은 칸에서는 단위가 숫자를 밀어낸다. 안쪽 여백을 줄여 자리를 만든다. */
+.oil-fields2 .oil-field input { padding: 11px 8px; }
+.oil-fields2 .oil-field-unit { font-size: 11.5px; }
+.oil-fields2 .oil-chip { padding: 7px 0; flex: 1 1 0; text-align: center; }
+
 .oil-field { margin-bottom: 13px; }
 .oil-field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--oil-ink2); margin-bottom: 6px; }
 .oil-field-in { display: flex; align-items: center; gap: 8px; }
