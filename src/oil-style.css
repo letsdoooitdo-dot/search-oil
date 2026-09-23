@@ -257,12 +257,10 @@
   margin: 0; font-size: 14px; font-weight: 700; line-height: 1.55;
   letter-spacing: -0.02em; color: var(--oil-mint-ink);
 }
-.oil-pitch-say b {
-  font-weight: 900;
-  background: var(--oil-gold-bg); color: var(--oil-gold);
-  padding: 2px 8px; border-radius: 8px;
-  -webkit-box-decoration-break: clone; box-decoration-break: clone;
-}
+/* 메뉴 제목과 똑같은 붉은색. 연청록 바탕 위라 대비가 4.2 로 흰 바탕(4.7)보다
+   조금 낮지만, 굵은 글씨라 읽는 데 지장이 없어 한 가지 색으로 통일했다.
+   더 진한 빨강을 쓰면 여기만 어두워 보여 같은 말이 다른 색처럼 읽힌다. */
+.oil-pitch-say b { font-weight: 900; color: var(--oil-accent-dark); }
 
 /* 두 기능을 각각 하나의 상자로 묶는다. 제목·입력칸·설명이 한 덩어리라는 게
    눈으로 보여야 "이게 하나의 메뉴"로 읽힌다. 묶지 않으면 글과 버튼이
@@ -297,20 +295,11 @@
 /* 글은 통째로 한 조각이어야 한다. 막대와 글을 바로 flex 로 나란히 두면
    '가는 길에서' 와 붉은 구절이 별개 조각이 되어 사이가 8px 벌어진다. */
 .oil-find-h > span { min-width: 0; }
-/* 핵심 구절은 띠와 같은 모양으로 만든다 - 진한 청록 위의 밝은 금색.
-   흰 바탕에 금색을 그냥 올리면 안 읽혀서(대비 2~3) 어두운 구릿빛으로
-   내려 쓸 수밖에 없었다. 받침을 깔면 진짜 금색을 대비 7.7 로 쓸 수 있다. */
-.oil-find-h b {
-  display: inline; font-weight: 900;
-  background: var(--oil-gold-bg); color: var(--oil-gold);
-  padding: 2px 8px; border-radius: 8px;
-  /* 줄이 바뀌어도 양쪽 끝이 둥글게 잘리도록 */
-  -webkit-box-decoration-break: clone; box-decoration-break: clone;
-}
-/* 막대는 받침과 같은 진한 청록. 항목 표시일 뿐이라 조용해야 한다. */
+/* 핵심 구절은 붉은 글씨. 받침 없이 글자색만 쓴다. */
+.oil-find-h b { font-weight: 900; color: var(--oil-accent-dark); }
 .oil-find-h::before {
   content: ''; flex-shrink: 0; width: 4px; height: 15px; border-radius: 2px;
-  background: var(--oil-gold-bg);
+  background: var(--oil-accent);
 }
 /* 따지는 항목을 적는 줄. 목록이라 두 줄로 나누고 <br> 로 끊는다.
    한 줄에 욱여넣으면 글자가 10px 아래로 내려가 읽을 수가 없다. */
