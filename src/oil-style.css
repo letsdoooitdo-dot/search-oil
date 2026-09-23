@@ -469,12 +469,23 @@ body.oil-noscroll { overflow: hidden; }
 /* 고르는 줄 - 주변반경 · 유종 · 차종
    항목 이름을 왼쪽에 크고 굵게 두고, 고른 값은 그 옆에 놓는다.
    이름이 작으면 무엇을 고르는 줄인지 모른 채 지나친다. */
+/* 네 개를 한 상자에 담는다. 낱개로 떠 있으면 고르는 곳이 네 군데처럼 보인다. */
+.oil-picks-box {
+  background: var(--oil-card); border-radius: var(--oil-r);
+  box-shadow: var(--oil-lift); padding: 12px;
+}
 .oil-picks { display: flex; gap: 6px; }
 .oil-pick {
   flex: 1 1 0; min-width: 0; position: relative;
   display: flex; align-items: center; gap: 7px;
   background: var(--oil-card); border: 0; box-shadow: var(--oil-lift);
   border-radius: 13px; padding: 10px 22px 10px 12px;
+}
+/* 흰 상자 안에 들어오면 흰 카드가 사라진다. 옅은 바탕과 실선으로 바꿔
+   '누르면 고르는 칸'으로 보이게 한다 - 글자 크기와 색은 그대로 둔다. */
+.oil-picks-box .oil-pick {
+  background: var(--oil-soft); border: 1px solid var(--oil-line);
+  box-shadow: none;
 }
 .oil-pick-k {
   flex-shrink: 0; font-size: 12.5px; font-weight: 800;

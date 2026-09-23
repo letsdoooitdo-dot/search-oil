@@ -169,27 +169,29 @@
       }).join('') + '</select></label>';
   }
 
-  /* 네 개는 한 줄에 안 들어간다. 두 줄로 나눈다. */
+  /* 네 개는 한 줄에 안 들어간다. 두 줄로 나누고, 넷을 한 상자에 담는다.
+     낱개로 떠 있으면 '고르는 곳'이 네 군데인 것처럼 보인다 - 한 덩어리로
+     묶어야 "여기가 조건 고르는 자리"로 한 번에 읽힌다. */
   P.pickerHtml = function () {
-    return '<div class="oil-picks">' +
+    return '<div class="oil-picks-box"><div class="oil-picks">' +
       sel('radius', '주변반경', RADIUS.map(function (k) { return [k, k + 'km']; })) +
       sel('fuel', '유종', Object.keys(FUELS).map(function (f) { return [f, FUELS[f]]; })) +
       '</div><div class="oil-picks">' +
       sel('vehicle', '차종', VEHICLE_ORDER.map(function (v) { return [v, VEHICLE[v].label]; })) +
       sel('trip', '이동', Object.keys(TRIPS).map(function (t) { return [t, TRIPS[t]]; })) +
-      '</div>';
+      '</div></div>';
   };
 
   /* 목적지 모드용. 반경·편도왕복 대신 주행가능거리·우회허용이 들어간다.
      가는 길이니 편도가 당연하고, 우회는 '벗어났다 돌아오기'라 왕복이 이미 포함돼 있다. */
   P.destPickerHtml = function () {
-    return '<div class="oil-picks">' +
+    return '<div class="oil-picks-box"><div class="oil-picks">' +
       sel('range', '더 갈 수 있는 거리', RANGE.map(function (k) { return [k, k + 'km']; })) +
       sel('detour', '우회 허용', DETOUR.map(function (k) { return [k, k + 'km까지']; })) +
       '</div><div class="oil-picks">' +
       sel('fuel', '유종', Object.keys(FUELS).map(function (f) { return [f, FUELS[f]]; })) +
       sel('vehicle', '차종', VEHICLE_ORDER.map(function (v) { return [v, VEHICLE[v].label]; })) +
-      '</div>';
+      '</div></div>';
   };
 
   P.wirePicker = function (onChange) {

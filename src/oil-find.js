@@ -64,7 +64,37 @@
         '</section>';
     }
 
-    /* 1. 목적지까지 가는 길에서 찾기 */
+    /* 광고는 첫 상자 바로 다음에 둔다. 맨 아래에 두면 두 기능을 다 보고
+       내려간 사람만 만나는데, 그 사람은 이미 화면을 떠난 뒤다. */
+    if (!pickOrigin) html += OIL.adSlotHtml();
+
+    /* 1. 내 주변. 지난번 결과가 있으면 오늘 가격으로 다시 계산해 미리 보여준다.
+       자리는 먼저 잡아두고, 계산이 끝나면 채운다(기다리게 하지 않는다).
+       ★ 가는 길보다 위에 둔다(2026-09-23). 목적지를 정해 검색하는 것보다
+         "지금 내 주변"이 훨씬 자주 쓰는 길이다.
+       출발지를 고르러 온 경우에는 아예 그리지 않는다 - 출발지를 묻는 화면에
+       주변 주유소 찾기가 같이 떠 있으면 무엇을 하라는 화면인지 알 수 없다. */
+    if (!pickOrigin) {
+      html += '<section class="oil-find-sec">' +
+        '<h2 class="oil-find-h"><span>내 주변에서 ' +
+          '<b>다 따져서 제일 싼 주유소</b></span></h2>' +
+        '<button type="button" class="oil-near-btn" id="oil-near">' +
+          '<span class="oil-near-l">' + PIN +
+            '<span><span class="oil-near-t">내 주변 다 따져서 제일 싼 주유소</span>' +
+            '<span id="oil-near-sub"><span class="oil-near-where">' +
+            (spot ? esc(spot) + ' 기준으로 찾아드립니다'
+                  : '위치를 켜면 바로 찾아드립니다') +
+            '</span></span></span></span>' +
+          OIL.chev('#fff') +
+        '</button>' +
+        '<p class="oil-find-hint">따지는 항목 : 기름값 · 실제 이동거리 · 편도/왕복<br>' +
+          '차종별 연비와 1회 주유량까지 따져서 계산합니다</p>' +
+        '<div class="oil-locate-msg" id="oil-locate-msg"></div>' +
+        '</section>';
+    }
+    void near;
+
+    /* 2. 목적지까지 가는 길에서 찾기 */
     html += '<section class="oil-find-sec">' +
       '<h2 class="oil-find-h"><span>' +
         (pickOrigin ? '출발지를 정해주세요'
@@ -84,28 +114,8 @@
           '차종별 연비와 1회 주유량까지 따져서 계산합니다') +
       '</p></section>';
 
-    /* 2. 내 주변. 지난번 결과가 있으면 오늘 가격으로 다시 계산해 미리 보여준다.
-       자리는 먼저 잡아두고, 계산이 끝나면 채운다(기다리게 하지 않는다). */
-    html += '<section class="oil-find-sec">' +
-      '<h2 class="oil-find-h"><span>내 주변에서 ' +
-        '<b>다 따져서 제일 싼 주유소</b></span></h2>' +
-      '<button type="button" class="oil-near-btn" id="oil-near">' +
-        '<span class="oil-near-l">' + PIN +
-          '<span><span class="oil-near-t">내 주변 다 따져서 제일 싼 주유소</span>' +
-          '<span id="oil-near-sub"><span class="oil-near-where">' +
-          (spot ? esc(spot) + ' 기준으로 찾아드립니다'
-                : '위치를 켜면 바로 찾아드립니다') +
-          '</span></span></span></span>' +
-        OIL.chev('#fff') +
-      '</button>' +
-      '<p class="oil-find-hint">따지는 항목 : 기름값 · 실제 이동거리 · 편도/왕복<br>' +
-        '차종별 연비와 1회 주유량까지 따져서 계산합니다</p>' +
-      '<div class="oil-locate-msg" id="oil-locate-msg"></div>' +
-      '</section>';
-    void near;
-
-    /* 3. 광고 자리 */
-    html += OIL.adSlotHtml();
+    /* 출발지를 고르러 온 화면에는 위에 상자가 없으니 광고를 여기 둔다 */
+    if (pickOrigin) html += OIL.adSlotHtml();
 
     html += '</div>';
 
@@ -114,8 +124,9 @@
 
     document.getElementById('oil-open-search')
       .addEventListener('click', function () { openSheet(); });
-    document.getElementById('oil-near')
-      .addEventListener('click', goNear);
+    /* 출발지 고르기 화면에는 이 버튼이 없다 */
+    var nearBtn = document.getElementById('oil-near');
+    if (nearBtn) nearBtn.addEventListener('click', goNear);
     showLastPick();
   }
 
