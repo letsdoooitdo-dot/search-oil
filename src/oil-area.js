@@ -63,11 +63,13 @@
 
     var html = '<div class="oil-stack">';
 
-    /* 머리말 - 재방문이면 짧게 */
+    /* 머리말 - 재방문이면 짧게.
+       "우리 동네"라는 딱지는 뺐다(2026-09-23). 바로 아래 줄에 동네 이름이
+       그대로 있어서 같은 말을 두 번 하는 셈이고, 위치를 잡아 들어온 사람에게
+       필요한 건 '어디로 잡혔는지'뿐이다. */
     if (mine) {
       html += '<a class="oil-mine" href="' + OIL.areaUrl(mine.sl) + '">' +
-        '<span><span class="oil-mine-k">우리 동네</span>' +
-        '<span class="oil-mine-r">' + esc(mine.r) + '</span>' +
+        '<span><span class="oil-mine-r">' + esc(mine.r) + '</span>' +
         '<span class="oil-mine-s">' + fuelName() + ' 최저 ' + won(st(mine).lo) + '원 · ' +
         '주유소 ' + st(mine).n + '곳</span></span>' + OIL.chev(OIL.cfg.accent || '#A54A04') + '</a>';
     } else {
@@ -77,8 +79,9 @@
         '30원도 차이 안 나는 곳이 있습니다. 어느 쪽인지부터 확인해보세요.</p></div>';
     }
 
-    /* 내 설정 */
-    if (P) html += P.barHtml({ regionName: mine ? mine.r : '' });
+    /* 내 설정 - 접지 않는다(fixed). 유종·차종이 아래 숫자를 전부 바꾸는데,
+       접혀 있으면 무엇을 고를 수 있는지조차 모르고 지나친다. */
+    if (P) html += P.barHtml({ regionName: mine ? mine.r : '', fixed: true });
 
     /* 오늘 전국 */
     html += '<div class="oil-card">' +
@@ -124,9 +127,8 @@
           '<span class="v">' + won(st(r).md) + '원</span></a>';
       }).join('') + '</div></div>';
 
-    html += '<a class="oil-btn" href="' + (OIL.cfg.calcPageUrl || '/p/calc.html') + '">' +
-      '<span>연간 주유비·경차 환급 계산기</span>' + OIL.chev('#fff') + '</a>';
-
+    /* 계산기로 보내는 버튼은 뺐다(2026-09-23). 위 메뉴에 계산기 칸이 이미 있고,
+       없어진 계산기(연간 주유비·경차 환급) 이름을 달고 있던 버튼이다. */
     html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
       OIL.dateKo(meta.date) + ' 실제 판매가 · 출처 오피넷 · 매일 갱신</p></div>';
 
@@ -189,16 +191,17 @@
     if (P) P.set('last', r.sl);
 
     var v = OIL.verdict(r, meta, total, s, fuelName());
-    var isHome = P && P.get('home') === r.sl;
-    var isWork = P && P.get('work') === r.sl;
 
     var html = '<div class="oil-stack">';
     var spot = P ? P.get('spot') : '';
-    html += '<div><div class="oil-kicker">우리 동네 ' + fuelName() + '</div>' +
+    /* "우리 동네"가 아니라 실제 동네 이름을 적는다. 목록에서 눌러 들어온
+       동네는 우리 동네가 아닐 수도 있어서, 그렇게 쓰면 틀린 말이 된다. */
+    html += '<div><div class="oil-kicker">' + esc(r.r) + ' ' + fuelName() + '</div>' +
       '<h1 class="oil-h1">' + esc(v.head) + '</h1>' +
       (spot ? '<div class="oil-spot">현위치 ' + esc(spot) + '</div>' : '') + '</div>';
 
-    if (P) html += P.barHtml({ regionName: r.r });
+    /* 설정은 접지 않는다 - 아래 숫자가 전부 여기서 고른 유종·차종 기준이다 */
+    if (P) html += P.barHtml({ regionName: r.r, fixed: true });
 
     html += '<div class="oil-card"><p class="oil-p">' + v.body + '</p>' +
       '<p class="oil-p" style="font-size:13px;">' + v.nat + '</p>' +
@@ -208,12 +211,8 @@
         ['동네 중앙값', won(s.md) + '원', true]
       ]) + '</div>';
 
-    html += '<div class="oil-save-row">' +
-      '<button type="button" class="oil-save' + (isHome ? ' is-on' : '') + '" data-save="home">' +
-      (isHome ? '집으로 저장됨' : '집으로 저장') + '</button>' +
-      '<button type="button" class="oil-save' + (isWork ? ' is-on' : '') + '" data-save="work">' +
-      (isWork ? '회사로 저장됨' : '회사로 저장') + '</button></div>';
-
+    /* 집·회사 저장 버튼은 뺐다(2026-09-23). 위치를 잡으면 마지막 동네가
+       자동으로 남아서, 손으로 저장할 일이 없다. */
     html += OIL.adHtml();
 
     var list = (r.stations || []).filter(function (x) { return price(x); })
@@ -223,10 +222,11 @@
       '<p class="oil-p" style="font-size:12.5px;margin:6px 0 0;">' + OIL.characterLine(r) + '</p></div>' +
       list.map(stationRow).join('') + '</div>';
 
-    html += '<a class="oil-btn" href="' + (OIL.cfg.listPageUrl || '/') + '">' +
+    /* '다른 동네 보기'는 동네 목록(=동네기름값? 메인)으로 간다.
+       첫 화면(/)으로 보내면 동네를 보러 왔던 사람이 장소 검색 화면에
+       떨어져서, 한 번 더 눌러 돌아와야 한다. */
+    html += '<a class="oil-btn" href="' + (OIL.cfg.areaPageUrl || '/p/area.html') + '">' +
       '<span>다른 동네 보기</span>' + OIL.chev('#fff') + '</a>';
-    html += '<a class="oil-btn is-ghost" href="' + (OIL.cfg.calcPageUrl || '/p/calc.html') + '">' +
-      '<span>내 연간 주유비 계산해보기</span>' + OIL.chev() + '</a>';
 
     html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
       esc(r.r) + ' · ' + OIL.dateKo(meta.date) + ' ' + fuelName() + ' 실제 판매가 ' + s.n +
@@ -235,17 +235,7 @@
     OIL.render(html);
     document.title = r.r + ' 주유소 최저가 - 오늘 ' + fuelName() + ' ' + won(s.lo) + '원부터';
 
-    if (P) {
-      P.wireBar(function () { renderArea(meta, r, total); });
-      var root = OIL.root();
-      root.addEventListener('click', function (e) {
-        var b = e.target.closest('[data-save]');
-        if (!b) return;
-        var key = b.getAttribute('data-save');
-        P.set(key, P.get(key) === r.sl ? '' : r.sl);
-        renderArea(meta, r, total);
-      });
-    }
+    if (P) P.wireBar(function () { renderArea(meta, r, total); });
   }
 
   /* ── 시작 ────────────────────────────────────────────────── */

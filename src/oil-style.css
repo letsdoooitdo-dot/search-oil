@@ -194,9 +194,14 @@
   box-shadow: 0 0 0 3px var(--oil-accent-soft);
   border-radius: 16px; padding: 15px 16px;
 }
-.oil-mine-k { font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--oil-accent-dark); }
-.oil-mine-r { font-size: 17px; font-weight: 900; color: var(--oil-ink); margin-top: 3px; letter-spacing: -.02em; }
-.oil-mine-s { font-size: 12px; color: var(--oil-muted); margin-top: 3px; }
+/* 동네 이름과 가격 줄은 각자 한 줄을 쓴다. 이어 쓰면
+   "경기 평택시휘발유 최저 1,807원"처럼 붙어 읽힌다 - 앞에 있던
+   "우리 동네" 딱지를 뺀 뒤 실제로 그렇게 나왔다(2026-09-23). */
+.oil-mine-r {
+  display: block; font-size: 17px; font-weight: 900; color: var(--oil-ink);
+  letter-spacing: -.02em;
+}
+.oil-mine-s { display: block; font-size: 12px; color: var(--oil-muted); margin-top: 4px; }
 
 /* 집·회사 저장 */
 .oil-save-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
