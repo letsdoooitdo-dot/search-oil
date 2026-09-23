@@ -49,6 +49,9 @@
          리터당 30원 싸고 10km 더 가는 경우는 경차·일반·SUV·화물 모두 손해다
          (기름값이 리터당 1,080원 아래로 떨어지지 않는 한 뒤집히지 않는다). */
       html += '<section class="oil-pitch">' +
+        /* 이 상자가 무슨 상자인지 한마디로 말해준다. 이게 없으면
+           갑자기 산수 문제가 튀어나온 것처럼 보인다. */
+        '<span class="oil-pitch-tag">쓰면 좋은 이유!</span>' +
         '<h1 class="oil-pitch-q">리터당 <b>30원 싼 집</b>이 <b>10km</b> 멀다면,<br>' +
           '가는 게 맞을까요?</h1>' +
         '<div class="oil-pitch-calc">' +
