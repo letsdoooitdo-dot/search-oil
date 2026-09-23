@@ -202,35 +202,38 @@
 .oil-find { display: flex; flex-direction: column; gap: 16px; }
 
 /* 우리가 무슨 말을 하는 사이트인지 한 상자에 담는다.
-   아래 '내 주변' 민트 버튼과 같은 형태(그라데이션·모서리·짙은 그림자)에
-   색만 보라로 간다. 흰 카드로 두면 머리 띠 바로 아래라 묻히고,
-   민트로 두면 눌러야 하는 버튼과 헷갈린다 - 이건 읽는 자리다. */
+   진한 보라에 흰 글씨였다가 연보라에 보라 글씨로 바꿨다. 머리 띠가 이미
+   진한 색이라, 바로 아래에 또 진한 상자가 오면 화면이 무거웠다.
+   아래 메뉴 상자와 테두리·모서리를 맞춰 셋이 한 가족으로 보이게 한다. */
 .oil-pitch {
-  background: linear-gradient(135deg, #A855F7, #7C3AED);
-  color: #fff; border-radius: var(--oil-r);
-  box-shadow: 0 8px 22px rgba(124, 58, 237, .30);
+  background: linear-gradient(135deg, #F6F3FF, #E9E2FF);
+  color: var(--oil-violet-ink);
+  border: 1px solid var(--oil-violet-line);
+  border-radius: var(--oil-r);
+  box-shadow: 0 0 0 3px var(--oil-violet-soft), var(--oil-lift);
   padding: 17px 16px 16px;
 }
-/* 상자의 이름표. 노랑은 이 상자 안에서 '여기 보세요' 를 뜻하는 색이라
-   강조 글자와 같은 노랑을 쓴다. 글자는 보라를 써서 띠와 한 몸으로 보이게 한다. */
+/* 상자의 이름표. 상자가 연해졌으니 이름표는 진한 보라로 뒤집는다 -
+   상자 안에서 여기가 제일 먼저 눈에 들어와야 한다. */
 .oil-pitch-tag {
   display: inline-block; margin: 0 0 10px; padding: 4px 11px;
-  border-radius: 999px; background: #FDE047; color: #6D28D9;
+  border-radius: 999px; background: var(--oil-violet); color: #fff;
   font-size: 11.5px; font-weight: 900; letter-spacing: -0.02em;
 }
 
 /* 이 화면의 h1. 띠가 이미지라 검색엔진이 못 읽으므로 제목은 여기 있어야 한다. */
 .oil-pitch-q {
   margin: 0 0 12px; font-size: 15.5px; font-weight: 800; line-height: 1.55;
-  letter-spacing: -0.02em; color: #fff;
+  letter-spacing: -0.02em; color: var(--oil-violet-ink);
 }
-/* 띠가 노란색으로 강조한 방식을 그대로 이어받는다 */
-.oil-pitch-q b { font-weight: 900; color: #FDE047; }
+.oil-pitch-q b { font-weight: 900; color: var(--oil-violet); }
 
 /* 아끼는 돈과 드는 돈을 나란히 놓는다. 이 대비가 문구의 전부다.
-   보라 위에 흰 카드로 올려 숫자만 또렷하게 남긴다. */
+   연보라 위에 흰 카드를 올린다. 바탕이 연해져 경계가 약하므로 실선을 둘러
+   카드가 떠 있는 게 보이게 한다. */
 .oil-pitch-calc {
   margin: 0 0 12px; background: var(--oil-card);
+  border: 1px solid var(--oil-violet-line);
   border-radius: 13px; overflow: hidden;
 }
 .oil-pitch-row {
@@ -245,23 +248,26 @@
 .oil-pitch-row.is-cost { background: var(--oil-soft); }
 .oil-pitch-row.is-cost b { color: var(--oil-accent-dark); }
 
-/* 상자의 결론. 보라 바탕이라 붉은 강조는 안 보인다 - 여기서는 노랑이 그 역할. */
+/* 상자의 결론. 바탕이 연해지면서 붉은 강조를 쓸 수 있게 됐다.
+   아래 두 메뉴 제목에 쓰는 것과 같은 빨강이라, "다 따져서 제일 싼 주유소"가
+   화면 어디에 나와도 같은 색으로 읽힌다. */
 .oil-pitch-say {
   margin: 0; font-size: 14px; font-weight: 700; line-height: 1.55;
-  letter-spacing: -0.02em; color: #fff;
+  letter-spacing: -0.02em; color: var(--oil-violet-ink);
 }
-.oil-pitch-say b { font-weight: 900; color: #FDE047; }
+.oil-pitch-say b { font-weight: 900; color: var(--oil-accent-deep); }
 
 /* 두 기능을 각각 하나의 상자로 묶는다. 제목·입력칸·설명이 한 덩어리라는 게
    눈으로 보여야 "이게 하나의 메뉴"로 읽힌다. 묶지 않으면 글과 버튼이
    따로 떠다녀서 어디까지가 한 기능인지 알 수 없다.
-   테두리는 목록 화면의 1위 카드와 같은 모양으로 맞춘다 - 이 사이트에서
-   붉은 테두리 + 옅은 붉은 테는 '여기를 보세요'라는 뜻으로 이미 쓰고 있다. */
+   테두리는 붉은색이었다가 보라로 바꿨다. 빨강은 이 사이트에서 '비용·손해'라는
+   뜻으로 쓰는 색이라, 아무 뜻 없는 상자 테두리에 쓰면 뜻이 흐려진다.
+   위 보라 상자와 같은 색으로 맞추면 첫 화면 셋이 한 가족으로 보인다. */
 .oil-find-sec {
   background: var(--oil-card);
-  border: 1px solid var(--oil-accent);
+  border: 1px solid var(--oil-violet-line);
   border-radius: var(--oil-r);
-  box-shadow: 0 0 0 3px var(--oil-accent-soft), var(--oil-lift);
+  box-shadow: 0 0 0 3px var(--oil-violet-soft), var(--oil-lift);
   padding: 15px 16px 16px;
 }
 /* 상자 안에 들어오면 입력칸이 흰 바탕 위의 흰 카드가 되어 사라진다.
