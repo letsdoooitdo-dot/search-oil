@@ -206,7 +206,10 @@
    진한 색이라, 바로 아래에 또 진한 상자가 오면 화면이 무거웠다.
    아래 메뉴 상자와 테두리·모서리를 맞춰 셋이 한 가족으로 보이게 한다. */
 .oil-pitch {
-  background: linear-gradient(135deg, #F0FBF9, #D9F2EE);
+  /* 아래쪽 끝을 D9F2EE 에서 한 단계 밝혔다. 그래야 결론 줄의 금색을
+     메뉴 제목과 똑같은 색으로 쓸 수 있다(그 전엔 대비가 4.3 으로 모자랐다).
+     상자가 연해진 만큼은 테두리와 테가 붙잡아준다. */
+  background: linear-gradient(135deg, #F3FCFB, #E5F7F3);
   color: var(--oil-mint-ink);
   border: 1px solid var(--oil-mint-line);
   border-radius: var(--oil-r);
@@ -248,14 +251,13 @@
 .oil-pitch-row.is-cost { background: var(--oil-soft); }
 .oil-pitch-row.is-cost b { color: var(--oil-accent-dark); }
 
-/* 상자의 결론. 바탕이 연해지면서 붉은 강조를 쓸 수 있게 됐다.
-   아래 두 메뉴 제목에 쓰는 것과 같은 빨강이라, "다 따져서 제일 싼 주유소"가
-   화면 어디에 나와도 같은 색으로 읽힌다. */
+/* 상자의 결론. 아래 두 메뉴 제목과 똑같은 금색이라,
+   "다 따져서 제일 싼 주유소"가 화면 어디에 나와도 한 가지 색으로 읽힌다. */
 .oil-pitch-say {
   margin: 0; font-size: 14px; font-weight: 700; line-height: 1.55;
   letter-spacing: -0.02em; color: var(--oil-mint-ink);
 }
-.oil-pitch-say b { font-weight: 900; color: var(--oil-accent-deep); }
+.oil-pitch-say b { font-weight: 900; color: var(--oil-gold); }
 
 /* 두 기능을 각각 하나의 상자로 묶는다. 제목·입력칸·설명이 한 덩어리라는 게
    눈으로 보여야 "이게 하나의 메뉴"로 읽힌다. 묶지 않으면 글과 버튼이
@@ -280,7 +282,8 @@
 }
 
 /* 두 기능이 '메뉴'로 보이게 한다. 앞의 짧은 막대가 항목 표시 역할을 한다.
-   메뉴 이름에서 핵심 구절만 붉게 둔다 - 머리 띠가 노랗게 강조한 그 말이다. */
+   메뉴 이름에서 핵심 구절만 금색으로 둔다 - 머리 띠가 노랗게 강조한 그 말이고,
+   청록 화면에서 보색이라 제일 먼저 눈에 들어온다. */
 .oil-find-h {
   display: flex; align-items: center; gap: 8px;
   margin: 0 0 10px; font-size: 16.5px; font-weight: 900;
@@ -289,10 +292,11 @@
 /* 글은 통째로 한 조각이어야 한다. 막대와 글을 바로 flex 로 나란히 두면
    '가는 길에서' 와 붉은 구절이 별개 조각이 되어 사이가 8px 벌어진다. */
 .oil-find-h > span { min-width: 0; }
-.oil-find-h b { font-weight: 900; color: var(--oil-accent-dark); }
+.oil-find-h b { font-weight: 900; color: var(--oil-gold); }
+/* 막대도 같은 금색이다. 글자는 금색인데 막대만 빨강이면 따로 노는 조각이 된다. */
 .oil-find-h::before {
   content: ''; flex-shrink: 0; width: 4px; height: 15px; border-radius: 2px;
-  background: var(--oil-accent);
+  background: var(--oil-gold);
 }
 /* 따지는 항목을 적는 줄. 목록이라 두 줄로 나누고 <br> 로 끊는다.
    한 줄에 욱여넣으면 글자가 10px 아래로 내려가 읽을 수가 없다. */
