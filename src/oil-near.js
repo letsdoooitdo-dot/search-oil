@@ -148,7 +148,7 @@
         : '<br>기준(' + esc(baseName) + ')보다 <b>' + t.extra.toFixed(1) + 'km 더</b> 갑니다' +
           (t.round ? ' · 왕복이라 ' + t.drive.toFixed(1) + 'km' : '') +
           '<br>' + t.car.label + ' ' + t.kmpl + 'km/L · ' + t.L + 'L 주유 기준<br>' +
-          '아끼는 돈 ' + won(t.gain) + '원 − 더 가는 기름값 ' + won(t.cost) + '원 = ' +
+          '아끼는 돈 ' + won(t.gain) + '원 − 거기까지 가는 기름값 ' + won(t.cost) + '원 = ' +
           '<b>' + (t.net >= 0 ? '+' : '') + won(t.net) + '원</b>') +
       (s._real ? '' : '<br><span class="oil-st-caveat">이 주유소는 길찾기가 안 돼 ' +
         '직선거리로 어림했습니다.</span>') + '</p>';
@@ -249,7 +249,7 @@
         '더 싼 곳도 있지만, 거기까지 오가는 기름값이 아끼는 돈보다 큽니다.'
       : '<b>' + esc(best.n) + '</b>까지 가서 넣으면 제일 가까운 ' +
         esc(base.n) + '보다 <b>' + won(best._trip.net) + '원</b>을 아낍니다. ' +
-        '더 가는 기름값은 이미 뺀 금액입니다.';
+        '거기까지 가는 기름값은 이미 뺀 금액입니다.';
     html += '<p class="oil-lead" style="margin-top:0;">' + lead + '</p>';
 
     /* 지도 - 목록에 보이는 곳을 그대로 찍는다 */

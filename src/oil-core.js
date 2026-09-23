@@ -110,6 +110,9 @@
   OIL.tripLine = function (t, isBase, kind) {
     var off = (kind === 'detour');
     var go = off ? '돌아가도' : '더 가도';
+    /* "더 드는 기름값"은 읽기가 어렵다. '더'(무엇에 비해?)와 '드는'(무슨 돈?)이
+       겹쳐서 한 번 더 생각해야 뜻이 잡힌다. 돈이 어디에 쓰이는지를 그대로 적는다. */
+    var costName = off ? '들렀다 가는' : '거기까지 가는';
     function sub(s) { return '<span class="oil-st-sub">' + s + '</span>'; }
 
     if (isBase) {
@@ -132,15 +135,15 @@
       }
       return { cls: 'is-good',
                text: '<b>' + OIL.won(t.net) + '원 더 아낍니다</b>' +
-                     sub(t.drive.toFixed(1) + 'km ' + go + ', 더 드는 기름값 ' +
+                     sub(t.drive.toFixed(1) + 'km ' + go + ', ' + costName + ' 기름값 ' +
                          OIL.won(t.cost) + '원을 뺀 금액입니다') };
     }
     /* 싸긴 한데 오가는 기름값이 더 큰 경우 - 이게 우리가 잡아주는 함정이다 */
     return { cls: 'is-bad',
              text: '<b>' + OIL.won(-t.net) + '원 손해입니다</b>' +
-                   sub('싸게 넣어 ' + OIL.won(t.gain) + '원 아끼지만, ' +
-                       t.drive.toFixed(1) + 'km ' + (off ? '돌아가는' : '더 가는') +
-                       ' 기름값이 ' + OIL.won(t.cost) + '원입니다') };
+                   sub('싸게 넣어 ' + OIL.won(t.gain) + '원 아끼는데, ' +
+                       (off ? '돌아서' : '거기까지') + ' ' + t.drive.toFixed(1) +
+                       'km 가는 기름값이 ' + OIL.won(t.cost) + '원입니다') };
   };
 
   /* ── 주유소 상표 ──────────────────────────────────────────

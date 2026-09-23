@@ -196,7 +196,7 @@
         ? '<br>가는 길에서 가장 덜 벗어나는 곳이라 비교 기준으로 씁니다.'
         : '<br>기준(' + esc(baseName) + ')보다 <b>' + t.extra.toFixed(1) + 'km 더</b> 우회합니다' +
           '<br>' + t.car.label + ' ' + t.kmpl + 'km/L · ' + t.L + 'L 주유 기준<br>' +
-          '아끼는 돈 ' + won(t.gain) + '원 − 더 우회하는 기름값 ' + won(t.cost) + '원 = ' +
+          '아끼는 돈 ' + won(t.gain) + '원 − 들렀다 가는 기름값 ' + won(t.cost) + '원 = ' +
           '<b>' + (t.net >= 0 ? '+' : '') + won(t.net) + '원</b>') +
       (s._real ? '' : '<br><span class="oil-st-caveat">길찾기가 안 돼 어림한 값입니다.</span>') +
       '</p>';
@@ -269,7 +269,7 @@
           '더 싼 곳도 있지만, 거기까지 돌아가는 기름값이 아끼는 돈보다 큽니다.'
         : '<b>' + esc(best.n) + '</b>에 들렀다 가면 제일 안 돌아가는 ' +
           esc(base.n) + '보다 <b>' + won(best._trip.net) + '원</b>을 아낍니다. ' +
-          '더 돌아가는 기름값은 이미 뺀 금액입니다.') + '</p>';
+          '들렀다 가는 기름값은 이미 뺀 금액입니다.') + '</p>';
 
     if (OIL.map && OIL.map.can()) html += '<div class="oil-list-map" id="oil-list-map"></div>';
 
