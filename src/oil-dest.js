@@ -388,7 +388,7 @@
           '아래에서 출발지를 직접 정하셔도 결과는 똑같습니다.</p>' +
         '<a class="oil-locate' + (w.solid ? ' is-ghost' : '') + '" href="' + pick + '">' +
           '출발지 직접 정하기</a>' +
-        (kind === 'none' ? '' :
+        (kind === 'none' || w.noRetry ? '' :
           '<button type="button" class="oil-locate is-ghost" id="oil-dest-retry">' +
             '위치 다시 시도</button>') +
       '</div>' +

@@ -213,7 +213,8 @@
            단 w.solid(새 창에서 열기)처럼 그게 진짜 해결책인 경우만 양보한다. */
         '<button type="button" class="oil-locate' + (w.solid ? ' is-ghost' : '') +
           '" id="oil-near-search">동네·장소 이름으로 찾기</button>' +
-        (kind === 'none' ? '' :
+        /* w.noRetry - 다시 눌러도 같은 답이 확실한 경우(앱이 거부). 헛걸음을 안 시킨다 */
+        (kind === 'none' || w.noRetry ? '' :
           '<button type="button" class="oil-locate is-ghost" id="oil-near-retry">' +
             '위치 다시 시도</button>') +
       '</div>';
