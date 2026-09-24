@@ -261,6 +261,17 @@
     return '';
   }
 
+  function isAndroid() { return /Android/i.test(navigator.userAgent || ''); }
+
+  /* 안드로이드에서 앱 안 브라우저를 빠져나와 크롬으로 여는 주소.
+     아이폰에는 이런 방법이 없다 - 애플이 막아놔서 손으로 [브라우저로 열기]를
+     골라주는 수밖에 없다. */
+  function chromeIntent() {
+    var bare = location.href.replace(/^https?:\/\//, '');
+    return 'intent://' + bare + '#Intent;scheme=https;package=com.android.chrome;' +
+      'S.browser_fallback_url=' + encodeURIComponent(location.href) + ';end';
+  }
+
   function allowHint() {
     var ua = navigator.userAgent || '';
     if (/iPhone|iPad|iPod/i.test(ua)) {
@@ -292,6 +303,16 @@
             '아래 <b>새 창에서 열기</b>를 누르면 바로 됩니다.';
       extra = '<button type="button" class="oil-locate" id="oil-near-newwin">' +
               '새 창에서 열기</button>';
+    } else if (app && isAndroid()) {
+      /* 안드로이드는 말로 안내할 필요가 없다. intent:// 로 크롬을 직접
+         열 수 있어서 버튼 한 번이면 끝난다. 크롬이 없으면 아무 일도 일어나지
+         않으므로 fallback 주소를 같이 실어 보통 브라우저로라도 열리게 한다. */
+      head = app + ' 안에서 열려 위치를 못 씁니다';
+      why = '앱이 품고 있는 작은 브라우저는 위치를 잘 내주지 않습니다 — ' +
+            '거부한다고 말해주지도 않고 <b>그냥 늘어지는</b> 경우가 많아, ' +
+            '기다려도 끝나지 않습니다. 아래를 누르면 크롬으로 열립니다.';
+      extra = '<a class="oil-locate" href="' + chromeIntent() + '">' +
+              '크롬으로 열기</a>';
     } else if (app) {
       /* ★ 거부일 때만 이 안내를 띄우다가 놓쳤다(2026-09-24). 앱 안
          브라우저는 대놓고 거부하는 대신 **아무 답도 안 주고 늘어지는**
