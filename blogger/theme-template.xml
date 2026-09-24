@@ -22,6 +22,20 @@
   </script>
   <script src='https://cdn.jsdelivr.net/gh/abaeksite/aros_adsense_blocker@main/aros_adsense_blocker_v7-1.js'/>
 
+  <!-- 5. 홈 화면에 추가했을 때 쓰이는 아이콘과 이름 (2026-09-24)
+       ★ 이 줄들이 없으면 폰이 알아서 만든다 - 주소 첫 글자 한 자를 동그라미에
+         넣어버려서 'L' 로 나왔다. 무슨 앱인지 알 수가 없다.
+       그림은 scripts/build_icon.py 가 만든다.
+       apple-touch-icon 은 아이폰이 보고, sizes 붙은 icon 은 안드로이드가 본다.
+       ★ 아래 이름은 아이콘 밑에 붙는 글씨다. 길면 "다따져 주유..." 로 잘리므로
+         여섯 자 안쪽으로 둔다. 안드로이드 크롬은 추가할 때 사용자가 고칠 수
+         있는 칸을 띄워주는데, 그 칸에 처음 채워지는 값이 이것이다. -->
+  <link href='@@OIL_IMG_URL@@icon-180.png' rel='apple-touch-icon'/>
+  <link href='@@OIL_IMG_URL@@icon-192.png' rel='icon' sizes='192x192' type='image/png'/>
+  <link href='@@OIL_IMG_URL@@icon-512.png' rel='icon' sizes='512x512' type='image/png'/>
+  <meta content='다따져 주유소' name='apple-mobile-web-app-title'/>
+  <meta content='다따져 주유소' name='application-name'/>
+
 <!-- Open Graph (카톡·페이스북에 링크를 보냈을 때 보이는 카드)
      og:image 가 없으면 카톡이 본문에서 아무 그림이나 긁어다 잘라 보여준다.
      카톡 큰 카드는 가로세로 1.91:1 이라 1200x630 짜리를 따로 만들어 지정한다
