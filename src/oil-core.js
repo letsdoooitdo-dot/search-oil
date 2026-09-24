@@ -339,6 +339,27 @@
       };
     }
 
+    /* ★ 아이폰은 위 'appperm' 을 알아낼 수가 없다.
+       그 판정은 안드로이드 웹뷰가 주는 영어 메시지에 기대는데, 아이폰(WKWebView)은
+       같은 상황에서도 그냥 '거부'나 '못 구함'으로만 알려준다. 즉 **앱에 권한이
+       없어서인지, 사용자가 창에서 거절해서인지 구분할 방법이 없다.**
+       그래서 아이폰 + 앱 안에서는 두 가지 이유를 같이 적는다. 한쪽만 찍어
+       말했다가 틀리면, 맞는 해결책을 아예 못 보게 된다. */
+    if (app && ENV.isIOS() && (kind === 'deny' || kind === 'unavail')) {
+      var isys = esc(ENV.appSysName() || '해당 앱');
+      return {
+        head: app + ' 안에서 위치를 못 받았습니다',
+        why: '둘 중 하나입니다.<br>' +
+             '<b>①</b> <b>' + esc(app) + '</b> 앱 자체에 위치 권한이 없는 경우 — ' +
+             '<b>설정 → 개인정보 보호 및 보안 → 위치 서비스 → ' + isys + '</b>을 ' +
+             '<b>앱을 사용하는 동안</b>으로 바꾸고 아래 <b>[위치 다시 시도]</b>. ' +
+             '<b>한 번만 켜두면 계속 됩니다.</b><br>' +
+             '<b>②</b> 방금 창에서 <b>[허용 안 함]</b>을 누르신 경우 — 앱 안 브라우저는 ' +
+             '되돌릴 자리가 없어서, 아래에서 크롬으로 열어 다시 하셔야 합니다.',
+        extra: chromeBtn()
+      };
+    }
+
     if (kind === 'none') {
       return { head: '이 브라우저는 위치 기능을 쓸 수 없습니다',
                why: '아래에서 동네나 장소 이름으로 찾아주세요.', extra: '' };
@@ -428,7 +449,20 @@
     if (!navigator.geolocation) { onFail('none'); return; }
 
     function attempt(gps, ms) {
-      navigator.geolocation.getCurrentPosition(onOk, function (err) {
+      /* 30초를 말없이 기다리면 멈춘 화면처럼 보인다. 중간에 한 번 말을 건다 -
+         권한 창이 다른 화면에 가려 안 보이는 경우도 이 말로 알아챈다. */
+      var nudge = null;
+      if (onStep && ms >= 20000) {
+        nudge = setTimeout(function () {
+          onStep('아직 기다리는 중입니다. 위치 창이 떠 있으면 [허용]을 눌러주세요.');
+        }, 8000);
+      }
+      function stop() { if (nudge) { clearTimeout(nudge); nudge = null; } }
+
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        stop(); onOk(pos);
+      }, function (err) {
+        stop();
         var kind = failKind(err);
         /* 시간 초과일 때만 GPS 로 한 번 더. 나머지는 다시 해도 같은 답이다. */
         if (!gps && kind === 'slow') {
@@ -440,18 +474,31 @@
       }, { enableHighAccuracy: !!gps, timeout: ms, maximumAge: gps ? 0 : 300000 });
     }
 
-    if (navigator.permissions && navigator.permissions.query) {
-      navigator.permissions.query({ name: 'geolocation' }).then(function (st) {
+    /* 권한 상태를 모를 때 가는 길. 창이 뜬다고 보고 넉넉히 기다린다. */
+    function askFresh() {
+      if (onStep) onStep('위치를 물어보는 창이 뜹니다. [허용]을 눌러주세요.');
+      attempt(false, WAIT.prompt);
+    }
+
+    /* ★ 사파리(아이폰)는 Permissions API 가 있어도 'geolocation' 은 모른다.
+       거절된 약속으로 오는 게 보통이지만, 그 자리에서 예외를 던지는 구현도 있다.
+       그러면 여기서 통째로 죽어 버튼이 영영 '확인 중'으로 멈춘다 - try 로 감싼다.
+       결국 아이폰은 늘 이 길로 온다(상태를 알 수 없으니 넉넉히 기다린다). */
+    var q = null;
+    try {
+      if (navigator.permissions && navigator.permissions.query) {
+        q = navigator.permissions.query({ name: 'geolocation' });
+      }
+    } catch (e) { q = null; }
+
+    if (q && q.then) {
+      q.then(function (st) {
         if (st.state === 'denied') { onFail('deny'); return; }
         if (st.state === 'granted') { attempt(false, WAIT.granted); return; }
-        /* 물어볼 참이다 - 창이 뜬다고 미리 말해준다. 창을 보고도 무슨 창인지
-           몰라 닫아버리는 일이 있다. */
-        if (onStep) onStep('위치를 물어보는 창이 뜹니다. [허용]을 눌러주세요.');
-        attempt(false, WAIT.prompt);
-      }).catch(function () { attempt(false, WAIT.prompt); });
+        askFresh();
+      }).catch(askFresh);
     } else {
-      /* 권한 상태를 알 수 없으면 창이 뜬다고 보고 넉넉히 기다린다 */
-      attempt(false, WAIT.prompt);
+      askFresh();
     }
   };
 
