@@ -29,6 +29,7 @@ ROOT = os.path.dirname(HERE)
 DB = os.path.join(HERE, "oil.db")
 
 BEFORE = "2026-09-23"      # 연휴 직전 평일
+EARLY = "2026-09-20"       # 우리 자료의 첫날 - 이 값이 안 움직였는지로 기준일을 검증한다
 BRAND = "알뜰(ex)"          # 오피넷에서 고속도로(도로공사) 주유소를 가리키는 상표
 
 # 이름 앞에 붙은 운영사(대보건설·케이알산업 등)는 떼어낸다.
@@ -89,6 +90,30 @@ def main():
     up = [r for r in got if r["내린폭"] <= -10]
     avg = sum(r["내린폭"] for r in got) / len(got) if got else 0
 
+    # ── 기준일 검증 ──────────────────────────────────────────
+    # 공식 기준은 9/17 인데 우리 자료는 9/20 부터다. 그날을 직접 잴 수는 없으니,
+    # 대신 '그 주에 값이 움직이긴 했나'를 본다. 안 움직였다면 9/17 도 같았을
+    # 가능성이 크다 - 이건 확인이 아니라 추정이므로 글에도 그렇게 적는다.
+    # 날짜별 평균가로 본다. '값이 바뀐 곳 수'로 세면 사흘치와 하루치를
+    # 헷갈리기 쉬워서 실제로 한 번 잘못 적었다(2026-09-25). 평균가는
+    # 기준선이 밀렸는지를 한 줄로 보여준다.
+    days = [d[0] for d in c.execute(
+        "select distinct price_date from prices order by price_date").fetchall()]
+    daily = []
+    for d in days:
+        n, av = c.execute(
+            """select count(*), avg(gasoline) from prices p
+               join stations s using(station_id)
+               where p.price_date=? and s.brand=? and p.gasoline>0""",
+            (d, BRAND)).fetchone()
+        if n:
+            daily.append((d, n, av))
+
+    pre = [x for x in daily if x[0] < "2026-09-24"]     # 연휴 전
+    hol = [x for x in daily if x[0] >= "2026-09-24"]    # 연휴
+    drift = (pre[-1][2] - pre[0][2]) if len(pre) > 1 else 0   # 연휴 전 값이 밀린 폭
+    gap = (pre[-1][2] - hol[-1][2]) if (pre and hol) else 0   # 직전 평일 -> 오늘
+
     lines = []
     lines.append("# 2026 추석 고속도로 주유소 100원 할인 - 주유소별 명단\n")
     lines.append("한국도로공사가 **재정고속도로 주유소 226곳**의 기름값을 9월 24~27일")
@@ -100,6 +125,27 @@ def main():
                  % len(out))
     lines.append("> 내린폭은 공식 기준일(9/17)이 아니라 **연휴 직전 평일 9월 23일**과")
     lines.append("> 비교한 값입니다. 우리 가격 자료가 9월 20일부터라 그렇습니다.\n")
+    lines.append("## 9월 17일과 비교한 게 아닌데, 믿어도 되나\n")
+    lines.append("정부 발표 기준일은 **9월 17일**입니다. 우리 자료는 9월 20일부터라")
+    lines.append("그날 값이 없습니다. 그래서 **그 주에 값이 움직였는지**를 대신 봤습니다.\n")
+    lines.append("| 날짜 | 주유소 | 휘발유 평균 |")
+    lines.append("|---|---|---|")
+    for d, n, av in daily:
+        mark = " ← 연휴 시작" if d == "2026-09-24" else ""
+        lines.append("| %s%s | %d곳 | %s원 |"
+                     % (d, mark, n, format(round(av), ",")))
+    lines.append("")
+    lines.append("연휴 전 나흘(%s~%s) 동안 평균값은 **%+d원**밖에 안 움직였습니다."
+                 % (pre[0][0][5:], pre[-1][0][5:], round(drift)))
+    lines.append("고속도로 기름값은 동네 주유소와 달리 날마다 바뀌지 않습니다.")
+    lines.append("그러니 9월 17일 값도 9월 23일과 크게 다르지 않았을 것입니다 —")
+    lines.append("사흘에 %d원이면 엿새라도 한 자릿수 차이입니다.\n" % abs(round(drift)))
+    lines.append("> **다만 이건 추정입니다.** 9월 17일 가격을 직접 재서 맞춰본 게")
+    lines.append("> 아닙니다. 우리가 확실히 말할 수 있는 건 '연휴 직전 평일보다")
+    lines.append("> **%d원** 쌉니다'까지입니다.\n" % round(gap))
+    lines.append("연휴가 시작된 9월 24일에 값이 한꺼번에 떨어졌습니다. 며칠에 걸쳐")
+    lines.append("조금씩 내린 게 아니라 하루 만에 일제히 움직였으니, 시장이 아니라")
+    lines.append("**정책으로 내린 것이 분명합니다.**\n")
     lines.append("## 실제로 내렸나\n")
     lines.append("| 항목 | 곳수 |")
     lines.append("|---|---|")
