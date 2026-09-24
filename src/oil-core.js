@@ -298,10 +298,11 @@
 
   /* 앱 안에서 빠져나가는 버튼. 이제는 '유일한 길'이 아니라 '곁다리 길'이라
      흐린 단추로 둔다 - 앱 권한만 켜면 앱 안에서도 되기 때문이다. */
-  function chromeBtn() {
+  function chromeBtn(solid) {
+    var c = 'oil-locate' + (solid ? '' : ' is-ghost');
     return ENV.isAndroid()
-      ? '<a class="oil-locate is-ghost" href="' + ENV.chromeIntent() + '">크롬으로 열기</a>'
-      : '<button type="button" class="oil-locate is-ghost" id="oil-loc-chrome">' +
+      ? '<a class="' + c + '" href="' + ENV.chromeIntent() + '">크롬으로 열기</a>'
+      : '<button type="button" class="' + c + '" id="oil-loc-chrome">' +
           '크롬으로 열기</button>' +
         '<div class="oil-locate-tip" id="oil-loc-tip" hidden>' +
           '크롬이 열리지 않았습니다. 오른쪽 위 <b>⋯</b>(또는 <b>⋮</b>)를 눌러 ' +
@@ -354,6 +355,29 @@
              '<br><b>한 번만 켜두면 그다음부터는 계속 됩니다.</b> ' +
              '켜신 뒤 아래 <b>[위치 다시 시도]</b>를 눌러주세요.',
         extra: chromeBtn()
+      };
+    }
+
+    /* ★ 앱이 묻지도 않고 거절한 경우 (2026-09-24 스레드에서 확인).
+       인스타그램은 권한 창을 띄워주는데 스레드는 **창 자체가 안 뜨고** 바로
+       거부로 끝난다. 휴대폰 설정에서 스레드 위치 권한을 켜도 마찬가지다 -
+       막는 자리가 OS 가 아니라 그 앱의 브라우저라서 설정으로는 안 풀린다.
+       ★ 그래서 여기서는 '앱 권한을 켜세요'를 주버튼으로 두면 안 된다.
+         켜봐야 창이 안 뜬다. 크롬으로 나가는 게 유일하게 확실한 길이라
+         이때만 [크롬으로 열기]를 진한 버튼으로 올린다.
+       다만 아이폰은 앱 권한이 없을 때도 이렇게 보일 수 있어서, 아직 안
+       켜보신 분을 위해 설정 경로도 한 줄 남겨둔다. */
+    if (kind === 'autodeny') {
+      return {
+        head: (app === '앱 안 브라우저' ? '이 앱' : app) + ' 안에서는 위치를 물어보지도 않습니다',
+        why: '권한 창이 <b>뜨지도 않고 바로 거절</b>됐습니다. 이 앱의 브라우저가 ' +
+             '위치를 아예 안 내주는 것이라, <b>휴대폰 설정을 바꿔도 창이 안 뜹니다.</b><br>' +
+             '아래 <b>[크롬으로 열기]</b>가 확실한 길입니다. ' +
+             '<b>[동네·장소 이름으로 찾기]</b>를 쓰셔도 결과는 똑같습니다.<br>' +
+             '<span style="opacity:.8">아직 안 해보셨다면 ' + appPermPath() +
+             ' 바꾸고 <b>[위치 다시 시도]</b>도 한 번은 해볼 만합니다.</span>',
+        extra: chromeBtn(true),
+        solid: true
       };
     }
 
@@ -534,10 +558,18 @@
        인스타그램/안드로이드에서 실제로 이 메시지를 받았다(2026-09-24).
        사이트에는 [허용]을 눌러줬는데도 0.0초에 즉시 실패한다 - 기다린다고
        되지 않고, 휴대폰 설정에서 그 앱의 권한을 켜야 한다. */
-  function failKind(err) {
+  /* ★ 앱 안에서 '거부'가 눈 깜짝할 새에 오면, 사용자가 [차단]을 누른 게 아니다.
+     창이 뜨고 그걸 읽고 손가락이 닿기까지 1.5초는 절대 안 걸린다.
+     **앱이 묻지도 않고 대신 거절한 것**이다 (2026-09-24 스레드에서 확인 -
+     인스타는 창이 뜨는데 스레드는 아예 안 뜨고 바로 실패한다).
+     이때는 휴대폰 설정을 아무리 만져도 창이 안 뜨므로, 안내가 달라야 한다. */
+  var INSTANT = 1500;
+
+  function failKind(err, ms) {
     var code = err ? err.code : 0;
     var msg = (err && err.message) || '';
     if (code === 2 && /sufficient\s+geolocation\s+permissions/i.test(msg)) return 'appperm';
+    if (code === 1 && ENV.app() && ms < INSTANT) return 'autodeny';
     return code === 1 ? 'deny' : code === 2 ? 'unavail' : 'slow';
   }
 
@@ -547,6 +579,7 @@
     function attempt(gps, ms) {
       /* 30초를 말없이 기다리면 멈춘 화면처럼 보인다. 중간에 한 번 말을 건다 -
          권한 창이 다른 화면에 가려 안 보이는 경우도 이 말로 알아챈다. */
+      var t0 = Date.now();
       var nudge = null;
       if (onStep && ms >= 20000) {
         nudge = setTimeout(function () {
@@ -561,7 +594,7 @@
         onOk(pos);
       }, function (err) {
         stop();
-        var kind = failKind(err);
+        var kind = failKind(err, Date.now() - t0);
         /* 시간 초과일 때만 GPS 로 한 번 더. 나머지는 다시 해도 같은 답이다. */
         if (!gps && kind === 'slow') {
           if (onStep) onStep('GPS로 한 번 더 잡아보는 중... (최대 15초)');
