@@ -166,24 +166,67 @@
     }).catch(function () { /* 못 불러오면 원래 안내문 그대로 둔다 */ });
   }
 
-  /* 내 주변 - 위치를 새로 받아서 결과 화면으로 */
+  /* ── 내 주변 - 위치를 받아서 결과 화면으로 ──────────────────
+     두 번 시도한다.
+       1차  빠른 방식(기지국·와이파이). 대개 1초 안에 온다.
+       2차  1차가 시간 초과일 때만, GPS 를 켜고 더 기다린다.
+     한 번만 해보고 포기하면 "오래 걸립니다"가 억울하게 뜬다 - 실내에서
+     첫 시도가 자주 늦는데, GPS 로 다시 하면 되는 경우가 많다.
+
+     ★ 실패 코드를 뭉뚱그리지 않는다. 전에는 거부(1)가 아니면 전부
+       "오래 걸립니다"라고 했는데, 실제로 흔한 건 2번(위치를 못 구함)이다.
+       PC 는 위치 장치가 없어 인터넷 주소로 어림잡는데 그게 자주 실패한다.
+       "오래 걸린다"고 하면 기다리면 될 줄 알고 계속 눌러보게 된다. */
   function goNear() {
     var btn = document.getElementById('oil-near');
     var msg = document.getElementById('oil-locate-msg');
     if (!navigator.geolocation) { locateFailed('none'); return; }
     if (btn) btn.disabled = true;
     if (msg) msg.textContent = '위치를 확인하는 중...';
+
+    /* 이미 거부해둔 상태면 8초를 기다릴 이유가 없다. 바로 알려준다. */
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'geolocation' }).then(function (st) {
+        if (st.state === 'denied') { if (btn) btn.disabled = false; locateFailed('deny'); }
+        else tryLocate(false);
+      }).catch(function () { tryLocate(false); });
+    } else {
+      tryLocate(false);
+    }
+  }
+
+  function tryLocate(gps) {
+    var btn = document.getElementById('oil-near');
+    var msg = document.getElementById('oil-locate-msg');
+    var app = inAppName();
+
+    /* 앱 안 브라우저는 기다려도 안 된다. 21초(6+15)를 세워두지 않고
+       5초만 보고 바로 빠져나오는 길을 안내한다. GPS 재시도도 안 한다. */
+    var opt = app
+      ? { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+      : gps
+        /* 2차 - 위성을 쓴다. 오래 걸리는 대신 실내에서도 잡히는 일이 있다.
+           갓 받은 값만 받으려고 maximumAge 를 0 으로 둔다. */
+        ? { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        /* 1차 - 기지국·와이파이로 충분하다. 우리는 반경 몇 km 안을 찾는
+           일이라 정밀도가 필요 없고, 조금 전 받아둔 값이 있으면 그대로 쓴다. */
+        : { enableHighAccuracy: false, timeout: 6000, maximumAge: 300000 };
+
     navigator.geolocation.getCurrentPosition(function (pos) {
       var la = pos.coords.latitude, ln = pos.coords.longitude;
       location.href = (OIL.cfg.areaPageUrl || '/p/area.html') +
         '?la=' + la.toFixed(5) + '&ln=' + ln.toFixed(5) + '&me=1';
     }, function (err) {
+      var code = err ? err.code : 0;
+      /* 시간 초과면 GPS 로 한 번 더. 그 외(거부·못 구함)는 다시 해도 같다. */
+      if (!gps && !app && code === 3) {
+        if (msg) msg.textContent = 'GPS로 한 번 더 잡아보는 중... (최대 15초)';
+        tryLocate(true);
+        return;
+      }
       if (btn) btn.disabled = false;
-      locateFailed(err && err.code === 1 ? 'deny' : 'slow');
-      /* 고정밀(GPS)을 켜면 위성을 잡느라 3~8초를 기다린다. 우리는 반경
-         몇 km 안의 주유소를 찾는 일이라 기지국·와이파이 위치로 충분하고,
-         그건 1초 안에 온다. 조금 전에 받아둔 위치가 있으면 그대로 쓴다. */
-    }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 });
+      locateFailed(code === 1 ? 'deny' : code === 2 ? 'unavail' : 'slow');
+    }, opt);
   }
 
   /* ── 위치를 못 잡았을 때 ───────────────────────────────────
@@ -204,13 +247,17 @@
      대신 받아야 해서 막히는 경우가 많다. 이때는 "브라우저로 열기"가 답이다. */
   function inAppName() {
     var ua = navigator.userAgent || '';
+    /* ★ 안드로이드 스레드는 UA 에 'Threads' 가 아니라 'Barcelona' 로 적힌다
+       (스레드의 개발 시절 이름). 이것 때문에 스레드에서 들어온 사람을
+       못 알아보고 엉뚱한 안내를 보여줬다(2026-09-24). */
+    if (/Barcelona|Threads/i.test(ua)) return '스레드';
     if (/Instagram/i.test(ua)) return '인스타그램';
-    if (/Threads/i.test(ua)) return '스레드';
-    if (/FBAN|FBAV|FB_IAB/i.test(ua)) return '페이스북';
+    if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) return '페이스북';
     if (/KAKAOTALK/i.test(ua)) return '카카오톡';
-    if (/NAVER\(inapp/i.test(ua)) return '네이버 앱';
+    if (/NAVER\(inapp|NAVER\//i.test(ua)) return '네이버 앱';
     if (/Line\//i.test(ua)) return '라인';
     if (/DaumApps/i.test(ua)) return '다음 앱';
+    if (/everytimeApp|BAND|TwitterAndroid|Snapchat/i.test(ua)) return '앱 안 브라우저';
     return '';
   }
 
@@ -245,9 +292,16 @@
             '아래 <b>새 창에서 열기</b>를 누르면 바로 됩니다.';
       extra = '<button type="button" class="oil-locate" id="oil-near-newwin">' +
               '새 창에서 열기</button>';
-    } else if (app && kind === 'deny') {
-      head = app + ' 안에서 열려 위치가 막혔습니다';
-      why = '앱 안 브라우저는 위치를 잘 내주지 않습니다. ' +
+    } else if (app) {
+      /* ★ 거부일 때만 이 안내를 띄우다가 놓쳤다(2026-09-24). 앱 안
+         브라우저는 대놓고 거부하는 대신 **아무 답도 안 주고 늘어지는**
+         경우가 더 많다 - 그래서 "오래 걸립니다"로 떨어졌고, 사용자는
+         기다리면 될 줄 알고 계속 눌렀다. 앱 안이면 이유를 안 가리고
+         빠져나오는 길부터 알려준다. */
+      head = app + ' 안에서 열려 위치를 못 씁니다';
+      why = '앱이 품고 있는 작은 브라우저는 위치를 잘 내주지 않습니다 — ' +
+            '거부한다고 말해주지도 않고 <b>그냥 늘어지는</b> 경우가 많아, ' +
+            '기다려도 끝나지 않습니다.<br>' +
             '오른쪽 위 <b>⋯</b>(또는 <b>⋮</b>)를 눌러 ' +
             '<b>다른 브라우저로 열기</b>를 골라주세요. 크롬·사파리에서 열면 됩니다.';
     } else if (kind === 'none') {
@@ -256,9 +310,20 @@
     } else if (kind === 'deny') {
       head = '위치 권한이 꺼져 있습니다';
       why = allowHint();
+    } else if (kind === 'unavail') {
+      /* 제일 흔한 실패인데 전에는 "오래 걸립니다"로 덮여 있었다.
+         기다린다고 되는 게 아니라는 걸 분명히 말해준다. */
+      head = '위치를 찾지 못했습니다';
+      why = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '')
+        ? '기기가 위치를 내주지 못했습니다. <b>휴대폰 설정에서 위치(GPS)</b>가 ' +
+          '꺼져 있지 않은지 보시고, 그래도 안 되면 아래에서 동네 이름으로 찾아주세요.'
+        : '<b>컴퓨터는 위치 장치가 없어</b> 인터넷 주소로 어림잡는데, 그게 자주 ' +
+          '실패합니다. 기다린다고 되지는 않습니다 — 휴대폰에서는 대개 잡히고, ' +
+          '지금은 아래에서 <b>동네 이름으로 찾으시면 결과는 똑같습니다.</b>';
     } else {
       head = '위치 확인이 오래 걸립니다';
-      why = '실내나 지하에서는 위치를 못 잡는 경우가 있습니다. ' +
+      why = 'GPS로 한 번 더 해봤는데도 시간이 넘었습니다. ' +
+            '실내나 지하에서 자주 그렇습니다. ' +
             '다시 시도하거나, 동네 이름으로 바로 찾으셔도 됩니다.';
     }
 
