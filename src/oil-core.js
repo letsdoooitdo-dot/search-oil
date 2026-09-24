@@ -423,6 +423,83 @@
     ENV.wireIosChrome('oil-loc-chrome', 'oil-loc-tip');
   };
 
+  /* ── 자주 쓰는 사람에게만 - 홈 화면에 추가 권유 ─────────────
+     앱 안 브라우저는 '이 사이트에 위치를 허용' 을 기억하지 않는다. 그래서
+     들어올 때마다 팝업을 본다. 우리가 고칠 수 있는 자리가 아니다 - 웹페이지에는
+     "이 허용을 기억해줘"라고 부탁할 방법이 아예 없다. 크롬·사파리는 기억하므로,
+     자주 쓸 사람에게는 그쪽으로 옮겨 홈 화면에 담아두시라고 권한다.
+
+     ★ 아무에게나 띄우면 안 된다. 방문자 대부분은 한 번 보고 간다 - 그분들에게는
+       그냥 성가신 광고다. **자주 쓴다는 증거가 있는 사람에게만** 띄운다.
+         (1) 3번째 방문부터          - 다시 찾아온 사람
+         (2) 한 방문에 위치를 두 번  - 팝업을 두 번 본, 불편을 직접 겪은 사람
+       (2) 가 필요한 이유: 앱 안 브라우저는 저장소를 지우는 경우가 있어 방문
+       횟수가 안 쌓인다. 그러면 정작 제일 불편한 사람에게 안 뜬다.
+     ★ 한 번 닫으면 영구히 안 뜬다. 두 번 권하면 그때부터는 방해물이다. */
+  var TIPKEY = 'oil.hometip', LOCKEY = 'oil.loccount';
+
+  ENV.noteLocated = function () {
+    try {
+      var n = (parseInt(sessionStorage.getItem(LOCKEY), 10) || 0) + 1;
+      sessionStorage.setItem(LOCKEY, String(n));
+    } catch (e) { }
+  };
+
+  function tipEarned() {
+    try { if (localStorage.getItem(TIPKEY) === 'x') return false; } catch (e) { }
+    var visits = (OIL.prefs && OIL.prefs.get('visits')) || 0;
+    if (visits >= 3) return true;
+    try { return (parseInt(sessionStorage.getItem(LOCKEY), 10) || 0) >= 2; } catch (e) { }
+    return false;
+  }
+
+  ENV.homeTipHtml = function () {
+    if (!tipEarned()) return '';
+    var app = ENV.app();
+    var head, body, act = '';
+
+    if (app) {
+      head = '매번 위치를 물어보죠?';
+      body = '<b>' + OIL.esc(app) + '</b>은 위치 허용을 기억하지 않습니다. ' +
+             '<b>크롬으로 열어 홈 화면에 추가</b>해두면 다음부터 아이콘 한 번으로 ' +
+             '열리고, 위치도 다시 묻지 않습니다.';
+      act = ENV.isAndroid()
+        ? '<a class="oil-hometip-go" href="' + ENV.chromeIntent() + '">크롬으로 열기</a>'
+        : '<button type="button" class="oil-hometip-go" id="oil-tip-chrome">' +
+            '크롬으로 열기</button>' +
+          '<div class="oil-locate-tip" id="oil-tip-chrome-t" hidden>' +
+            '크롬이 열리지 않았습니다. 오른쪽 위 <b>⋯</b> → <b>브라우저로 열기</b></div>';
+    } else {
+      head = '자주 쓰시네요';
+      /* ★ 아이콘 글자는 믿지 말 것. '⋮' 는 글꼴에 없으면 쌍점(:)처럼 보여서
+         "오른쪽 위 : 를 누르세요"가 된다(2026-09-24 실제로 그렇게 나왔다).
+         무엇을 누르는지는 **말로** 적고, 아이콘은 곁들이기만 한다. */
+      body = '<b>홈 화면에 추가</b>해두면 앱처럼 한 번에 열립니다.<br>' +
+             (ENV.isIOS()
+               ? '아래 <b>공유</b> <span class="oil-hometip-k">↑</span> → ' +
+                 '<b>홈 화면에 추가</b>'
+               : '오른쪽 위 <b>점 세 개</b> <span class="oil-hometip-k">⋮</span> → ' +
+                 '<b>홈 화면에 추가</b>');
+    }
+
+    return '<div class="oil-hometip" id="oil-hometip">' +
+      '<button type="button" class="oil-hometip-x" id="oil-hometip-x" ' +
+        'aria-label="다시 보지 않기">✕</button>' +
+      '<b class="oil-hometip-h">' + head + '</b>' +
+      '<p class="oil-hometip-p">' + body + '</p>' + act + '</div>';
+  };
+
+  ENV.wireHomeTip = function () {
+    ENV.wireIosChrome('oil-tip-chrome', 'oil-tip-chrome-t');
+    var x = document.getElementById('oil-hometip-x');
+    if (!x) return;
+    x.addEventListener('click', function () {
+      var box = document.getElementById('oil-hometip');
+      if (box) box.parentNode.removeChild(box);
+      try { localStorage.setItem(TIPKEY, 'x'); } catch (e) { }
+    });
+  };
+
   /* ── 앱 안이라고 미리 알려주던 띠는 뺐다 (2026-09-24) ────────
      "OO 안에서 보고 계십니다. 내 주변 찾기는 브라우저에서 열어야 됩니다" 라는
      띠를 화면 맨 위에 띄웠었다. 그 전제가 실측으로 깨졌다 - 앱 안에서도
@@ -479,7 +556,9 @@
       function stop() { if (nudge) { clearTimeout(nudge); nudge = null; } }
 
       navigator.geolocation.getCurrentPosition(function (pos) {
-        stop(); onOk(pos);
+        stop();
+        ENV.noteLocated();   /* 한 방문에 두 번이면 '자주 쓰는 사람'으로 본다 */
+        onOk(pos);
       }, function (err) {
         stop();
         var kind = failKind(err);

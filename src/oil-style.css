@@ -214,6 +214,41 @@
   border: 1px solid #E6D3B0; font-weight: 600;
 }
 
+/* 홈 화면에 추가 권유 (첫 화면 맨 아래, 자주 쓰는 사람에게만).
+   ★ 경고가 아니라 귀띔이다. 위치 실패 안내(.oil-locate-help)가 쓰는 주황을
+     여기 쓰면 안 된다 - 뭔가 잘못된 줄 알고 놀란다. 옅은 파랑 바탕에 점선
+     테두리로 "필수는 아닌 안내"라는 게 보이게 한다. */
+.oil-hometip {
+  position: relative;
+  margin: 4px 0 0; padding: 14px 34px 15px 15px; border-radius: 14px;
+  background: var(--oil-soft); border: 1px dashed var(--oil-line);
+}
+.oil-hometip-h {
+  display: block; font-size: 13px; font-weight: 800; color: var(--oil-ink);
+  letter-spacing: -.02em;
+}
+.oil-hometip-p {
+  margin: 5px 0 0; font-size: 12px; line-height: 1.65; color: var(--oil-ink2);
+}
+.oil-hometip-p b { font-weight: 800; color: var(--oil-ink); }
+/* 아이폰 공유 아이콘 자리 - 그림을 못 쓰니 네모에 화살표로 흉내낸다 */
+.oil-hometip-k {
+  display: inline-block; padding: 0 4px; border: 1px solid var(--oil-muted2);
+  border-radius: 4px; font-size: 10px; line-height: 1.4; color: var(--oil-ink2);
+}
+.oil-hometip-x {
+  position: absolute; top: 8px; right: 8px;
+  background: none; border: 0; cursor: pointer;
+  padding: 4px 6px; font-size: 12px; color: var(--oil-muted2); line-height: 1;
+}
+.oil-hometip-go {
+  display: block; width: 100%; margin-top: 11px; padding: 11px 0;
+  border: 0; border-radius: 11px; cursor: pointer; text-align: center;
+  background: var(--oil-ink); color: #fff;
+  font-size: 12.5px; font-weight: 700; font-family: inherit;
+}
+.oil-hometip-go[disabled] { opacity: .55; }
+
 /* (앱 안이라고 미리 알려주던 띠 .oil-inapp 은 2026-09-24 에 뺐다.
    "여기선 위치를 못 씁니다"가 사실이 아니었다 - 앱 안에서도 된다.
    자세한 사연은 oil-core.js 의 같은 날짜 주석 참고) */

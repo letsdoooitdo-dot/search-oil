@@ -114,10 +114,15 @@
           '차종별 연비와 1회 주유량까지 따져서 계산합니다') +
       '</p></section>';
 
+    /* 자주 쓰는 사람에게만, 화면 맨 아래에 조용히. 하려던 일을 막지 않는다 */
+    html += ENV.homeTipHtml();
+
     html += '</div>';
 
     OIL.render(html);
     document.title = '주유소찾기 - 내 주변 기름값 싼 주유소';
+
+    ENV.wireHomeTip();
 
     document.getElementById('oil-open-search')
       .addEventListener('click', function () { openSheet(); });
