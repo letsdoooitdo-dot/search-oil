@@ -211,12 +211,54 @@
   ENV.isAndroid = function () { return /Android/i.test(navigator.userAgent || ''); };
   ENV.isIOS = function () { return /iPhone|iPad|iPod/i.test(navigator.userAgent || ''); };
 
-  /* 앱 안 브라우저를 빠져나와 크롬으로 여는 주소(안드로이드 전용).
-     아이폰에는 이런 방법이 없다 - 애플이 막아놔서 손으로 골라야 한다. */
+  /* ── 앱 안 브라우저를 빠져나와 크롬으로 ─────────────────────
+     두 운영체제가 방법이 다르다.
+
+     안드로이드 intent:// - 확실하다. 크롬이 없으면 S.browser_fallback_url
+       덕에 기본 브라우저로라도 열린다. 그냥 <a href> 면 끝.
+
+     아이폰 googlechromes:// - 크롬 iOS 가 가진 자기 주소다. https 를
+       googlechromes 로, http 를 googlechrome 으로 바꿔 넣으면 크롬이 뜬다.
+       ★ 다만 안드로이드와 달리 보장이 없다. (1) 크롬이 안 깔려 있으면
+         아무 일도 안 일어나고, (2) 앱마다 이런 주소를 막아두기도 한다.
+         실패해도 알려주지 않아서 버튼이 먹통처럼 보인다 - 그래서 눌러보고
+         1.2초 안에 화면이 안 바뀌면 손으로 하는 법을 대신 띄운다
+         (ENV.wireIosChrome). */
   ENV.chromeIntent = function () {
     var bare = location.href.replace(/^https?:\/\//, '');
     return 'intent://' + bare + '#Intent;scheme=https;package=com.android.chrome;' +
       'S.browser_fallback_url=' + encodeURIComponent(location.href) + ';end';
+  };
+
+  ENV.iosChromeUrl = function () {
+    return location.href.replace(/^https:/, 'googlechromes:')
+                        .replace(/^http:/, 'googlechrome:');
+  };
+
+  /* 아이폰용 [크롬으로 열기] 버튼을 살린다.
+     성공하면 우리 화면은 뒤로 물러나므로 visibilitychange/pagehide 가 온다.
+     아무 일도 없으면 실패다 - 그때만 손으로 하는 법을 보여준다.
+     ★ 시계도 같이 본다. 크롬으로 넘어가면 이 화면이 멈춰 setTimeout 이
+       한참 뒤에야 깨는데, 그때 안내를 띄우면 돌아왔을 때 실패한 것처럼 뜬다. */
+  ENV.wireIosChrome = function (btnId, tipId) {
+    var btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var t0 = Date.now(), left = false;
+      function gone() { left = true; }
+      document.addEventListener('visibilitychange', gone);
+      window.addEventListener('pagehide', gone);
+      try { location.href = ENV.iosChromeUrl(); } catch (e) { left = false; }
+      setTimeout(function () {
+        document.removeEventListener('visibilitychange', gone);
+        window.removeEventListener('pagehide', gone);
+        if (left || document.visibilityState !== 'visible') return;
+        if (Date.now() - t0 > 2500) return;      /* 화면이 멈췄다 돌아온 것 */
+        var tip = document.getElementById(tipId);
+        if (tip) tip.hidden = false;
+        btn.disabled = true;
+      }, 1200);
+    });
   };
 
   ENV.allowHint = function () {
@@ -251,16 +293,16 @@
          더 흔하다. 그래서 이유를 안 가리고 빠져나오는 길부터 준다. */
       var common = '앱이 품고 있는 작은 브라우저는 위치를 잘 내주지 않습니다 — ' +
                    '거부한다고 말해주지도 않고 <b>그냥 늘어지는</b> 경우가 많아, ' +
-                   '기다려도 끝나지 않습니다.';
-      return ENV.isAndroid()
-        ? { head: app + ' 안에서 열려 위치를 못 씁니다',
-            why: common + ' 아래를 누르면 크롬으로 열립니다.',
-            extra: '<a class="oil-locate" href="' + ENV.chromeIntent() + '">' +
-                   '크롬으로 열기</a>' }
-        : { head: app + ' 안에서 열려 위치를 못 씁니다',
-            why: common + '<br>오른쪽 위 <b>⋯</b>(또는 <b>⋮</b>)를 눌러 ' +
-                 '<b>다른 브라우저로 열기</b>를 골라주세요. 크롬·사파리에서 열면 됩니다.',
-            extra: '' };
+                   '기다려도 끝나지 않습니다. 아래를 누르면 크롬으로 열립니다.';
+      return { head: app + ' 안에서 열려 위치를 못 씁니다',
+               why: common,
+               extra: ENV.isAndroid()
+                 ? '<a class="oil-locate" href="' + ENV.chromeIntent() + '">크롬으로 열기</a>'
+                 : '<button type="button" class="oil-locate" id="oil-loc-chrome">' +
+                     '크롬으로 열기</button>' +
+                   '<div class="oil-locate-tip" id="oil-loc-tip" hidden>' +
+                     '크롬이 열리지 않았습니다. 오른쪽 위 <b>⋯</b>(또는 <b>⋮</b>)를 눌러 ' +
+                     '<b>브라우저로 열기</b>를 골라주세요.</div>' };
     }
     if (kind === 'none') {
       return { head: '이 브라우저는 위치 기능을 쓸 수 없습니다',
@@ -289,7 +331,7 @@
              extra: '' };
   };
 
-  /* 위 extra 에 들어간 [새 창에서 열기] 버튼을 살린다(iframe 일 때만 생긴다) */
+  /* 위 extra 에 들어간 버튼들을 살린다 - 어느 쪽이든 없으면 그냥 넘어간다 */
   ENV.wireWhy = function () {
     var w = document.getElementById('oil-loc-newwin');
     if (w) {
@@ -297,6 +339,7 @@
         window.open(location.href, '_blank', 'noopener');
       });
     }
+    ENV.wireIosChrome('oil-loc-chrome', 'oil-loc-tip');
   };
 
   /* ── 앱 안에서 열렸다고 미리 알려주는 띠 ────────────────────
@@ -307,9 +350,12 @@
     if (!app) return '';
     try { if (sessionStorage.getItem('oil.inapp') === 'x') return ''; } catch (e) { }
 
+    /* 아이폰도 버튼을 준다. 안 열리면 그때 손으로 하는 법이 아래 붙는다 */
     var act = ENV.isAndroid()
       ? '<a class="oil-inapp-go" href="' + ENV.chromeIntent() + '">크롬으로 열기</a>'
-      : '<span class="oil-inapp-tip">오른쪽 위 <b>⋯</b> → <b>브라우저로 열기</b></span>';
+      : '<button type="button" class="oil-inapp-go" id="oil-inapp-chrome">크롬으로 열기</button>' +
+        '<span class="oil-inapp-tip" id="oil-inapp-tip" hidden>' +
+          '크롬이 열리지 않았습니다. 오른쪽 위 <b>⋯</b> → <b>브라우저로 열기</b></span>';
 
     return '<div class="oil-inapp" id="oil-inapp">' +
       '<span class="oil-inapp-t"><b>' + OIL.esc(app) + ' 안</b>에서 보고 계십니다. ' +
@@ -319,6 +365,7 @@
   };
 
   ENV.wireBanner = function () {
+    ENV.wireIosChrome('oil-inapp-chrome', 'oil-inapp-tip');
     var x = document.getElementById('oil-inapp-x');
     if (!x) return;
     x.addEventListener('click', function () {
