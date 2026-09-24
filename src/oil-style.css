@@ -187,6 +187,25 @@
 .oil-locate-msg { font-size: 12px; color: var(--oil-muted); margin-top: 8px; line-height: 1.6; }
 .oil-locate-msg:empty { display: none; }
 
+/* 위치를 못 잡았을 때 뜨는 안내 상자.
+   한 줄 안내만 남기면 막다른 길이 된다 - 여기서 할 수 있는 일(동네로 찾기,
+   다시 시도)을 버튼으로 같이 준다. 알림 색(연한 주황)을 쓰는 이유는
+   '막힌 곳'이 아니라 '알려드립니다'로 읽히게 하기 위해서다. */
+.oil-locate-help {
+  margin-top: 10px; padding: 14px 15px; border-radius: 14px;
+  background: #FFF6E9; color: #7A5A22;
+}
+.oil-locate-help b { display: block; font-size: 13.5px; font-weight: 800; color: #6B4B15; }
+.oil-locate-help p { margin: 6px 0 12px; font-size: 12.5px; line-height: 1.65; }
+.oil-locate-help p b { display: inline; font-size: inherit; }
+.oil-locate-help .oil-locate + .oil-locate { margin-top: 7px; }
+/* 두 번째 버튼은 한 단계 낮춘다 - 먼저 눌러야 할 건 '동네로 찾기'다.
+   위치가 이미 한 번 안 됐으니 다시 시도는 덜 급한 선택지다. */
+.oil-locate.is-ghost {
+  background: var(--oil-card); color: var(--oil-ink2);
+  border: 1px solid #E6D3B0; font-weight: 600;
+}
+
 /* 저장된 우리 동네 */
 .oil-mine {
   display: flex; justify-content: space-between; align-items: center; gap: 10px;

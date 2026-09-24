@@ -170,36 +170,142 @@
   function goNear() {
     var btn = document.getElementById('oil-near');
     var msg = document.getElementById('oil-locate-msg');
-    if (!navigator.geolocation) {
-      msg.textContent = '이 브라우저는 위치 기능을 지원하지 않습니다. 장소명으로 찾아주세요.';
-      return;
-    }
-    btn.disabled = true;
-    msg.textContent = '위치를 확인하는 중...';
+    if (!navigator.geolocation) { locateFailed('none'); return; }
+    if (btn) btn.disabled = true;
+    if (msg) msg.textContent = '위치를 확인하는 중...';
     navigator.geolocation.getCurrentPosition(function (pos) {
       var la = pos.coords.latitude, ln = pos.coords.longitude;
       location.href = (OIL.cfg.areaPageUrl || '/p/area.html') +
         '?la=' + la.toFixed(5) + '&ln=' + ln.toFixed(5) + '&me=1';
     }, function (err) {
-      btn.disabled = false;
-      msg.textContent = (err && err.code === 1)
-        ? '위치 권한이 거부되었습니다. 위 검색창에 동네나 장소 이름을 넣어주세요.'
-        : '위치 확인이 오래 걸립니다. 위 검색창에 동네나 장소 이름을 넣어주세요.';
+      if (btn) btn.disabled = false;
+      locateFailed(err && err.code === 1 ? 'deny' : 'slow');
       /* 고정밀(GPS)을 켜면 위성을 잡느라 3~8초를 기다린다. 우리는 반경
          몇 km 안의 주유소를 찾는 일이라 기지국·와이파이 위치로 충분하고,
          그건 1초 안에 온다. 조금 전에 받아둔 위치가 있으면 그대로 쓴다. */
     }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 });
   }
 
+  /* ── 위치를 못 잡았을 때 ───────────────────────────────────
+     한 줄 안내만 남기면 막다른 길이 된다. 여기서 할 수 있는 일을
+     두 개 다 손에 쥐여준다 - (1) 동네 이름으로 찾기 (2) 다시 시도.
+     권한을 거부한 사람에게는 어디를 눌러 켜는지도 기기에 맞춰 알려준다.
+     "설정에서 허용해주세요"만으로는 설정 어디인지 못 찾는다. */
+  /* 우리 화면이 남의 사이트 안에 끼워져 있는가(iframe).
+     끼워진 화면에는 브라우저가 위치를 아예 안 내준다 - 바깥 사이트가
+     allow="geolocation" 을 붙여주지 않으면 권한 거부로 떨어진다.
+     내려받기 차단 등으로 window.top 을 읽다 막히면 그것도 남의 집이다. */
+  function inFrame() {
+    try { return window.top !== window.self; } catch (e) { return true; }
+  }
+
+  /* 앱 안에 들어 있는 브라우저(인앱 브라우저)인가.
+     인스타·스레드·카톡 등에서 링크를 누르면 이게 열리는데, 위치를 앱이
+     대신 받아야 해서 막히는 경우가 많다. 이때는 "브라우저로 열기"가 답이다. */
+  function inAppName() {
+    var ua = navigator.userAgent || '';
+    if (/Instagram/i.test(ua)) return '인스타그램';
+    if (/Threads/i.test(ua)) return '스레드';
+    if (/FBAN|FBAV|FB_IAB/i.test(ua)) return '페이스북';
+    if (/KAKAOTALK/i.test(ua)) return '카카오톡';
+    if (/NAVER\(inapp/i.test(ua)) return '네이버 앱';
+    if (/Line\//i.test(ua)) return '라인';
+    if (/DaumApps/i.test(ua)) return '다음 앱';
+    return '';
+  }
+
+  function allowHint() {
+    var ua = navigator.userAgent || '';
+    if (/iPhone|iPad|iPod/i.test(ua)) {
+      return '아이폰은 <b>설정 → 개인정보 보호 및 보안 → 위치 서비스</b>를 켜고, ' +
+             '그 안에서 <b>Safari 웹사이트</b>(크롬을 쓰시면 <b>Chrome</b>)를 ' +
+             '<b>앱을 사용하는 동안</b>으로 바꿔주세요. 그다음 이 화면을 새로고침하시면 됩니다.';
+    }
+    if (/Android/i.test(ua)) {
+      return '주소창 왼쪽 <b>자물쇠</b>를 누르고 <b>권한 → 위치</b>를 ' +
+             '<b>허용</b>으로 바꾼 뒤, 아래 [위치 다시 시도]를 눌러주세요.';
+    }
+    return '주소창 왼쪽 <b>자물쇠</b>를 누르고 <b>위치</b>를 <b>허용</b>으로 바꾼 뒤, ' +
+           '아래 [위치 다시 시도]를 눌러주세요.';
+  }
+
+  function locateFailed(kind) {
+    var msg = document.getElementById('oil-locate-msg');
+    if (!msg) return;
+
+    /* 왜 막혔는지부터 갈라본다. 남의 사이트 안이거나 앱 안 브라우저면
+       "설정에서 위치를 켜세요"는 소용이 없다 - 거기서는 켤 수가 없다.
+       빠져나오는 길을 알려주는 게 유일한 답이다. */
+    var app = inAppName();
+    var head, why, extra = '';
+
+    if (inFrame()) {
+      head = '이 화면은 다른 사이트 안에 들어 있습니다';
+      why = '끼워 넣어진 화면에는 브라우저가 위치를 내주지 않습니다. ' +
+            '아래 <b>새 창에서 열기</b>를 누르면 바로 됩니다.';
+      extra = '<button type="button" class="oil-locate" id="oil-near-newwin">' +
+              '새 창에서 열기</button>';
+    } else if (app && kind === 'deny') {
+      head = app + ' 안에서 열려 위치가 막혔습니다';
+      why = '앱 안 브라우저는 위치를 잘 내주지 않습니다. ' +
+            '오른쪽 위 <b>⋯</b>(또는 <b>⋮</b>)를 눌러 ' +
+            '<b>다른 브라우저로 열기</b>를 골라주세요. 크롬·사파리에서 열면 됩니다.';
+    } else if (kind === 'none') {
+      head = '이 브라우저는 위치 기능을 쓸 수 없습니다';
+      why = '아래에서 동네나 장소 이름으로 찾아주세요.';
+    } else if (kind === 'deny') {
+      head = '위치 권한이 꺼져 있습니다';
+      why = allowHint();
+    } else {
+      head = '위치 확인이 오래 걸립니다';
+      why = '실내나 지하에서는 위치를 못 잡는 경우가 있습니다. ' +
+            '다시 시도하거나, 동네 이름으로 바로 찾으셔도 됩니다.';
+    }
+
+    /* 어떤 경우든 '동네 이름으로 찾기'는 준다. 이 길만 있으면 위치 없이도
+       똑같은 결과를 볼 수 있다 - 막다른 길로 끝내지 않는다. */
+    msg.innerHTML =
+      '<div class="oil-locate-help">' +
+        '<b>' + head + '</b>' +
+        '<p>' + why + '</p>' + extra +
+        '<button type="button" class="oil-locate' + (extra ? ' is-ghost' : '') +
+          '" id="oil-near-search">동네·장소 이름으로 찾기</button>' +
+        (kind === 'none' ? '' :
+          '<button type="button" class="oil-locate is-ghost" id="oil-near-retry">' +
+            '위치 다시 시도</button>') +
+      '</div>';
+
+    var w = document.getElementById('oil-near-newwin');
+    if (w) {
+      w.addEventListener('click', function () {
+        window.open(location.href, '_blank', 'noopener');
+      });
+    }
+    var s = document.getElementById('oil-near-search');
+    if (s) s.addEventListener('click', function () { openSheet('near'); });
+    var r = document.getElementById('oil-near-retry');
+    if (r) r.addEventListener('click', goNear);
+  }
+
   /* ── 검색 화면 ───────────────────────────────────────────── */
   var sheet = null, input = null, body = null;
   var timer = null, seq = 0;
 
-  function openSheet() {
+  /* 같은 검색 화면을 세 가지로 쓴다. 고른 곳을 어디로 넘길지가 다르다.
+       dest    목적지로     - 가는 길에서 찾기
+       origin  출발지로     - 목적지는 정했는데 출발지를 모를 때
+       near    그 지점 주변 - 위치를 못 잡아 '내 주변' 대신 쓰는 길 */
+  var sheetMode = 'dest';
+
+  function openSheet(mode) {
     if (!sheet) buildSheet();
+    sheetMode = mode || (pickOrigin ? 'origin' : 'dest');
     sheet.classList.add('is-open');
     document.body.classList.add('oil-noscroll');
     input.value = '';
+    input.placeholder = sheetMode === 'near'
+      ? '동네나 장소 이름을 넣어주세요'
+      : '장소명을 검색해 주세요';
     drawIdle();
     /* 휴대폰 뒤로가기로 닫히게 한 칸 넣어둔다 */
     try { history.pushState({ oilSheet: 1 }, '', location.href); } catch (e) { }
@@ -307,7 +413,7 @@
     if (go) {
       var p;
       try { p = JSON.parse(go.getAttribute('data-go')); } catch (err) { return; }
-      if (pickOrigin) {
+      if (sheetMode === 'origin') {
         /* 고른 곳은 목적지가 아니라 출발지다 */
         location.href = PL.destUrl(
           { la: parseFloat(OIL.param('dla')), ln: parseFloat(OIL.param('dln')),
@@ -315,7 +421,8 @@
         return;
       }
       PL.remember(p);
-      location.href = PL.destUrl(p);
+      /* near - 위치를 못 잡았을 때. 고른 곳을 '내 위치' 대신 쓴다. */
+      location.href = sheetMode === 'near' ? PL.nearUrl(p) : PL.destUrl(p);
     }
   }
 
