@@ -178,6 +178,192 @@
     return 'https://map.kakao.com/link/search/' + encodeURIComponent(name);
   };
 
+  /* ── 어디서 열렸나 · 위치가 왜 막혔나 ──────────────────────
+     '내 주변'과 '가는 길' 둘 다 위치로 시작한다. 실패했을 때 하는 말이
+     화면마다 다르면 같은 상황에서 다른 안내를 보게 된다 - 여기 한 곳에
+     모아두고 두 화면이 같이 쓴다. 대신 '무엇으로 대신할지'(동네로 찾기 /
+     출발지 정하기)는 화면마다 달라서 부르는 쪽이 붙인다. */
+  var ENV = OIL.env = {};
+
+  /* 남의 사이트 안에 끼워져 있는가(iframe). 끼워진 화면에는 브라우저가
+     위치를 아예 안 내준다 - 바깥 사이트가 allow="geolocation" 을
+     붙여주지 않으면 거부로 떨어진다. window.top 을 읽다 막혀도 남의 집이다. */
+  ENV.inFrame = function () {
+    try { return window.top !== window.self; } catch (e) { return true; }
+  };
+
+  /* 앱이 품고 있는 브라우저(인앱 브라우저)인가.
+     ★ 안드로이드 스레드의 UA 는 'Threads' 가 아니라 'Barcelona' 다
+       (스레드의 개발 시절 이름). 이것 때문에 스레드 유입을 놓쳤었다. */
+  ENV.app = function () {
+    var ua = navigator.userAgent || '';
+    if (/Barcelona|Threads/i.test(ua)) return '스레드';
+    if (/Instagram/i.test(ua)) return '인스타그램';
+    if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) return '페이스북';
+    if (/KAKAOTALK/i.test(ua)) return '카카오톡';
+    if (/NAVER\(inapp|NAVER\//i.test(ua)) return '네이버 앱';
+    if (/Line\//i.test(ua)) return '라인';
+    if (/DaumApps/i.test(ua)) return '다음 앱';
+    if (/everytimeApp|BAND|TwitterAndroid|Snapchat/i.test(ua)) return '앱 안 브라우저';
+    return '';
+  };
+
+  ENV.isAndroid = function () { return /Android/i.test(navigator.userAgent || ''); };
+  ENV.isIOS = function () { return /iPhone|iPad|iPod/i.test(navigator.userAgent || ''); };
+
+  /* 앱 안 브라우저를 빠져나와 크롬으로 여는 주소(안드로이드 전용).
+     아이폰에는 이런 방법이 없다 - 애플이 막아놔서 손으로 골라야 한다. */
+  ENV.chromeIntent = function () {
+    var bare = location.href.replace(/^https?:\/\//, '');
+    return 'intent://' + bare + '#Intent;scheme=https;package=com.android.chrome;' +
+      'S.browser_fallback_url=' + encodeURIComponent(location.href) + ';end';
+  };
+
+  ENV.allowHint = function () {
+    if (ENV.isIOS()) {
+      return '아이폰은 <b>설정 → 개인정보 보호 및 보안 → 위치 서비스</b>를 켜고, ' +
+             '그 안에서 <b>Safari 웹사이트</b>(크롬을 쓰시면 <b>Chrome</b>)를 ' +
+             '<b>앱을 사용하는 동안</b>으로 바꿔주세요. 그다음 이 화면을 새로고침하시면 됩니다.';
+    }
+    return '주소창 왼쪽 <b>자물쇠</b>를 누르고 <b>위치</b>(안드로이드는 <b>권한 → 위치</b>)를 ' +
+           '<b>허용</b>으로 바꾼 뒤 다시 눌러주세요.';
+  };
+
+  /* kind: 'deny' 권한 거부 / 'unavail' 위치를 못 구함 / 'slow' 시간 초과 /
+           'none' 위치 기능 없음
+     돌려주는 것: { head 제목, why 설명, extra 추가 버튼 HTML }
+     ★ 막힌 이유보다 '어디서 열렸는지'가 먼저다. 남의 사이트 안이나 앱 안이면
+       "설정에서 켜세요"가 통하지 않는다 - 거기서는 켤 수가 없다. */
+  ENV.locateWhy = function (kind) {
+    var app = ENV.app();
+
+    if (ENV.inFrame()) {
+      return {
+        head: '이 화면은 다른 사이트 안에 들어 있습니다',
+        why: '끼워 넣어진 화면에는 브라우저가 위치를 내주지 않습니다. ' +
+             '아래 <b>새 창에서 열기</b>를 누르면 바로 됩니다.',
+        extra: '<button type="button" class="oil-locate" id="oil-loc-newwin">' +
+               '새 창에서 열기</button>'
+      };
+    }
+    if (app) {
+      /* 앱 안 브라우저는 거부한다고 말해주지도 않고 그냥 늘어지는 쪽이
+         더 흔하다. 그래서 이유를 안 가리고 빠져나오는 길부터 준다. */
+      var common = '앱이 품고 있는 작은 브라우저는 위치를 잘 내주지 않습니다 — ' +
+                   '거부한다고 말해주지도 않고 <b>그냥 늘어지는</b> 경우가 많아, ' +
+                   '기다려도 끝나지 않습니다.';
+      return ENV.isAndroid()
+        ? { head: app + ' 안에서 열려 위치를 못 씁니다',
+            why: common + ' 아래를 누르면 크롬으로 열립니다.',
+            extra: '<a class="oil-locate" href="' + ENV.chromeIntent() + '">' +
+                   '크롬으로 열기</a>' }
+        : { head: app + ' 안에서 열려 위치를 못 씁니다',
+            why: common + '<br>오른쪽 위 <b>⋯</b>(또는 <b>⋮</b>)를 눌러 ' +
+                 '<b>다른 브라우저로 열기</b>를 골라주세요. 크롬·사파리에서 열면 됩니다.',
+            extra: '' };
+    }
+    if (kind === 'none') {
+      return { head: '이 브라우저는 위치 기능을 쓸 수 없습니다',
+               why: '아래에서 동네나 장소 이름으로 찾아주세요.', extra: '' };
+    }
+    if (kind === 'deny') {
+      return { head: '위치 권한이 꺼져 있습니다', why: ENV.allowHint(), extra: '' };
+    }
+    if (kind === 'unavail') {
+      /* 제일 흔한 실패인데 전에는 "오래 걸립니다"로 덮여 있었다.
+         기다린다고 되는 게 아니라는 걸 분명히 말해준다. */
+      return {
+        head: '위치를 찾지 못했습니다',
+        why: (ENV.isAndroid() || ENV.isIOS())
+          ? '기기가 위치를 내주지 못했습니다. <b>휴대폰 설정에서 위치(GPS)</b>가 ' +
+            '꺼져 있지 않은지 보시고, 그래도 안 되면 아래에서 동네 이름으로 찾아주세요.'
+          : '<b>컴퓨터는 위치 장치가 없어</b> 인터넷 주소로 어림잡는데, 그게 자주 ' +
+            '실패합니다. 기다린다고 되지는 않습니다 — 휴대폰에서는 대개 잡히고, ' +
+            '지금은 아래에서 <b>동네 이름으로 찾으시면 결과는 똑같습니다.</b>',
+        extra: '' };
+    }
+    return { head: '위치 확인이 오래 걸립니다',
+             why: 'GPS로 한 번 더 해봤는데도 시간이 넘었습니다. ' +
+                  '실내나 지하에서 자주 그렇습니다. ' +
+                  '다시 시도하거나, 동네 이름으로 바로 찾으셔도 됩니다.',
+             extra: '' };
+  };
+
+  /* 위 extra 에 들어간 [새 창에서 열기] 버튼을 살린다(iframe 일 때만 생긴다) */
+  ENV.wireWhy = function () {
+    var w = document.getElementById('oil-loc-newwin');
+    if (w) {
+      w.addEventListener('click', function () {
+        window.open(location.href, '_blank', 'noopener');
+      });
+    }
+  };
+
+  /* ── 앱 안에서 열렸다고 미리 알려주는 띠 ────────────────────
+     눌러보고 실패한 뒤에 알려주면 이미 한 번 헛걸음이다.
+     닫으면 그 방문 동안 다시 안 뜬다 - 매번 뜨면 그게 더 성가시다. */
+  ENV.bannerHtml = function () {
+    var app = ENV.app();
+    if (!app) return '';
+    try { if (sessionStorage.getItem('oil.inapp') === 'x') return ''; } catch (e) { }
+
+    var act = ENV.isAndroid()
+      ? '<a class="oil-inapp-go" href="' + ENV.chromeIntent() + '">크롬으로 열기</a>'
+      : '<span class="oil-inapp-tip">오른쪽 위 <b>⋯</b> → <b>브라우저로 열기</b></span>';
+
+    return '<div class="oil-inapp" id="oil-inapp">' +
+      '<span class="oil-inapp-t"><b>' + OIL.esc(app) + ' 안</b>에서 보고 계십니다. ' +
+        '내 주변 찾기는 브라우저에서 열어야 됩니다.</span>' +
+      '<button type="button" class="oil-inapp-x" id="oil-inapp-x" ' +
+        'aria-label="안내 닫기">✕</button>' + act + '</div>';
+  };
+
+  ENV.wireBanner = function () {
+    var x = document.getElementById('oil-inapp-x');
+    if (!x) return;
+    x.addEventListener('click', function () {
+      var box = document.getElementById('oil-inapp');
+      if (box) box.parentNode.removeChild(box);
+      try { sessionStorage.setItem('oil.inapp', 'x'); } catch (e) { }
+    });
+  };
+
+  /* ── 위치 받기 (두 화면이 같이 쓴다) ────────────────────────
+     1차 빠른 방식(6초) → 시간 초과면 2차 GPS(15초).
+     앱 안이면 재시도하지 않고 5초에 끊는다 - 어차피 안 될 기다림이다.
+     이미 거부해둔 상태면 Permissions API 로 먼저 알아채고 기다리지 않는다.
+     onFail(kind) 로 'deny'|'unavail'|'slow'|'none' 을 돌려준다. */
+  ENV.locate = function (onOk, onFail, onStep) {
+    if (!navigator.geolocation) { onFail('none'); return; }
+    var app = ENV.app();
+
+    function attempt(gps) {
+      var opt = app
+        ? { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+        : gps
+          ? { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+          : { enableHighAccuracy: false, timeout: 6000, maximumAge: 300000 };
+      navigator.geolocation.getCurrentPosition(onOk, function (err) {
+        var code = err ? err.code : 0;
+        if (!gps && !app && code === 3) {
+          if (onStep) onStep('GPS로 한 번 더 잡아보는 중... (최대 15초)');
+          attempt(true);
+          return;
+        }
+        onFail(code === 1 ? 'deny' : code === 2 ? 'unavail' : 'slow');
+      }, opt);
+    }
+
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'geolocation' }).then(function (st) {
+        if (st.state === 'denied') onFail('deny');
+        else attempt(false);
+      }).catch(function () { attempt(false); });
+    } else {
+      attempt(false);
+    }
+  };
+
   /* ── 광고 ──────────────────────────────────────────────────
      자리마다 광고 단위 번호를 나눈다.
        kind='top'  화면 맨 위      (adSlotTop)

@@ -206,6 +206,30 @@
   border: 1px solid #E6D3B0; font-weight: 600;
 }
 
+/* 앱 안에서 열렸다고 미리 알려주는 띠 (화면 제일 위).
+   광고보다도 앞에 둔다 - 이걸 모르고 내려가면 아무것도 안 되는 화면이다.
+   글은 한 줄, 행동은 그 아래 한 줄. 좁은 폰에서 셋을 옆으로 늘어놓으면
+   버튼이 눌리지 않을 만큼 작아진다. */
+.oil-inapp {
+  display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0 8px;
+  padding: 11px 13px 12px; border-radius: 14px;
+  background: #FFF6E9; border: 1px solid #F0DCBB;
+  font-size: 12px; line-height: 1.5; color: #7A5A22;
+}
+.oil-inapp-t { flex: 1 1 0; min-width: 0; }
+.oil-inapp-t b { font-weight: 800; color: #6B4B15; }
+.oil-inapp-x {
+  flex-shrink: 0; background: none; border: 0; cursor: pointer;
+  padding: 0 0 0 4px; font-size: 12px; color: #B79B6B; line-height: 1.5;
+}
+.oil-inapp-go, .oil-inapp-tip {
+  flex: 1 1 100%; margin-top: 9px; padding: 9px 0; border-radius: 10px;
+  text-align: center; font-size: 12.5px; font-weight: 700;
+}
+.oil-inapp-go { background: var(--oil-ink); color: #fff; }
+.oil-inapp-tip { background: #FBEDD8; color: #6B4B15; }
+.oil-inapp-tip b { font-weight: 800; }
+
 /* 저장된 우리 동네 */
 .oil-mine {
   display: flex; justify-content: space-between; align-items: center; gap: 10px;

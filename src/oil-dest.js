@@ -20,7 +20,7 @@
   if (!OIL || window.OIL_MODE !== 'dest') return;
 
   var esc = OIL.esc, won = OIL.won;
-  var P = OIL.prefs, PL = OIL.place;
+  var P = OIL.prefs, PL = OIL.place, ENV = OIL.env;
 
   /* 진짜 우회거리를 물어볼 곳 수 (한 곳당 호출 1회).
      8곳이면 기준이 될 '안 벗어나는 곳'과 이길 만한 '싼 곳'이 모두 들어온다.
@@ -359,31 +359,45 @@
     if (PL) PL.remember({ n: destName, a: '', la: dest.la, ln: dest.ln });
     if (origin) { run(); return; }
 
-    /* 출발지가 없으면 현재 위치를 쓴다. 거부하면 출발지도 검색으로 정하게 안내한다. */
+    /* 출발지가 없으면 현재 위치를 쓴다.
+       ★ 위치 받는 방법도, 실패했을 때 하는 말도 '내 주변'과 똑같이 맞춘다
+         (2026-09-24). 전에는 이 화면만 8초 한 번 시도에 "권한 거부"와
+         "오래 걸립니다" 두 마디밖에 없어서, 앱 안 브라우저로 들어온 사람은
+         왜 안 되는지도 모른 채 막다른 길에 섰다. */
     OIL.loading('현재 위치를 확인하는 중...');
-    if (!navigator.geolocation) { noOrigin('이 브라우저는 위치 기능을 지원하지 않습니다.'); return; }
-    navigator.geolocation.getCurrentPosition(function (pos) {
+    ENV.locate(function (pos) {
       origin = { la: pos.coords.latitude, ln: pos.coords.longitude };
       run();
-    }, function (err) {
-      noOrigin(err && err.code === 1
-        ? '위치 권한이 거부되어 출발지를 알 수 없습니다.'
-        : '위치 확인이 오래 걸립니다.');
-      /* 고정밀(GPS)은 위성을 잡느라 오래 걸린다 - oil-find.js 와 같은 이유로 끈다 */
-    }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 });
+    }, noOrigin, function (step) { OIL.loading(step); });
   }
 
-  function noOrigin(msg) {
-    OIL.render('<div class="oil-stack">' + head('') +
-      '<div class="oil-note">' + esc(msg) +
-      '<br><br>가는 길에서 찾으려면 <b>어디서 출발하는지</b>를 알아야 합니다. ' +
-      '출발지를 직접 정해주세요.</div>' +
-      '<a class="oil-btn" href="' + (OIL.cfg.listPageUrl || '/') +
+  /* 출발지를 못 잡았을 때. '내 주변'과 같은 안내를 쓰되, 대신 할 일만
+     이 화면에 맞게 바꾼다 - 여기서는 동네 목록이 아니라 출발지를 정해야 한다. */
+  function noOrigin(kind) {
+    var w = ENV.locateWhy(kind);
+    var pick = (OIL.cfg.listPageUrl || '/') +
       '?pick=origin&dla=' + dest.la + '&dln=' + dest.ln +
-      '&dq=' + encodeURIComponent(destName) + '">' +
-      '<span>출발지 검색하기</span>' + OIL.chev('#fff') + '</a>' +
+      '&dq=' + encodeURIComponent(destName);
+
+    OIL.render('<div class="oil-stack">' + head('') +
+      '<div class="oil-locate-help">' +
+        '<b>' + w.head + '</b>' +
+        '<p>' + w.why + '</p>' + w.extra +
+        '<p style="margin:10px 0 0;">가는 길에서 찾으려면 ' +
+          '<b>어디서 출발하는지</b>를 알아야 합니다. ' +
+          '아래에서 출발지를 직접 정하셔도 결과는 똑같습니다.</p>' +
+        '<a class="oil-locate' + (w.extra ? ' is-ghost' : '') + '" href="' + pick + '">' +
+          '출발지 직접 정하기</a>' +
+        (kind === 'none' ? '' :
+          '<button type="button" class="oil-locate is-ghost" id="oil-dest-retry">' +
+            '위치 다시 시도</button>') +
+      '</div>' +
       '<a class="oil-btn is-ghost" href="' + (OIL.cfg.listPageUrl || '/') + '">' +
       '<span>처음으로</span>' + OIL.chev() + '</a></div>');
+
+    ENV.wireWhy();
+    var r = document.getElementById('oil-dest-retry');
+    if (r) r.addEventListener('click', start);
   }
 
   start();
