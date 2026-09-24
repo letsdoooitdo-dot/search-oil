@@ -217,7 +217,20 @@
   };
   ENV.appSysName = function () {
     var a = ENV.app();
+    /* 어느 앱인지 못 알아본 경우(에브리타임·밴드 등 뭉뚱그린 이름)에는
+       설정에서 찾을 이름이 없다. "애플리케이션 → 앱 안 브라우저" 를 찾으라고
+       하면 그런 앱이 없어서 거기서 멈춘다. 사람 말로 바꿔준다. */
+    if (!a || a === '앱 안 브라우저') return '지금 쓰고 계신 앱';
     return SYSNAME[a] || a;
+  };
+
+  /* 안내 제목에 쓸 이름. '앱 안 브라우저 앱에 …' 처럼 겹쳐 읽히지 않게 한다.
+     ★ 권한은 앱마다 따로다. 인스타를 켜줬다고 스레드가 되지는 않는다 -
+       안드로이드·아이폰 둘 다 설치된 앱 단위로 권한을 준다. 그래서 여기서
+       고른 이름이 곧 사용자가 설정에서 찾아야 할 앱이다. */
+  ENV.appLabel = function () {
+    var a = ENV.app();
+    return (!a || a === '앱 안 브라우저') ? '지금 쓰는 앱' : a + ' 앱';
   };
 
   ENV.isAndroid = function () { return /Android/i.test(navigator.userAgent || ''); };
@@ -321,11 +334,11 @@
          켜고 다시 재니 6.9초에 100m 정확도로 잡혔다. 그래서 '크롬으로 열기'보다
          이쪽을 먼저 안내한다. 앱을 나갈 필요가 없다. */
     if (kind === 'appperm') {
-      var nm = app || '이 앱';
+      var nm = ENV.appLabel();
       /* 설정 화면에 적힌 이름으로 적어야 찾을 수 있다 (인스타그램 -> Instagram) */
-      var sys = esc(ENV.appSysName() || '해당 앱');
+      var sys = esc(ENV.appSysName());
       return {
-        head: nm + ' 앱에 위치 권한이 없습니다',
+        head: nm + '에 위치 권한이 없습니다',
         why: '<b>' + esc(nm) + '</b> 자체가 휴대폰에서 위치 권한을 받지 못해, ' +
              '이 화면에 넘겨줄 위치가 없습니다.<br>' +
              (ENV.isIOS()
@@ -346,11 +359,11 @@
        그래서 아이폰 + 앱 안에서는 두 가지 이유를 같이 적는다. 한쪽만 찍어
        말했다가 틀리면, 맞는 해결책을 아예 못 보게 된다. */
     if (app && ENV.isIOS() && (kind === 'deny' || kind === 'unavail')) {
-      var isys = esc(ENV.appSysName() || '해당 앱');
+      var isys = esc(ENV.appSysName());
       return {
-        head: app + ' 안에서 위치를 못 받았습니다',
+        head: (app === '앱 안 브라우저' ? '앱' : app) + ' 안에서 위치를 못 받았습니다',
         why: '둘 중 하나입니다.<br>' +
-             '<b>①</b> <b>' + esc(app) + '</b> 앱 자체에 위치 권한이 없는 경우 — ' +
+             '<b>①</b> <b>' + esc(ENV.appLabel()) + '</b> 자체에 위치 권한이 없는 경우 — ' +
              '<b>설정 → 개인정보 보호 및 보안 → 위치 서비스 → ' + isys + '</b>을 ' +
              '<b>앱을 사용하는 동안</b>으로 바꾸고 아래 <b>[위치 다시 시도]</b>. ' +
              '<b>한 번만 켜두면 계속 됩니다.</b><br>' +
