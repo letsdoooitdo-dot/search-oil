@@ -39,10 +39,6 @@
 
     var html = '<div class="oil-find">';
 
-    /* 앱 안 브라우저면 들어오자마자 알려준다. 눌러보고 실패한 뒤에 알려주면
-       헛걸음을 한 번 시키는 셈이다. 한 번 닫으면 그 방문 동안 다시 안 뜬다. */
-    html += ENV.bannerHtml();
-
     /* 광고는 화면 제일 위, 소개상자보다 앞에 둔다(2026-09-23).
        다른 화면(계산기·동네·글)도 전부 맨 위라, 자리를 하나로 맞춘다. */
     html += OIL.adSlotHtml('top');
@@ -123,7 +119,6 @@
     OIL.render(html);
     document.title = '주유소찾기 - 내 주변 기름값 싼 주유소';
 
-    ENV.wireBanner();
     document.getElementById('oil-open-search')
       .addEventListener('click', function () { openSheet(); });
     /* 출발지 고르기 화면에는 이 버튼이 없다 */
@@ -209,7 +204,9 @@
       '<div class="oil-locate-help">' +
         '<b>' + w.head + '</b>' +
         '<p>' + w.why + '</p>' + w.extra +
-        '<button type="button" class="oil-locate' + (w.extra ? ' is-ghost' : '') +
+        /* 이 길만 있으면 위치 없이도 결과가 같다. 그래서 기본은 이쪽이 주버튼이다.
+           단 w.solid(새 창에서 열기)처럼 그게 진짜 해결책인 경우만 양보한다. */
+        '<button type="button" class="oil-locate' + (w.solid ? ' is-ghost' : '') +
           '" id="oil-near-search">동네·장소 이름으로 찾기</button>' +
         (kind === 'none' ? '' :
           '<button type="button" class="oil-locate is-ghost" id="oil-near-retry">' +

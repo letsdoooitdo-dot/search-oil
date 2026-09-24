@@ -386,7 +386,7 @@
         '<p style="margin:10px 0 0;">가는 길에서 찾으려면 ' +
           '<b>어디서 출발하는지</b>를 알아야 합니다. ' +
           '아래에서 출발지를 직접 정하셔도 결과는 똑같습니다.</p>' +
-        '<a class="oil-locate' + (w.extra ? ' is-ghost' : '') + '" href="' + pick + '">' +
+        '<a class="oil-locate' + (w.solid ? ' is-ghost' : '') + '" href="' + pick + '">' +
           '출발지 직접 정하기</a>' +
         (kind === 'none' ? '' :
           '<button type="button" class="oil-locate is-ghost" id="oil-dest-retry">' +

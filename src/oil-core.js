@@ -208,6 +208,18 @@
     return '';
   };
 
+  /* 휴대폰 '설정 → 애플리케이션' 목록에 적혀 있는 이름.
+     우리는 읽기 좋으라고 '인스타그램'이라 부르지만 설정에는 'Instagram' 으로
+     뜬다 - 안내대로 따라갔는데 그 이름이 없으면 거기서 멈춘다. */
+  var SYSNAME = {
+    '스레드': 'Threads', '인스타그램': 'Instagram', '페이스북': 'Facebook',
+    '라인': 'LINE', '다음 앱': 'Daum'
+  };
+  ENV.appSysName = function () {
+    var a = ENV.app();
+    return SYSNAME[a] || a;
+  };
+
   ENV.isAndroid = function () { return /Android/i.test(navigator.userAgent || ''); };
   ENV.isIOS = function () { return /iPhone|iPad|iPod/i.test(navigator.userAgent || ''); };
 
@@ -271,13 +283,24 @@
            '<b>허용</b>으로 바꾼 뒤 다시 눌러주세요.';
   };
 
-  /* kind: 'deny' 권한 거부 / 'unavail' 위치를 못 구함 / 'slow' 시간 초과 /
-           'none' 위치 기능 없음
-     돌려주는 것: { head 제목, why 설명, extra 추가 버튼 HTML }
-     ★ 막힌 이유보다 '어디서 열렸는지'가 먼저다. 남의 사이트 안이나 앱 안이면
-       "설정에서 켜세요"가 통하지 않는다 - 거기서는 켤 수가 없다. */
+  /* 앱 안에서 빠져나가는 버튼. 이제는 '유일한 길'이 아니라 '곁다리 길'이라
+     흐린 단추로 둔다 - 앱 권한만 켜면 앱 안에서도 되기 때문이다. */
+  function chromeBtn() {
+    return ENV.isAndroid()
+      ? '<a class="oil-locate is-ghost" href="' + ENV.chromeIntent() + '">크롬으로 열기</a>'
+      : '<button type="button" class="oil-locate is-ghost" id="oil-loc-chrome">' +
+          '크롬으로 열기</button>' +
+        '<div class="oil-locate-tip" id="oil-loc-tip" hidden>' +
+          '크롬이 열리지 않았습니다. 오른쪽 위 <b>⋯</b>(또는 <b>⋮</b>)를 눌러 ' +
+          '<b>브라우저로 열기</b>를 골라주세요.</div>';
+  }
+
+  /* kind: 'deny' 권한 거부 / 'appperm' 앱에 위치 권한 없음 /
+           'unavail' 위치를 못 구함 / 'slow' 시간 초과 / 'none' 위치 기능 없음
+     돌려주는 것: { head 제목, why 설명, extra 추가 버튼 HTML, solid 추가버튼이 주버튼인가 } */
   ENV.locateWhy = function (kind) {
     var app = ENV.app();
+    var esc = OIL.esc;
 
     if (ENV.inFrame()) {
       return {
@@ -285,35 +308,53 @@
         why: '끼워 넣어진 화면에는 브라우저가 위치를 내주지 않습니다. ' +
              '아래 <b>새 창에서 열기</b>를 누르면 바로 됩니다.',
         extra: '<button type="button" class="oil-locate" id="oil-loc-newwin">' +
-               '새 창에서 열기</button>'
+               '새 창에서 열기</button>',
+        solid: true
       };
     }
-    if (app) {
-      /* 앱 안 브라우저는 거부한다고 말해주지도 않고 그냥 늘어지는 쪽이
-         더 흔하다. 그래서 이유를 안 가리고 빠져나오는 길부터 준다. */
-      var common = '앱이 품고 있는 작은 브라우저는 위치를 잘 내주지 않습니다 — ' +
-                   '거부한다고 말해주지도 않고 <b>그냥 늘어지는</b> 경우가 많아, ' +
-                   '기다려도 끝나지 않습니다. 아래를 누르면 크롬으로 열립니다.';
-      return { head: app + ' 안에서 열려 위치를 못 씁니다',
-               why: common,
-               extra: ENV.isAndroid()
-                 ? '<a class="oil-locate" href="' + ENV.chromeIntent() + '">크롬으로 열기</a>'
-                 : '<button type="button" class="oil-locate" id="oil-loc-chrome">' +
-                     '크롬으로 열기</button>' +
-                   '<div class="oil-locate-tip" id="oil-loc-tip" hidden>' +
-                     '크롬이 열리지 않았습니다. 오른쪽 위 <b>⋯</b>(또는 <b>⋮</b>)를 눌러 ' +
-                     '<b>브라우저로 열기</b>를 골라주세요.</div>' };
+
+    /* ★ 앱 자체에 위치 권한이 없는 경우 (2026-09-24 인스타그램/안드로이드 실측).
+       사이트에는 [허용]을 눌러줬는데도 code 2 로 0.0초에 즉시 실패하고, 메시지가
+       'application does not have sufficient geolocation permissions' 였다.
+       앱이 휴대폰에서 위치 권한을 못 받아 우리에게 건네줄 게 없는 것이다.
+       ★ 이건 사용자가 고칠 수 있고 한 번 켜면 계속 된다 - 같은 기기에서 권한을
+         켜고 다시 재니 6.9초에 100m 정확도로 잡혔다. 그래서 '크롬으로 열기'보다
+         이쪽을 먼저 안내한다. 앱을 나갈 필요가 없다. */
+    if (kind === 'appperm') {
+      var nm = app || '이 앱';
+      /* 설정 화면에 적힌 이름으로 적어야 찾을 수 있다 (인스타그램 -> Instagram) */
+      var sys = esc(ENV.appSysName() || '해당 앱');
+      return {
+        head: nm + ' 앱에 위치 권한이 없습니다',
+        why: '<b>' + esc(nm) + '</b> 자체가 휴대폰에서 위치 권한을 받지 못해, ' +
+             '이 화면에 넘겨줄 위치가 없습니다.<br>' +
+             (ENV.isIOS()
+               ? '<b>설정 → 개인정보 보호 및 보안 → 위치 서비스 → ' + sys +
+                 '</b>을 <b>앱을 사용하는 동안</b>으로 바꿔주세요.'
+               : '<b>설정 → 애플리케이션 → ' + sys + ' → 권한 → 위치</b>를 ' +
+                 '<b>앱 사용 중에만 허용</b>으로 바꿔주세요.') +
+             '<br><b>한 번만 켜두면 그다음부터는 계속 됩니다.</b> ' +
+             '켜신 뒤 아래 <b>[위치 다시 시도]</b>를 눌러주세요.',
+        extra: chromeBtn()
+      };
     }
+
     if (kind === 'none') {
       return { head: '이 브라우저는 위치 기능을 쓸 수 없습니다',
                why: '아래에서 동네나 장소 이름으로 찾아주세요.', extra: '' };
     }
     if (kind === 'deny') {
-      return { head: '위치 권한이 꺼져 있습니다', why: ENV.allowHint(), extra: '' };
+      /* 앱 안에서 [차단]을 누르면 되돌릴 자리가 없는 경우가 많다.
+         보통 브라우저처럼 "자물쇠를 누르세요"라고 하면 찾을 수가 없다. */
+      return { head: '위치 권한이 꺼져 있습니다',
+               why: app
+                 ? '앱 안 브라우저는 한 번 <b>차단</b>하면 되돌릴 자리가 없는 ' +
+                   '경우가 많습니다. 아래에서 크롬으로 열어 다시 해보시거나, ' +
+                   '동네 이름으로 찾아주세요.'
+                 : ENV.allowHint(),
+               extra: app ? chromeBtn() : '' };
     }
     if (kind === 'unavail') {
-      /* 제일 흔한 실패인데 전에는 "오래 걸립니다"로 덮여 있었다.
-         기다린다고 되는 게 아니라는 걸 분명히 말해준다. */
       return {
         head: '위치를 찾지 못했습니다',
         why: (ENV.isAndroid() || ENV.isIOS())
@@ -322,13 +363,13 @@
           : '<b>컴퓨터는 위치 장치가 없어</b> 인터넷 주소로 어림잡는데, 그게 자주 ' +
             '실패합니다. 기다린다고 되지는 않습니다 — 휴대폰에서는 대개 잡히고, ' +
             '지금은 아래에서 <b>동네 이름으로 찾으시면 결과는 똑같습니다.</b>',
-        extra: '' };
+        extra: app ? chromeBtn() : '' };
     }
     return { head: '위치 확인이 오래 걸립니다',
              why: 'GPS로 한 번 더 해봤는데도 시간이 넘었습니다. ' +
                   '실내나 지하에서 자주 그렇습니다. ' +
                   '다시 시도하거나, 동네 이름으로 바로 찾으셔도 됩니다.',
-             extra: '' };
+             extra: app ? chromeBtn() : '' };
   };
 
   /* 위 extra 에 들어간 버튼들을 살린다 - 어느 쪽이든 없으면 그냥 넘어간다 */
@@ -342,72 +383,75 @@
     ENV.wireIosChrome('oil-loc-chrome', 'oil-loc-tip');
   };
 
-  /* ── 앱 안에서 열렸다고 미리 알려주는 띠 ────────────────────
-     눌러보고 실패한 뒤에 알려주면 이미 한 번 헛걸음이다.
-     닫으면 그 방문 동안 다시 안 뜬다 - 매번 뜨면 그게 더 성가시다. */
-  ENV.bannerHtml = function () {
-    var app = ENV.app();
-    if (!app) return '';
-    try { if (sessionStorage.getItem('oil.inapp') === 'x') return ''; } catch (e) { }
+  /* ── 앱 안이라고 미리 알려주던 띠는 뺐다 (2026-09-24) ────────
+     "OO 안에서 보고 계십니다. 내 주변 찾기는 브라우저에서 열어야 됩니다" 라는
+     띠를 화면 맨 위에 띄웠었다. 그 전제가 실측으로 깨졌다 - 앱 안에서도
+     위치는 된다(인스타그램/안드로이드, 6.9초, 오차 100m). 앱에 위치 권한을
+     준 사람에게 "여기선 안 됩니다"라고 말하는 셈이라 거짓말이 된다.
+     ★ 이제는 미리 겁주지 않고, 실패했을 때 그 이유를 정확히 짚어준다.
+       앱 권한이 없는 경우는 0.0초에 판정되므로 기다리게 하지도 않는다.
+     되살리려면 git 에서 이 커밋 이전의 ENV.bannerHtml / .oil-inapp 을 본다. */
 
-    /* 아이폰도 버튼을 준다. 안 열리면 그때 손으로 하는 법이 아래 붙는다 */
-    var act = ENV.isAndroid()
-      ? '<a class="oil-inapp-go" href="' + ENV.chromeIntent() + '">크롬으로 열기</a>'
-      : '<button type="button" class="oil-inapp-go" id="oil-inapp-chrome">크롬으로 열기</button>' +
-        '<span class="oil-inapp-tip" id="oil-inapp-tip" hidden>' +
-          '크롬이 열리지 않았습니다. 오른쪽 위 <b>⋯</b> → <b>브라우저로 열기</b></span>';
+  /* ── 위치 받기 (모든 화면이 같이 쓴다) ──────────────────────
+     onFail(kind) 로 'deny'|'appperm'|'unavail'|'slow'|'none' 을 돌려준다.
 
-    return '<div class="oil-inapp" id="oil-inapp">' +
-      '<span class="oil-inapp-t"><b>' + OIL.esc(app) + ' 안</b>에서 보고 계십니다. ' +
-        '내 주변 찾기는 브라우저에서 열어야 됩니다.</span>' +
-      '<button type="button" class="oil-inapp-x" id="oil-inapp-x" ' +
-        'aria-label="안내 닫기">✕</button>' + act + '</div>';
+     ★★ 기다릴 시간은 '권한 창이 떠 있을지'로 정한다 (2026-09-24 실측).
+       타이머는 권한 창이 떠 있는 동안에도 계속 흐른다. 짧게 잡으면 사용자가
+       [허용]을 누르기도 전에 우리가 요청을 죽인다. 인스타그램 안에서 재보니
+       성공까지 6.9초가 걸렸는데 그 대부분이 창을 읽고 누르는 시간이었다 -
+       예전의 '앱 안이면 5초 컷'이 바로 이 사고였다. 될 사람을 끊고 있었다.
+       앱 안이라고 짧게 끊지 않는다. 앱 안에서도 위치는 된다.
+
+     ★ 앱 안 브라우저가 못 준다는 건 틀린 전제였다. 인스타그램은 위치 요청을
+       제대로 구현해뒀고 권한 창도 띄운다. 막히는 건 한 겹 아래 - 인스타 앱
+       자체가 휴대폰에서 위치 권한을 못 받았을 때다(아래 'appperm'). */
+  var WAIT = {
+    prompt:  30000,   /* 창을 읽고 누를 시간까지 준다 */
+    granted: 8000,    /* 이미 허락했으니 바로 와야 한다 */
+    gps:     15000    /* 2차 - 위성을 잡는 시간 */
   };
 
-  ENV.wireBanner = function () {
-    ENV.wireIosChrome('oil-inapp-chrome', 'oil-inapp-tip');
-    var x = document.getElementById('oil-inapp-x');
-    if (!x) return;
-    x.addEventListener('click', function () {
-      var box = document.getElementById('oil-inapp');
-      if (box) box.parentNode.removeChild(box);
-      try { sessionStorage.setItem('oil.inapp', 'x'); } catch (e) { }
-    });
-  };
+  /* 실패 이유를 가른다.
+     ★ code 2 인데 메시지에 'sufficient geolocation permissions' 가 있으면
+       브라우저가 위치를 못 구한 게 아니라 **앱 자체에 위치 권한이 없는** 것이다.
+       인스타그램/안드로이드에서 실제로 이 메시지를 받았다(2026-09-24).
+       사이트에는 [허용]을 눌러줬는데도 0.0초에 즉시 실패한다 - 기다린다고
+       되지 않고, 휴대폰 설정에서 그 앱의 권한을 켜야 한다. */
+  function failKind(err) {
+    var code = err ? err.code : 0;
+    var msg = (err && err.message) || '';
+    if (code === 2 && /sufficient\s+geolocation\s+permissions/i.test(msg)) return 'appperm';
+    return code === 1 ? 'deny' : code === 2 ? 'unavail' : 'slow';
+  }
 
-  /* ── 위치 받기 (두 화면이 같이 쓴다) ────────────────────────
-     1차 빠른 방식(6초) → 시간 초과면 2차 GPS(15초).
-     앱 안이면 재시도하지 않고 5초에 끊는다 - 어차피 안 될 기다림이다.
-     이미 거부해둔 상태면 Permissions API 로 먼저 알아채고 기다리지 않는다.
-     onFail(kind) 로 'deny'|'unavail'|'slow'|'none' 을 돌려준다. */
   ENV.locate = function (onOk, onFail, onStep) {
     if (!navigator.geolocation) { onFail('none'); return; }
-    var app = ENV.app();
 
-    function attempt(gps) {
-      var opt = app
-        ? { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
-        : gps
-          ? { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-          : { enableHighAccuracy: false, timeout: 6000, maximumAge: 300000 };
+    function attempt(gps, ms) {
       navigator.geolocation.getCurrentPosition(onOk, function (err) {
-        var code = err ? err.code : 0;
-        if (!gps && !app && code === 3) {
+        var kind = failKind(err);
+        /* 시간 초과일 때만 GPS 로 한 번 더. 나머지는 다시 해도 같은 답이다. */
+        if (!gps && kind === 'slow') {
           if (onStep) onStep('GPS로 한 번 더 잡아보는 중... (최대 15초)');
-          attempt(true);
+          attempt(true, WAIT.gps);
           return;
         }
-        onFail(code === 1 ? 'deny' : code === 2 ? 'unavail' : 'slow');
-      }, opt);
+        onFail(kind);
+      }, { enableHighAccuracy: !!gps, timeout: ms, maximumAge: gps ? 0 : 300000 });
     }
 
     if (navigator.permissions && navigator.permissions.query) {
       navigator.permissions.query({ name: 'geolocation' }).then(function (st) {
-        if (st.state === 'denied') onFail('deny');
-        else attempt(false);
-      }).catch(function () { attempt(false); });
+        if (st.state === 'denied') { onFail('deny'); return; }
+        if (st.state === 'granted') { attempt(false, WAIT.granted); return; }
+        /* 물어볼 참이다 - 창이 뜬다고 미리 말해준다. 창을 보고도 무슨 창인지
+           몰라 닫아버리는 일이 있다. */
+        if (onStep) onStep('위치를 물어보는 창이 뜹니다. [허용]을 눌러주세요.');
+        attempt(false, WAIT.prompt);
+      }).catch(function () { attempt(false, WAIT.prompt); });
     } else {
-      attempt(false);
+      /* 권한 상태를 알 수 없으면 창이 뜬다고 보고 넉넉히 기다린다 */
+      attempt(false, WAIT.prompt);
     }
   };
 

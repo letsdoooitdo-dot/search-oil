@@ -245,13 +245,23 @@
     }).catch(function () { return null; });
   }
 
-  /* onDone(결과, 오류메시지) — 결과에 region 과 spot(읍면동)이 들어온다 */
+  /* 실패 이유별 한 줄 안내. 자세한 안내 상자는 OIL.env.locateWhy 가 따로 맡는다 -
+     여기(동네 목록·계산기)는 화면 한구석의 작은 글씨 자리라 한 줄이면 된다. */
+  var LOCMSG = {
+    none:    '이 브라우저는 위치 기능을 지원하지 않습니다.',
+    deny:    '위치 권한이 거부되었습니다. 아래에서 직접 선택해주세요.',
+    appperm: '앱에 위치 권한이 없습니다. 크롬·사파리에서 열거나 아래에서 직접 선택해주세요.',
+    unavail: '위치를 찾지 못했습니다. 아래에서 직접 선택해주세요.',
+    slow:    '위치 확인이 오래 걸립니다. 아래에서 직접 선택해주세요.'
+  };
+
+  /* onDone(결과, 오류메시지) — 결과에 region 과 spot(읍면동)이 들어온다.
+     ★ 위치 받는 일은 OIL.env.locate 에 맡긴다. 여기서 따로 8초 컷을 두고 있었는데,
+       권한 창이 떠 있는 동안에도 타이머가 흘러서 사용자가 [허용]을 누르기 전에
+       요청이 죽는다(2026-09-24 실측 - 창 읽는 시간까지 6.9초 걸렸다).
+       세 화면이 각자 다른 규칙을 갖고 있을 이유도 없다. */
   P.locate = function (onDone) {
-    if (!navigator.geolocation) {
-      onDone(null, '이 브라우저는 위치 기능을 지원하지 않습니다.');
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(function (pos) {
+    OIL.env.locate(function (pos) {
       var lat = pos.coords.latitude, lng = pos.coords.longitude;
       Promise.all([OIL.regions(), nearestDong(lat, lng)]).then(function (a) {
         var reg = a[0], spot = a[1];
@@ -267,12 +277,9 @@
         hit.accuracy = pos.coords.accuracy;
         onDone(hit, null);
       }).catch(function () { onDone(null, '데이터를 불러오지 못했습니다.'); });
-    }, function (err) {
-      var msg = '위치를 가져오지 못했습니다.';
-      if (err && err.code === 1) msg = '위치 권한이 거부되었습니다. 아래에서 직접 선택해주세요.';
-      else if (err && err.code === 3) msg = '위치 확인이 오래 걸립니다. 아래에서 직접 선택해주세요.';
-      onDone(null, msg);
-    }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 });
+    }, function (kind) {
+      onDone(null, LOCMSG[kind] || '위치를 가져오지 못했습니다.');
+    });
   };
 
   P.locateBtnHtml = function () {
