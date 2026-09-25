@@ -65,6 +65,19 @@ def build_index(s):
       </p>
     </div>
 
+    <!-- 추석 연휴 임시 띠. 블로그·쓰레드에서 명단 보러 오는 사람이 첫 화면에서
+         바로 받게 한다. 9/28 이후에는 이 블록을 지운다. -->
+    <a href="{url('/chuseok/')}" style="display:flex;justify-content:space-between;align-items:center;
+       gap:10px;background:#8A3D03;border-radius:14px;padding:13px 14px;">
+      <span>
+        <span style="display:block;font-size:10.5px;font-weight:700;letter-spacing:0.08em;color:#FFC98A;">추석 연휴 한정 · 9월 27일까지</span>
+        <span style="display:block;font-size:14px;font-weight:800;color:#FFFFFF;margin-top:3px;">100원 내린 고속도로 주유소 205곳</span>
+        <span style="display:block;font-size:11.5px;color:#F3D3B4;margin-top:3px;">명단 보기 · 엑셀로 내려받기</span>
+      </span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4"
+           stroke-linecap="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"></path></svg>
+    </a>
+
     <div style="background:#FFFFFF;border:1px solid #DDE3E1;border-radius:16px;padding:16px;">
       <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:#5B666A;">오늘 전국 휘발유</div>
       <div style="display:flex;align-items:baseline;gap:9px;margin-top:5px;">
