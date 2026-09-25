@@ -732,3 +732,27 @@ body.oil-noscroll { overflow: hidden; }
   .oil-h1 { font-size: 26px; }
   #oil-root { padding: 20px 16px; }
 }
+
+/* ── 추석 연휴 임시 띠 (2026-09-25 ~ 09-27) ─────────────────
+   블로그·쓰레드에서 "명단은 사이트에" 로 불러온 사람이 첫 화면에서 바로
+   받게 하는 자리다. 광고 바로 아래, 소개상자 위에 앉는다.
+   ★ 연휴가 끝나면 이 블록과 oil-find.js 의 CHUSEOK 띠를 지운다.
+   색은 주황 계열로 따로 뗀다 - 청록(기능 상자)도 빨강(비용)도 이미 뜻이
+   있는 색이라, 한시적인 안내에 쓰면 그 뜻이 흐려진다. */
+.oil-chuseok {
+  display: block; padding: 14px 16px; border-radius: var(--oil-r);
+  background: linear-gradient(135deg, #B8510A, #8A3D03);
+  box-shadow: 0 6px 18px rgba(138, 61, 3, .28);
+}
+.oil-chuseok-tag {
+  display: block; font-size: 10.5px; font-weight: 700;
+  letter-spacing: .06em; color: #FFC98A;
+}
+.oil-chuseok-h {
+  display: block; margin-top: 4px; font-size: 15px; font-weight: 900;
+  letter-spacing: -.03em; color: #fff; line-height: 1.35;
+}
+.oil-chuseok-s {
+  display: block; margin-top: 4px; font-size: 12px; font-weight: 600;
+  color: #F3D3B4;
+}
