@@ -306,67 +306,54 @@
    26px 이던 것을 줄인다 - 그대로 두면 상자 사이가 휑하다. */
 .oil-find { display: flex; flex-direction: column; gap: 16px; }
 
-/* 우리가 무슨 말을 하는 사이트인지 한 상자에 담는다.
-   진한 보라에 흰 글씨였다가 연청록에 청록 글씨로 바꿨다. 머리 띠가 이미
-   진한 색이라, 바로 아래에 또 진한 상자가 오면 화면이 무거웠다.
-   아래 메뉴 상자와 테두리·모서리를 맞춰 셋이 한 가족으로 보이게 한다. */
-.oil-pitch {
-  /* 아래쪽 끝을 D9F2EE 에서 한 단계 밝혔다. 그래야 결론 줄의 금색을
-     메뉴 제목과 똑같은 색으로 쓸 수 있다(그 전엔 대비가 4.3 으로 모자랐다).
-     상자가 연해진 만큼은 테두리와 테가 붙잡아준다. */
-  background: linear-gradient(135deg, #F3FCFB, #E5F7F3);
-  color: var(--oil-mint-ink);
-  border: 1px solid var(--oil-mint-line);
-  border-radius: var(--oil-r);
-  box-shadow: 0 0 0 3px var(--oil-mint-soft), var(--oil-lift);
-  padding: 17px 16px 16px;
+/* ── 소개 구역: "이 사이트는 이래서 좋아요" ──────────────────────
+   기능 메뉴(아래 두 상자)와 한눈에 구별돼야 한다(2026-09-27 사용자 요청).
+   메뉴는 테두리·빛번짐·버튼이 있는 카드, 여기는 바탕 위에 놓인 글이다.
+   누를 것처럼 생긴 모양(알약·버튼·테두리 상자)은 하나도 두지 않는다.
+   색은 뜻만: 초록 = 아끼는 돈, 빨강 = 드는 돈·손해. */
+.oil-pitch { padding: 4px 4px 16px; border-bottom: 1px solid var(--oil-line); }
+.oil-pitch-k {
+  margin: 0 0 6px; font-size: 12px; font-weight: 800; letter-spacing: 0.02em;
+  color: var(--oil-mint-strong);
 }
-/* 상자의 이름표. 상자가 연해졌으니 이름표는 머리 띠와 같은 진한 청록으로 뒤집는다 -
-   상자 안에서 여기가 제일 먼저 눈에 들어와야 한다. */
-.oil-pitch-tag {
-  display: inline-block; margin: 0 0 10px; padding: 4px 11px;
-  border-radius: 999px; background: var(--oil-mint); color: #fff;
-  font-size: 11.5px; font-weight: 900; letter-spacing: -0.02em;
-}
-
 /* 이 화면의 h1. 띠가 이미지라 검색엔진이 못 읽으므로 제목은 여기 있어야 한다. */
 .oil-pitch-q {
-  margin: 0 0 12px; font-size: 15.5px; font-weight: 800; line-height: 1.55;
-  letter-spacing: -0.02em; color: var(--oil-mint-ink);
+  margin: 0 0 12px; font-size: 17px; font-weight: 800; line-height: 1.5;
+  letter-spacing: -0.03em; color: var(--oil-ink);
 }
-.oil-pitch-q b { font-weight: 900; color: var(--oil-mint-strong); }
+.oil-pitch-q b { font-weight: 900; }
 
-/* 아끼는 돈과 드는 돈을 나란히 놓는다. 이 대비가 문구의 전부다.
-   연청록 위에 흰 카드를 올린다. 바탕이 연해져 경계가 약하므로 실선을 둘러
-   카드가 떠 있는 게 보이게 한다. */
-.oil-pitch-calc {
-  margin: 0 0 12px; background: var(--oil-card);
-  border: 1px solid var(--oil-mint-line);
-  border-radius: 13px; overflow: hidden;
-}
-.oil-pitch-row {
+/* 예시 계산 - 결과 화면의 계산 줄과 같은 모양이라 "이 계산을 해준다"가 이어진다 */
+.oil-pitch-eq { padding: 2px 0; }
+.oil-pitch-eq > div {
   display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
-  padding: 11px 14px; font-size: 13px; color: var(--oil-ink2);
+  padding: 7px 0; font-size: 13.5px; color: var(--oil-ink2);
 }
-.oil-pitch-row + .oil-pitch-row { border-top: 1px solid var(--oil-line-soft); }
-.oil-pitch-row b {
-  flex-shrink: 0; font-size: 16px; font-weight: 900;
-  letter-spacing: -0.02em; color: var(--oil-teal-dark);
-}
-.oil-pitch-row.is-cost { background: var(--oil-soft); }
-.oil-pitch-row.is-cost b { color: var(--oil-accent-dark); }
+.oil-pitch-eq > div + div { border-top: 1px dashed var(--oil-line); }
+.oil-pitch-eq b { flex-shrink: 0; font-size: 15px; font-weight: 900; letter-spacing: -0.02em; }
+.oil-pitch-eq .is-sum { border-top: 1.5px solid var(--oil-ink2) !important; font-weight: 800; color: var(--oil-ink); }
+.oil-pitch-eq .is-sum b { font-size: 17px; }
+.oil-pitch-eq .is-gain { color: var(--oil-teal-dark); }
+.oil-pitch-eq .is-cost { color: var(--oil-accent-dark); }
+.oil-pitch-note { margin: 4px 0 0; font-size: 11px; color: var(--oil-muted); }
 
-/* 상자의 결론. 아래 두 메뉴 제목과 똑같은 금색이라,
-   "다 따져서 제일 싼 주유소"가 화면 어디에 나와도 한 가지 색으로 읽힌다. */
-.oil-pitch-say {
-  margin: 0; font-size: 14px; font-weight: 700; line-height: 1.55;
-  letter-spacing: -0.02em; color: var(--oil-mint-ink);
+.oil-pitch-lead {
+  margin: 14px 0 8px; font-size: 14px; font-weight: 700; line-height: 1.55;
+  letter-spacing: -0.02em; color: var(--oil-ink);
 }
-/* 메뉴 제목과 똑같은 붉은색. 연청록 바탕 위라 대비가 4.2 로 흰 바탕(4.7)보다
-   조금 낮지만, 굵은 글씨라 읽는 데 지장이 없어 한 가지 색으로 통일했다.
-   더 진한 빨강을 쓰면 여기만 어두워 보여 같은 말이 다른 색처럼 읽힌다. */
-.oil-pitch-say b { font-weight: 900; color: var(--oil-accent-dark); }
-
+/* 강점 셋 - 번호만 두고 아이콘·색 장식은 쓰지 않는다 */
+.oil-pitch-pts { margin: 0; padding: 0; list-style: none; counter-reset: pt; }
+.oil-pitch-pts li {
+  position: relative; padding: 6px 0 6px 28px; counter-increment: pt;
+}
+.oil-pitch-pts li::before {
+  content: counter(pt); position: absolute; left: 0; top: 7px;
+  width: 19px; height: 19px; border-radius: 50%;
+  background: var(--oil-ink); color: #fff;
+  font-size: 11px; font-weight: 800; line-height: 19px; text-align: center;
+}
+.oil-pitch-pts b { display: block; font-size: 13.5px; font-weight: 800; color: var(--oil-ink); }
+.oil-pitch-pts span { display: block; margin-top: 1px; font-size: 12.5px; line-height: 1.55; color: var(--oil-ink2); }
 /* 두 기능을 각각 하나의 상자로 묶는다. 제목·입력칸·설명이 한 덩어리라는 게
    눈으로 보여야 "이게 하나의 메뉴"로 읽힌다. 묶지 않으면 글과 버튼이
    따로 떠다녀서 어디까지가 한 기능인지 알 수 없다.

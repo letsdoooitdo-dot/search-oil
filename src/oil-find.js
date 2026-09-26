@@ -66,19 +66,30 @@
       /* 여기 숫자는 우리 계산기에 그대로 넣어도 같은 답이 나와야 한다.
          리터당 30원 싸고 10km 더 가는 경우는 경차·일반·SUV·화물 모두 손해다
          (기름값이 리터당 1,080원 아래로 떨어지지 않는 한 뒤집히지 않는다). */
-      html += '<section class="oil-pitch">' +
-        /* 이 상자가 무슨 상자인지 한마디로 말해준다. 이게 없으면
-           갑자기 산수 문제가 튀어나온 것처럼 보인다. */
-        '<span class="oil-pitch-tag">쓰면 좋은 이유!</span>' +
-        '<h1 class="oil-pitch-q">리터당 <b>30원 싼 집</b>이 <b>10km</b> 멀다면,<br>' +
+      /* ★ 기능 메뉴가 아니라 "이 사이트는 이래서 좋아요"를 말하는 소개 구역이다
+         (2026-09-27 사용자 요청). 메뉴 상자처럼 테두리·버튼을 두면 누르는 곳으로
+         보여서, 바탕 위에 글로 읽히게 만든다.
+         google-anno-skip - 애드센스 자동광고가 이 글귀를 보고 파란 검색 버튼을
+         끼워 넣어 기능 메뉴처럼 보이게 했다. 이 표시가 있으면 손대지 않는다. */
+      html += '<section class="oil-pitch google-anno-skip">' +
+        '<p class="oil-pitch-k">이 사이트가 다른 점</p>' +
+        '<h1 class="oil-pitch-q">리터당 <b>30원 싼</b> 주유소가 <b>10km</b> 더 멀다면,<br>' +
           '가는 게 맞을까요?</h1>' +
-        '<div class="oil-pitch-calc">' +
-          '<div class="oil-pitch-row"><span>싼 집 가서 아끼는 돈</span>' +
-            '<b>900원</b></div>' +
-          '<div class="oil-pitch-row is-cost"><span>더 멀리 가느라 드는 돈</span>' +
-            '<b>1,500원</b></div>' +
+        '<div class="oil-pitch-eq">' +
+          '<div><span>싸게 넣어 아끼는 돈</span><b class="is-gain">+900원</b></div>' +
+          '<div><span>더 가는 기름값</span><b class="is-cost">−1,500원</b></div>' +
+          '<div class="is-sum"><span>결과</span><b class="is-cost">600원 손해</b></div>' +
         '</div>' +
-        '<p class="oil-pitch-say"><b>다 따져서 제일 싼 주유소</b> 찾아드립니다.</p>' +
+        '<p class="oil-pitch-note">일반 승용차(연비 12km/L) · 30L 주유 · 리터당 1,800원 기준</p>' +
+        '<p class="oil-pitch-lead">가격표만 보면 놓치는 이 계산을, 주유소마다 전부 해드립니다.</p>' +
+        '<ol class="oil-pitch-pts">' +
+          '<li><b>실제로 남는 돈으로 순위</b>' +
+            '<span>기름값 · 실제 도로거리 · 차종 연비 · 주유량까지 넣어 계산합니다</span></li>' +
+          '<li><b>추천 이유를 숫자로 공개</b>' +
+            '<span>1위가 왜 1위인지, 제일 싼 곳은 왜 아닌지 계산식까지 보여드립니다</span></li>' +
+          '<li><b>빠짐없이 전부 비교</b>' +
+            '<span>반경·가는 길 안 주유소를 모두 따지고, 빠진 곳도 이유를 밝힙니다</span></li>' +
+        '</ol>' +
         '</section>';
     }
 
@@ -98,7 +109,7 @@
     if (!pickOrigin) {
       html += '<section class="oil-find-sec">' +
         '<h2 class="oil-find-h"><span>내 주변에서 ' +
-          '<b>다 따져서 제일 싼 주유소</b></span></h2>' +
+          '<b>다 따져서 제일 싼 주유소</b> 찾기</span></h2>' +
         '<button type="button" class="oil-near-btn" id="oil-near">' +
           '<span class="oil-near-l">' + PIN +
             '<span><span class="oil-near-t">내 주변 다 따져서 제일 싼 주유소</span>' +
@@ -119,7 +130,7 @@
     html += '<section class="oil-find-sec">' +
       '<h2 class="oil-find-h"><span>' +
         (pickOrigin ? '출발지를 정해주세요'
-                    : '가는 길에서 <b>다 따져서 제일 싼 주유소</b>') + '</span></h2>' +
+                    : '가는 길에서 <b>다 따져서 제일 싼 주유소</b> 찾기') + '</span></h2>' +
       '<button type="button" class="oil-fakein" id="oil-open-search">' +
         '<span>' + (pickOrigin ? '어디서 출발하세요?' : '어디로 가세요?') + '</span>' +
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
