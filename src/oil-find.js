@@ -73,7 +73,7 @@
          끼워 넣어 기능 메뉴처럼 보이게 했다. 이 표시가 있으면 손대지 않는다. */
       html += '<section class="oil-pitch google-anno-skip">' +
         '<p class="oil-pitch-k">이 사이트가 다른 점</p>' +
-        '<h1 class="oil-pitch-q">리터당 <b>30원 싼</b> 주유소가 <b>10km</b> 더 멀다면,<br>' +
+        '<h1 class="oil-pitch-q">리터당 <b>30원 싼</b> 주유소가<br><b>10km 더 멀다면</b>, ' +
           '가는 게 맞을까요?</h1>' +
         '<div class="oil-pitch-eq">' +
           '<div><span>싸게 넣어 아끼는 돈</span><b class="is-gain">+900원</b></div>' +
@@ -81,7 +81,8 @@
           '<div class="is-sum"><span>결과</span><b class="is-cost">600원 손해</b></div>' +
         '</div>' +
         '<p class="oil-pitch-note">일반 승용차(연비 12km/L) · 30L 주유 · 리터당 1,800원 기준</p>' +
-        '<p class="oil-pitch-lead">가격표만 보면 놓치는 이 계산을, 주유소마다 전부 해드립니다.</p>' +
+        '<p class="oil-pitch-lead">가격표만 보면 놓치는 부분을, 주유소마다 전부 계산해서 ' +
+          '가장 이득인 주유소를 찾아드립니다.</p>' +
         '<ol class="oil-pitch-pts">' +
           '<li><b>실제로 남는 돈으로 순위</b>' +
             '<span>기름값 · 실제 도로거리 · 차종 연비 · 주유량까지 넣어 계산합니다</span></li>' +
@@ -131,11 +132,14 @@
       '<h2 class="oil-find-h"><span>' +
         (pickOrigin ? '출발지를 정해주세요'
                     : '가는 길에서 <b>제일 이득인 주유소</b> 찾기') + '</span></h2>' +
-      '<button type="button" class="oil-fakein" id="oil-open-search">' +
-        '<span>' + (pickOrigin ? '어디서 출발하세요?' : '어디로 가세요?') + '</span>' +
-        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
-        'stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle>' +
-        '<path d="M20 20l-3.5-3.5"></path></svg>' +
+      /* 실제로는 여기를 눌러 목적지를 입력해야 기능이 시작된다. 흐린 회색 칸이면
+         설명 글처럼 보여서 지나친다 - 진한 테두리의 검색창 + 검색 버튼 모양으로 둔다. */
+      '<button type="button" class="oil-fakein is-main" id="oil-open-search">' +
+        '<span class="oil-fakein-t">' + (pickOrigin ? '어디서 출발하세요?' : '어디로 가세요?') +
+          '<i>' + (pickOrigin ? '눌러서 출발지를 입력하세요' : '눌러서 목적지를 입력하세요') + '</i></span>' +
+        '<span class="oil-fakein-go"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" ' +
+        'stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle>' +
+        '<path d="M20 20l-3.5-3.5"></path></svg></span>' +
       '</button>' +
       /* 무엇을 따지는지 그대로 적는다. 이 목록이 우리가 다른 점 전부다.
          두 메뉴의 목록이 다른 건, 가는 길은 '우회거리'를 재고

@@ -317,11 +317,16 @@
   color: var(--oil-mint-strong);
 }
 /* 이 화면의 h1. 띠가 이미지라 검색엔진이 못 읽으므로 제목은 여기 있어야 한다. */
+/* 이 구역에서 가장 먼저 읽혀야 하는 질문. 크게, 그리고 숫자 두 곳에 형광펜을 긋는다.
+   형광펜은 첫 화면 장식색(민트) - 이득/손해 색(초록/빨강)과 섞지 않는다. */
 .oil-pitch-q {
-  margin: 0 0 12px; font-size: 17px; font-weight: 800; line-height: 1.5;
-  letter-spacing: -0.03em; color: var(--oil-ink);
+  margin: 0 0 14px; font-size: clamp(19px, 5.6vw, 22px); font-weight: 900; line-height: 1.5;
+  letter-spacing: -0.04em; color: var(--oil-ink);
 }
-.oil-pitch-q b { font-weight: 900; }
+.oil-pitch-q b {
+  font-weight: 900; padding: 0 1px;
+  background: linear-gradient(transparent 58%, var(--oil-mint-line) 58%);
+}
 
 /* 예시 계산 - 결과 화면의 계산 줄과 같은 모양이라 "이 계산을 해준다"가 이어진다 */
 .oil-pitch-eq { padding: 2px 0; }
@@ -421,7 +426,31 @@
 .oil-near-l { display: flex; align-items: center; gap: 11px; min-width: 0; }
 .oil-near-l > span { min-width: 0; }
 .oil-near-l .oil-pin { flex-shrink: 0; opacity: .9; }
-.oil-near-t { display: block; font-size: 15px; font-weight: 800; letter-spacing: -0.02em; }
+.oil-near-t { display: block; font-size: 16px; font-weight: 800; letter-spacing: -0.02em; }
+/* 첫 화면에서는 누르는 곳이라는 게 확실히 보이게 한 단계 더 키운다 */
+.oil-find-sec .oil-near-btn { padding: 20px 16px; }
+.oil-find-sec .oil-near-btn:active, .oil-fakein.is-main:active { transform: scale(.985); }
+
+/* 가는 길 검색창 - 실제로 여기를 눌러 목적지를 입력한다(2026-09-27 사용자 요청).
+   흐린 칸이면 설명 글처럼 보여 지나친다. 진한 테두리 + 오른쪽 검색 버튼으로
+   '입력하는 곳'이라는 게 바로 읽히게 한다. 색은 내 주변 버튼과 같은 계열. */
+.oil-find-sec .oil-fakein.is-main {
+  padding: 8px 8px 8px 16px; background: var(--oil-card);
+  border: 2px solid #0891B2; box-shadow: 0 4px 14px rgba(8, 145, 178, .18);
+}
+.oil-fakein-t {
+  min-width: 0; font-size: 16px; font-weight: 800; letter-spacing: -0.02em; color: var(--oil-ink);
+}
+.oil-fakein-t i {
+  display: block; margin-top: 2px; font-style: normal; font-size: 12px; font-weight: 500;
+  color: var(--oil-muted);
+}
+.oil-fakein-go {
+  flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+  width: 46px; height: 46px; border-radius: 14px; color: #fff;
+  background: linear-gradient(135deg, #10B981, #0891B2);
+}
+.oil-fakein-go svg { color: #fff; }
 .oil-near-price {
   display: block; font-size: 13.5px; font-weight: 600; margin-top: 4px;
   letter-spacing: -0.01em;
