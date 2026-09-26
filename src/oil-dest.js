@@ -350,6 +350,7 @@
     html += OIL.restHtml({
       rest: r.list.filter(function (s) { return list.indexOf(s) < 0; }),
       rankOf: rankOf, price: price, baseShort: state.baseShort,
+      detail: function (s) { return detail(s, base); },
       sub: function (s) { return atText(s) + ' · ' + detText(s); },
       groups: [
         { title: '들렀다 가면 우회가 ' + rad + 'km를 넘어 뺀 곳',

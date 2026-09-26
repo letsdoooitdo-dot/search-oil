@@ -289,6 +289,7 @@
     html += OIL.restHtml({
       rest: r.list.filter(function (s) { return list.indexOf(s) < 0; }),
       rankOf: rankOf, price: price, baseShort: BASE_SHORT,
+      detail: function (s) { return detail(s, 0, base.n); },
       sub: function (s) { return '여기서 ' + (s._real ? '' : '약 ') + s._road.toFixed(1) + 'km'; },
       groups: [
         { title: '실제 도로거리가 반경 ' + rad + 'km를 넘어 뺀 곳',

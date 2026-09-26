@@ -786,10 +786,16 @@ body.oil-noscroll { overflow: hidden; }
 .oil-rest[open] > summary::after { transform: rotate(-135deg); margin-top: -1px; }
 .oil-rest[open] { padding-bottom: 12px; }
 .oil-rest-h { margin: 0 0 4px; font-size: 11.5px; color: var(--oil-muted); }
+.oil-rest-item { border-top: 1px solid var(--oil-line-soft); }
 .oil-rest-row {
   display: flex; align-items: center; gap: 10px; padding: 9px 0;
-  border-top: 1px solid var(--oil-line-soft); text-decoration: none; color: inherit;
+  list-style: none; cursor: pointer; color: inherit;
 }
+.oil-rest-row::-webkit-details-marker { display: none; }
+.oil-rest-item[open] > .oil-rest-row .oil-rest-name { color: var(--oil-ink2); }
+/* 펼친 상세 - 카드의 상세보기와 같은 내용 */
+.oil-rest-det { padding: 0 0 12px 32px; }
+.oil-rest-det .oil-rows { margin-top: 0; }
 .oil-rest-no {
   flex-shrink: 0; min-width: 22px; font-size: 11.5px; font-weight: 800; color: var(--oil-muted);
 }
