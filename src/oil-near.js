@@ -68,7 +68,7 @@
   }
 
   /* ── 한 곳 카드 ──────────────────────────────────────────── */
-  function card(s, i, baseName) {
+  function card(s, i, baseName, no) {
     var p = price(s);
     var t = s._trip;
     var line = OIL.tripLine(t, s._isBase, null, BASE_SHORT);
@@ -82,8 +82,7 @@
     /* 순위는 카드 맨 위에 띠로 단다. 1위만 색을 넣어 눈이 먼저 가게 한다.
        지도 표시도 같은 번호를 쓰므로 둘을 눈으로 이어 붙일 수 있다. */
     var rank = '<div class="oil-st-rank' + (i === 0 ? ' is-top' : '') + '">' +
-      '<span class="oil-st-no">' + (i + 1) + '위</span>' +
-      (i === 0 ? '<span class="oil-st-why1">추천 · 이유는 위 상자에</span>' : '') +
+      '<span class="oil-st-no">' + no + '위</span>' + OIL.rankTag(i, s._isBase) +
       '</div>';
 
     return '<article class="oil-st' + (i === 0 ? ' is-top' : '') + '">' + rank +
@@ -256,7 +255,8 @@
     }
 
     var base = r.base, best = r.best;
-    var list = r.list.slice(0, SHOW);
+    var list = OIL.showList(r.list, base, SHOW);
+    var rankOf = function (s) { return r.list.indexOf(s) + 1; };
     var measured = cand.filter(function (s) { return s._tried; }).length;
     var guessed = all.some(function (s) { return !s._real; });
     var unsure = cand.filter(function (s) { return !s._tried && upper(s, r) > best._trip.net; }).length;
@@ -283,14 +283,24 @@
     html += OIL.adSlotHtml();
 
     html += '<div class="oil-sts">' + list.map(function (s, i) {
-      return card(s, i, base.n);
+      return card(s, i, base.n, rankOf(s));
     }).join('') + '</div>';
 
-    if (all.length > list.length) {
-      html += '<p class="oil-p" style="font-size:12px;color:var(--oil-muted);text-align:center;">' +
-        '반경 안 <b>' + all.length + '곳</b> 중 제일 많이 남는 <b>' + list.length +
-        '곳</b>만 보여드립니다</p>';
-    }
+    html += OIL.restHtml({
+      rest: r.list.filter(function (s) { return list.indexOf(s) < 0; }),
+      rankOf: rankOf, price: price, baseShort: BASE_SHORT,
+      sub: function (s) { return '여기서 ' + (s._real ? '' : '약 ') + s._road.toFixed(1) + 'km'; },
+      groups: [
+        { title: '실제 도로거리가 반경 ' + rad + 'km를 넘어 뺀 곳',
+          items: cand.filter(function (s) { return s._tried && s._road > rad; })
+            .sort(function (a, b) { return a._road - b._road; }),
+          fmt: function (s) { return won(price(s)) + '원(' + s._road.toFixed(1) + 'km)'; } },
+        { title: '가장 가깝게 쳐도 1위보다 덜 남아 도로거리를 재지 않은 곳',
+          items: cand.filter(function (s) { return !s._tried; })
+            .sort(function (a, b) { return price(a) - price(b); }),
+          fmt: function (s) { return won(price(s)) + '원'; } }
+      ]
+    });
 
     html += '<a class="oil-btn" href="' + (OIL.cfg.listPageUrl || '/') + '">' +
       '<span>다른 장소로 찾기</span>' + OIL.chev('#fff') + '</a>';
@@ -318,7 +328,7 @@
         from: { la: la, ln: ln, name: isMe ? '내 위치' : placeName },
         items: list.map(function (s, i) {
           return { la: s.la, ln: s.ln, name: s.n, label: won(price(s)),
-                   brand: s.b, rank: i + 1, good: s._trip.net > 0, i: i };
+                   brand: s.b, rank: rankOf(s), good: s._trip.net > 0, i: i };
         }),
         onPick: OIL.map.focusCard
       });

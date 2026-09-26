@@ -651,6 +651,8 @@ body.oil-noscroll { overflow: hidden; }
   font-size: 11.5px; font-weight: 700; color: var(--oil-accent-dark);
   letter-spacing: -0.02em;
 }
+/* 비교 기준 카드 - 다른 카드 금액이 이곳과 비교한 값이라는 걸 알려준다 */
+.oil-st-why1.is-base { color: var(--oil-ink2); font-weight: 600; }
 /* 1위 카드는 테두리로 한 단계 띄운다 */
 .oil-st.is-top {
   border-color: var(--oil-accent);
@@ -764,6 +766,61 @@ body.oil-noscroll { overflow: hidden; }
   margin: 10px 0 0; font-size: 11.5px; line-height: 1.65; color: var(--oil-muted);
 }
 .oil-why-cond b { color: var(--oil-ink2); font-weight: 700; margin-right: 4px; }
+
+/* ── 비교한 나머지 보기 (접힘) ─────────────────────────────── */
+.oil-rest {
+  background: var(--oil-card); border-radius: var(--oil-r); box-shadow: var(--oil-lift);
+  padding: 0 16px;
+}
+.oil-rest > summary {
+  list-style: none; cursor: pointer; position: relative;
+  padding: 14px 22px 14px 0; font-size: 13.5px; font-weight: 600; color: var(--oil-ink2);
+}
+.oil-rest > summary::-webkit-details-marker { display: none; }
+.oil-rest > summary b { color: var(--oil-ink); font-weight: 800; }
+.oil-rest > summary::after {
+  content: ''; position: absolute; right: 4px; top: 50%; margin-top: -5px;
+  width: 7px; height: 7px; border-right: 1.8px solid var(--oil-muted);
+  border-bottom: 1.8px solid var(--oil-muted); transform: rotate(45deg);
+}
+.oil-rest[open] > summary::after { transform: rotate(-135deg); margin-top: -1px; }
+.oil-rest[open] { padding-bottom: 12px; }
+.oil-rest-h { margin: 0 0 4px; font-size: 11.5px; color: var(--oil-muted); }
+.oil-rest-row {
+  display: flex; align-items: center; gap: 10px; padding: 9px 0;
+  border-top: 1px solid var(--oil-line-soft); text-decoration: none; color: inherit;
+}
+.oil-rest-no {
+  flex-shrink: 0; min-width: 22px; font-size: 11.5px; font-weight: 800; color: var(--oil-muted);
+}
+.oil-rest-name {
+  flex: 1 1 auto; min-width: 0; font-size: 13px; font-weight: 700; color: var(--oil-ink);
+  line-height: 1.4;
+}
+.oil-rest-name i {
+  display: block; font-style: normal; font-weight: 500; font-size: 11.5px; color: var(--oil-muted);
+}
+.oil-rest-fig { flex-shrink: 0; text-align: right; line-height: 1.4; }
+.oil-rest-fig b { display: block; font-size: 13.5px; font-weight: 800; color: var(--oil-ink); }
+.oil-rest-fig em { display: block; font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--oil-muted); }
+.oil-rest-fig em.is-gain { color: var(--oil-teal-dark); }
+.oil-rest-fig em.is-cost { color: var(--oil-accent-dark); }
+.oil-rest-g {
+  margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--oil-line-soft);
+  font-size: 11.5px; line-height: 1.65; color: var(--oil-muted);
+}
+.oil-rest-g summary {
+  list-style: none; cursor: pointer; padding: 4px 0; font-size: 12px; font-weight: 600;
+  color: var(--oil-ink2);
+}
+.oil-rest-g summary::-webkit-details-marker { display: none; }
+.oil-rest-g summary::after {
+  content: ' 이름 보기'; font-weight: 700; color: var(--oil-muted);
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.oil-rest-g[open] summary::after { content: ' 접기'; }
+.oil-rest-g summary b { color: var(--oil-ink); font-weight: 800; }
+.oil-rest-g p { margin: 4px 0 0; }
 
 /* 상세보기 안의 계산 */
 .oil-st-calc { margin-top: 10px; }

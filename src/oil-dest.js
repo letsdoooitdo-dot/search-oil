@@ -206,7 +206,7 @@
       : '우회 ' + (s._real ? '' : '약 ') + s._detour.toFixed(1) + 'km';
   }
 
-  function card(s, i, base) {
+  function card(s, i, base, no) {
     var p = price(s), t = s._trip;
     var line = OIL.tripLine(t, s._isBase, 'detour', state.baseShort);
 
@@ -218,8 +218,7 @@
 
     /* 순위 띠 - 내 주변 화면과 같은 모양, 같은 번호를 지도에도 쓴다 */
     var rank = '<div class="oil-st-rank' + (i === 0 ? ' is-top' : '') + '">' +
-      '<span class="oil-st-no">' + (i + 1) + '위</span>' +
-      (i === 0 ? '<span class="oil-st-why1">추천 · 이유는 위 상자에</span>' : '') +
+      '<span class="oil-st-no">' + no + '위</span>' + OIL.rankTag(i, s._isBase) +
       '</div>';
 
     return '<article class="oil-st' + (i === 0 ? ' is-top' : '') + '">' + rank +
@@ -319,7 +318,8 @@
       return;
     }
 
-    var base = r.base, list = r.list.slice(0, SHOW);
+    var base = r.base, list = OIL.showList(r.list, base, SHOW);
+    var rankOf = function (s) { return r.list.indexOf(s) + 1; };
     state.baseShort = base._detour < BASE_SLACK ? '처음 나오는 곳' : '덜 돌아가는 곳';
     var pool = state.pool, measured = pool.filter(function (s) { return s._tried; }).length;
     var guessed = r.all.some(function (s) { return !s._real; });
@@ -335,7 +335,7 @@
         pool.length + '곳</b>을 모두 따져봤습니다 (들렀다 가는 길을 실제로 잰 곳 ' + measured + '곳' +
         (pool.length > measured
           ? (unsure ? ' · 기다리지 않으려고 ' + unsure + '곳은 못 쟀습니다. 이 중에 1위보다 조금 나은 곳이 있을 수 있습니다'
-                    : ' · 나머지는 경로에서 떨어진 거리로 봐서 1위보다 덜 남는 곳') : '') + ')' +
+                    : ' · 나머지는 가장 유리하게 쳐도 1위보다 덜 남는 곳') : '') + ')' +
         (guessed ? ' · 길찾기가 안 된 곳은 "약"을 붙였습니다' : ''),
       cond: OIL.condText('detour', state.date)
     });
@@ -344,8 +344,24 @@
 
     html += OIL.adSlotHtml();
     html += '<div class="oil-sts">' + list.map(function (s, i) {
-      return card(s, i, base);
+      return card(s, i, base, rankOf(s));
     }).join('') + '</div>';
+
+    html += OIL.restHtml({
+      rest: r.list.filter(function (s) { return list.indexOf(s) < 0; }),
+      rankOf: rankOf, price: price, baseShort: state.baseShort,
+      sub: function (s) { return atText(s) + ' · ' + detText(s); },
+      groups: [
+        { title: '들렀다 가면 우회가 ' + rad + 'km를 넘어 뺀 곳',
+          items: pool.filter(function (s) { return s._tried && s._detour > rad; })
+            .sort(function (a, b) { return a._at - b._at; }),
+          fmt: function (s) { return won(price(s)) + '원(우회 ' + s._detour.toFixed(1) + 'km)'; } },
+        { title: '가장 유리하게 쳐도 1위보다 덜 남아 재지 않은 곳',
+          items: pool.filter(function (s) { return !s._tried; })
+            .sort(function (a, b) { return a._at - b._at; }),
+          fmt: function (s) { return won(price(s)) + '원(' + atText(s) + ')'; } }
+      ]
+    });
 
     html += '<a class="oil-btn" href="' + (OIL.cfg.listPageUrl || '/') + '">' +
       '<span>다른 목적지로 찾기</span>' + OIL.chev('#fff') + '</a>';
@@ -362,7 +378,7 @@
         path: state.seg.path,
         items: list.map(function (s, i) {
           return { la: s.la, ln: s.ln, name: s.n, label: won(price(s)),
-                   brand: s.b, rank: i + 1, good: s._trip.net > 0, i: i };
+                   brand: s.b, rank: rankOf(s), good: s._trip.net > 0, i: i };
         }),
         onPick: OIL.map.focusCard
       });
