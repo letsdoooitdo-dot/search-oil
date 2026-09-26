@@ -1,0 +1,79 @@
+# 시험용: GitHub 서버(해외)에서 오피넷 '현재 판매가격' 파일을 받을 수 있는지 확인한다.
+# 사이트 데이터(api/)는 건드리지 않는다. 받은 파일은 실행 결과(Artifacts)로만 남긴다.
+# 실행: Actions 탭 → "오피넷 수집 시험" → Run workflow
+name: 오피넷 수집 시험
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  try:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 서버 위치 기록
+        run: |
+          curl -s https://ipinfo.io/json | grep -E '"(ip|city|region|country|org)"' || true
+          echo "오피넷 첫 화면 응답: $(curl -s -o /dev/null -w '%{http_code}' --max-time 30 https://www.opinet.co.kr/user/opdown/opDownload.do)"
+
+      - name: 브라우저 준비
+        run: |
+          pip install playwright
+          google-chrome --version
+
+      - name: 오피넷에서 받기 (PC와 같은 스크립트)
+        id: collect
+        continue-on-error: true
+        run: python scripts/collect_prices.py --force
+
+      - name: 받은 파일 확인
+        if: steps.collect.outcome == 'success'
+        run: |
+          ls -l current_data/
+          python - <<'EOF'
+          import glob, csv, io
+          f = sorted(glob.glob("current_data/현재판매가격_*.csv"))[-1]
+          text = open(f, "rb").read().decode("cp949", errors="replace")
+          rows = list(csv.DictReader(io.StringIO(text)))
+          print(f"주유소 {len(rows):,}곳 · 첫 줄: {rows[0]}")
+          EOF
+
+      - name: 실패했으면 화면 찍기
+        if: steps.collect.outcome != 'success'
+        run: |
+          python - <<'EOF'
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+              b = p.chromium.launch(channel="chrome")
+              pg = b.new_page(locale="ko-KR")
+              try:
+                  pg.goto("https://www.opinet.co.kr/user/opdown/opDownload.do", timeout=60000)
+                  pg.wait_for_timeout(5000)
+              except Exception as e:
+                  print("열기 실패:", e)
+              print("주소:", pg.url, "· 제목:", pg.title())
+              pg.screenshot(path="fail.png", full_page=True)
+              b.close()
+          EOF
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: result
+          path: |
+            current_data/*.csv
+            fail.png
+          if-no-files-found: ignore
+
+      - name: 결과
+        run: |
+          if [ "${{ steps.collect.outcome }}" = "success" ]; then echo "성공: 해외 서버에서 오피넷 수집 가능"; else echo "실패: 해외 서버에서 오피넷 수집 불가"; exit 1; fi
