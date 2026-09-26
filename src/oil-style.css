@@ -40,6 +40,8 @@
 .oil-row-k { color: var(--oil-muted); }
 .oil-row-v { font-weight: 700; color: var(--oil-ink); text-align: right; }
 .oil-row-v.is-accent { color: var(--oil-accent-dark); }
+/* 전화번호 등 링크 - 블로그 기본 링크색(빨강)을 물려받으면 '손해'로 읽힌다 */
+.oil-row-v a { color: var(--oil-ink); text-decoration: underline; text-underline-offset: 2px; }
 
 /* 주유소 목록 */
 .oil-list-item {
@@ -811,23 +813,19 @@ body.oil-noscroll { overflow: hidden; }
 .oil-rest-fig em { display: block; font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--oil-muted); }
 .oil-rest-fig em.is-gain { color: var(--oil-teal-dark); }
 .oil-rest-fig em.is-cost { color: var(--oil-accent-dark); }
-.oil-rest-g {
-  margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--oil-line-soft);
-  font-size: 11.5px; line-height: 1.65; color: var(--oil-muted);
+.oil-rest-g { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--oil-line-soft); }
+.oil-rest-g > summary {
+  list-style: none; cursor: pointer; padding: 4px 0; font-size: 12px; line-height: 1.65;
+  font-weight: 600; color: var(--oil-ink2);
 }
-.oil-rest-g summary {
-  list-style: none; cursor: pointer; padding: 4px 0; font-size: 12px; font-weight: 600;
-  color: var(--oil-ink2);
-}
-.oil-rest-g summary::-webkit-details-marker { display: none; }
-.oil-rest-g summary::after {
-  content: ' 이름 보기'; font-weight: 700; color: var(--oil-muted);
+.oil-rest-g > summary::-webkit-details-marker { display: none; }
+.oil-rest-g > summary::after {
+  content: ' 목록 보기'; font-weight: 700; color: var(--oil-muted);
   text-decoration: underline; text-underline-offset: 2px;
 }
-.oil-rest-g[open] summary::after { content: ' 접기'; }
-.oil-rest-g summary b { color: var(--oil-ink); font-weight: 800; }
-.oil-rest-g p { margin: 4px 0 0; }
-
+.oil-rest-g[open] > summary::after { content: ' 접기'; }
+.oil-rest-g > summary b { color: var(--oil-ink); font-weight: 800; }
+.oil-rest-g .oil-rest-list { margin-top: 4px; }
 /* 상세보기 안의 계산 */
 .oil-st-calc { margin-top: 10px; }
 .oil-st-calc-h { font-size: 12px; font-weight: 700; color: var(--oil-ink2); }

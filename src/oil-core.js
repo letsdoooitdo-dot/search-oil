@@ -288,6 +288,10 @@
     var top = list.slice(0, n);
     return top.indexOf(base) < 0 ? top.concat([base]) : top;
   };
+  /* 한도를 넘은 거리. 5.04km 를 5.0km 로 쓰면 "5.0km라 5km를 넘어"가 되어 틀려 보인다 */
+  OIL.overKm = function (v, lim) {
+    return (v > lim && v.toFixed(1) === lim.toFixed(1) ? v.toFixed(2) : v.toFixed(1)) + 'km';
+  };
   /* 순위 띠 옆 한마디 */
   OIL.rankTag = function (i, isBase) {
     if (i === 0) return '<span class="oil-st-why1">추천 · 이유는 위 상자에</span>';
@@ -299,7 +303,7 @@
      카드는 5곳만 보여준다(고르기엔 충분하고 더 늘리면 안 읽는다). 대신 계산에 들어간
      나머지를 접어서 전부 보여준다 - "내가 아는 저 주유소는 왜 없지?"에 답하려고.
      (2026-09-27 사용자가 길가의 같은 가격 주유소를 지나치고 물은 게 이 기능의 출발점)
-     o = { rest, rankOf(s), price(s), sub(s), detail(s), groups: [{ title, items, fmt(s) }] }
+     o = { rest, rankOf(s), price(s), sub(s), detail(s, why), groups: [{ title, items, sub(s), tag(s), why(s) }] }
        rest   - 순위 안에 든 나머지 (실측값, 기준보다 얼마인지 보여준다)
        groups - 순위에서 빠진 곳과 그 이유 (반경·우회 초과, 1위를 못 이겨 안 잰 곳) */
   OIL.restHtml = function (o) {
@@ -310,20 +314,29 @@
 
     /* 누르면 그 자리에서 상세가 펼쳐진다. 목록을 훑다가 잘못 눌러 지도 앱으로
        넘어가지 않게 길찾기는 연결하지 않는다(2026-09-27 사용자 요청). */
+    function row(no, s, sub, tag, det) {
+      return '<details class="oil-rest-item"><summary class="oil-rest-row">' +
+        '<span class="oil-rest-no">' + no + '</span>' +
+        '<span class="oil-rest-name">' + esc(s.n) + '<i>' + sub + '</i></span>' +
+        '<span class="oil-rest-fig"><b>' + won(p(s)) + '원</b>' + tag + '</span>' +
+        '</summary><div class="oil-rest-det">' + det + '</div></details>';
+    }
+
     var rows = o.rest.map(function (s) {
       var t = s._trip;
-      return '<details class="oil-rest-item"><summary class="oil-rest-row">' +
-        '<span class="oil-rest-no">' + o.rankOf(s) + '</span>' +
-        '<span class="oil-rest-name">' + esc(s.n) + '<i>' + o.sub(s) + '</i></span>' +
-        '<span class="oil-rest-fig"><b>' + won(p(s)) + '원</b>' +
-          (s._isBase ? '<em>비교 기준</em>' : '<em class="' + tone(t.net) + '">' + signed(t.net) + '</em>') +
-        '</span></summary><div class="oil-rest-det">' + o.detail(s) + '</div></details>';
+      return row(o.rankOf(s), s, o.sub(s),
+        s._isBase ? '<em>비교 기준</em>' : '<em class="' + tone(t.net) + '">' + signed(t.net) + '</em>',
+        o.detail(s));
     }).join('');
 
-    /* 빠진 곳은 수십 곳이라 이름을 한 번 더 접는다 - 개수와 이유만 먼저 보인다 */
+    /* 순위에서 빠진 곳도 한 줄씩 - 운전 중 "지금 지나가는 저 주유소"를 순서대로 찾을 수
+       있게. 손익은 순위 밖이라 매기지 않고, 누르면 빠진 이유를 숫자로 보여준다.
+       수십 곳이라 묶음째 한 번 더 접어 개수와 이유만 먼저 보인다. */
     var more = groups.map(function (g) {
       return '<details class="oil-rest-g"><summary>' + g.title + ' <b>' + g.items.length + '곳</b></summary>' +
-        '<p>' + g.items.map(function (s) { return esc(s.n) + ' ' + g.fmt(s); }).join(' · ') + '</p></details>';
+        '<div class="oil-rest-list">' + g.items.map(function (s) {
+          return row('', s, g.sub(s), '<em>' + g.tag(s) + '</em>', o.detail(s, g.why(s)));
+        }).join('') + '</div></details>';
     }).join('');
 
     return '<details class="oil-rest"><summary>비교한 나머지 <b>' + total + '곳</b> 보기</summary>' +

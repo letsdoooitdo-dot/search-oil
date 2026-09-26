@@ -201,6 +201,9 @@
 
   /* ── 카드 ────────────────────────────────────────────────── */
   function atText(s) { return (s._at < 10 ? s._at.toFixed(1) : s._at.toFixed(0)) + 'km 앞'; }
+  function offText(s) {
+    return s._off < 1 ? Math.round(s._off * 1000 / 10) * 10 + 'm' : s._off.toFixed(1) + 'km';
+  }
   function detText(s) {
     return s._detour < 0.05 ? '안 돌아감'
       : '우회 ' + (s._real ? '' : '약 ') + s._detour.toFixed(1) + 'km';
@@ -241,7 +244,8 @@
         detail(s, base) + '</div></article>';
   }
 
-  function detail(s, base) {
+  /* why - 순위에서 빠진 곳이면 계산 줄 대신 빠진 이유를 넣는다 */
+  function detail(s, base, why) {
     var fuels = [];
     if (s.g) fuels.push(['휘발유', s.g]);
     if (s.d) fuels.push(['경유', s.d]);
@@ -260,6 +264,8 @@
         '<span class="oil-row-v"><a href="tel:' + esc(s.t) + '">' + esc(s.t) + '</a></span></div>';
     }
     html += '</div>';
+
+    if (why) return html + '<p class="oil-st-why">' + why + '</p>';
 
     html += '<p class="oil-st-why">' +
       '출발지에서 경로를 따라 <b>' + atText(s) + '</b> · 들렀다 가면 <b>' +
@@ -350,17 +356,30 @@
     html += OIL.restHtml({
       rest: r.list.filter(function (s) { return list.indexOf(s) < 0; }),
       rankOf: rankOf, price: price, baseShort: state.baseShort,
-      detail: function (s) { return detail(s, base); },
+      detail: function (s, why) { return detail(s, base, why); },
       sub: function (s) { return atText(s) + ' · ' + detText(s); },
       groups: [
         { title: '들렀다 가면 우회가 ' + rad + 'km를 넘어 뺀 곳',
           items: pool.filter(function (s) { return s._tried && s._detour > rad; })
             .sort(function (a, b) { return a._at - b._at; }),
-          fmt: function (s) { return won(price(s)) + '원(우회 ' + s._detour.toFixed(1) + 'km)'; } },
+          sub: function (s) { return atText(s) + ' · 우회 ' + OIL.overKm(s._detour, rad); },
+          tag: function () { return '우회 초과'; },
+          why: function (s) {
+            return '들렀다 가면 <b>' + OIL.overKm(s._detour, rad) + '</b> 더 가야 해서 고르신 우회 허용 ' +
+              rad + 'km를 넘어 순위에서 뺐습니다. 위에서 우회 허용을 늘리면 순위에 들어갑니다.';
+          } },
         { title: '가장 유리하게 쳐도 1위보다 덜 남아 재지 않은 곳',
           items: pool.filter(function (s) { return !s._tried; })
             .sort(function (a, b) { return a._at - b._at; }),
-          fmt: function (s) { return won(price(s)) + '원(' + atText(s) + ')'; } }
+          sub: function (s) { return atText(s) + ' · 경로에서 ' + offText(s) + ' · 안 잼'; },
+          tag: function () { return '재지 않음'; },
+          why: function (s) {
+            var ub = upper(s, r);
+            return '경로에서 약 ' + offText(s) + ' 떨어져 있어, 들렀다 가려면 적어도 그 두 배는 더 ' +
+              '가야 합니다. 그렇게 가장 유리하게 쳐도 ' + esc(base.n) + '보다 <b>' +
+              (ub >= 0 ? '최대 ' + won(ub) + '원 남습니다' : won(-ub) + '원 손해입니다') + '</b>. ' +
+              '1위 ' + esc(r.best.n) + '(' + won(r.best._trip.net) + '원 남음)보다 적어서 재지 않았습니다.';
+          } }
       ]
     });
 

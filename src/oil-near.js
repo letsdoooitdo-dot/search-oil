@@ -105,7 +105,8 @@
       '</article>';
   }
 
-  function detail(s, i, baseName) {
+  /* why - 순위에서 빠진 곳이면 계산 줄 대신 빠진 이유를 넣는다 */
+  function detail(s, i, baseName, why) {
     var t = s._trip;
     var fuels = [];
     if (s.g) fuels.push(['휘발유', s.g]);
@@ -128,6 +129,8 @@
       '<span class="oil-row-v" style="font-weight:500;">' + esc(s.b || '-') +
       (s.s ? ' · 셀프' : '') + '</span></div>';
     html += '</div>';
+
+    if (why) return html + '<p class="oil-st-why">' + why + '</p>';
 
     /* 왜 이런 판정이 나왔는지 - 숨기지 않고 밝힌다. 식까지 보여줘야 따라 셀 수 있다. */
     html += '<p class="oil-st-why">' +
@@ -289,17 +292,30 @@
     html += OIL.restHtml({
       rest: r.list.filter(function (s) { return list.indexOf(s) < 0; }),
       rankOf: rankOf, price: price, baseShort: BASE_SHORT,
-      detail: function (s) { return detail(s, 0, base.n); },
+      detail: function (s, why) { return detail(s, 0, base.n, why); },
       sub: function (s) { return '여기서 ' + (s._real ? '' : '약 ') + s._road.toFixed(1) + 'km'; },
       groups: [
         { title: '실제 도로거리가 반경 ' + rad + 'km를 넘어 뺀 곳',
           items: cand.filter(function (s) { return s._tried && s._road > rad; })
             .sort(function (a, b) { return a._road - b._road; }),
-          fmt: function (s) { return won(price(s)) + '원(' + s._road.toFixed(1) + 'km)'; } },
+          sub: function (s) { return '여기서 ' + OIL.overKm(s._road, rad); },
+          tag: function () { return '반경 밖'; },
+          why: function (s) {
+            return '실제 도로거리가 <b>' + OIL.overKm(s._road, rad) + '</b>라 고르신 반경 ' + rad +
+              'km를 넘어 순위에서 뺐습니다. 위에서 반경을 넓히면 순위에 들어갑니다.';
+          } },
         { title: '가장 가깝게 쳐도 1위보다 덜 남아 도로거리를 재지 않은 곳',
           items: cand.filter(function (s) { return !s._tried; })
-            .sort(function (a, b) { return price(a) - price(b); }),
-          fmt: function (s) { return won(price(s)) + '원'; } }
+            .sort(function (a, b) { return a._straight - b._straight; }),
+          sub: function (s) { return '직선 ' + s._straight.toFixed(1) + 'km · 도로거리는 안 잼'; },
+          tag: function () { return '재지 않음'; },
+          why: function (s) {
+            var ub = upper(s, r);
+            return '도로거리는 직선거리(' + s._straight.toFixed(1) + 'km)보다 짧을 수 없어서, ' +
+              '가장 가깝게 쳐도 ' + esc(base.n) + '보다 <b>' +
+              (ub >= 0 ? '최대 ' + won(ub) + '원 남습니다' : won(-ub) + '원 손해입니다') + '</b>. ' +
+              '1위 ' + esc(best.n) + '(' + won(best._trip.net) + '원 남음)보다 적어서 도로거리를 재지 않았습니다.';
+          } }
       ]
     });
 
