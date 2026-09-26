@@ -109,7 +109,7 @@
     if (!pickOrigin) {
       html += '<section class="oil-find-sec">' +
         '<h2 class="oil-find-h"><span>내 주변에서 ' +
-          '<b>다 따져서 제일 싼 주유소</b> 찾기</span></h2>' +
+          '<b>제일 이득인 주유소</b> 찾기</span></h2>' +
         '<button type="button" class="oil-near-btn" id="oil-near">' +
           '<span class="oil-near-l">' + PIN +
             '<span><span class="oil-near-t">내 주변 다 따져서 제일 싼 주유소</span>' +
@@ -130,7 +130,7 @@
     html += '<section class="oil-find-sec">' +
       '<h2 class="oil-find-h"><span>' +
         (pickOrigin ? '출발지를 정해주세요'
-                    : '가는 길에서 <b>다 따져서 제일 싼 주유소</b> 찾기') + '</span></h2>' +
+                    : '가는 길에서 <b>제일 이득인 주유소</b> 찾기') + '</span></h2>' +
       '<button type="button" class="oil-fakein" id="oil-open-search">' +
         '<span>' + (pickOrigin ? '어디서 출발하세요?' : '어디로 가세요?') + '</span>' +
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
