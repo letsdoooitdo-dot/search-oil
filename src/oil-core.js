@@ -87,9 +87,12 @@
 
      기준 주유소도 어차피 가야 하므로, 무는 것은 '더 가는 거리'뿐이다.
      출발지에서의 전체 거리를 물리면 가까운 집이 공짜가 되어 늘 이긴다. */
-  OIL.calcTrip = function (price, base, km, baseKm, round) {
+  /* opt = { L, kmpl } - 계산기처럼 사용자가 숫자를 직접 넣을 때. 식은 하나만 둔다 -
+     계산기와 결과 화면이 다른 답을 내면 어느 쪽도 못 믿게 된다. */
+  OIL.calcTrip = function (price, base, km, baseKm, round, opt) {
     var car = (OIL.prefs && OIL.prefs.car()) || { kmpl: 12, usual: 30, label: '일반 승용차' };
     var L = (OIL.prefs && OIL.prefs.liters()) || car.usual, kmpl = car.kmpl;
+    if (opt) { L = opt.L; kmpl = opt.kmpl; car = { kmpl: kmpl, usual: L, label: '직접 입력' }; }
     var mult = round ? 2 : 1;
     /* 기준보다 더 가는 도로거리. 가는 길 모드는 기준이 '처음 나오는 곳'이라
        기준보다 덜 돌아가는 곳도 있다 - 그때는 음수로 두어 덜 달린 만큼 쳐준다. */

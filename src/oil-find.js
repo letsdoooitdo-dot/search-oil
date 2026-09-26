@@ -74,8 +74,10 @@
          보여서, 바탕 위에 글로 읽히게 만든다. */
       html += '<section class="oil-pitch">' +
         '<p class="oil-pitch-k">이 사이트가 다른 점</p>' +
-        '<h1 class="oil-pitch-q">리터당 <b>30원 싼</b> 주유소가<br><b>10km 더 멀다면</b>, ' +
-          '가는 게 맞을까요?</h1>' +
+        /* 강조는 뜻에 맞는 색 - 싼 건 이득(초록), 먼 건 비용(빨강). 바로 아래
+           계산 줄의 +900원(초록)·−1,500원(빨강)과 짝이 맞는다. */
+        '<h1 class="oil-pitch-q">리터당 <b class="is-gain">30원 싼</b> 주유소가<br>' +
+          '<b class="is-cost">10km 더 멀다면</b>, 가는 게 맞을까요?</h1>' +
         '<div class="oil-pitch-eq">' +
           '<div><span>싸게 넣어 아끼는 돈</span><b class="is-gain">+900원</b></div>' +
           '<div><span>더 가는 기름값</span><b class="is-cost">−1,500원</b></div>' +
@@ -116,12 +118,14 @@
           '<span class="oil-near-l">' + PIN +
             '<span><span class="oil-near-t">내 주변 다 따져서 제일 싼 주유소</span>' +
             '<span id="oil-near-sub"><span class="oil-near-where">' +
-            (spot ? esc(spot) + ' 기준으로 찾아드립니다'
-                  : '위치를 켜면 바로 찾아드립니다') +
+            (spot ? '누르면 ' + esc(spot) + ' 기준으로 바로 찾아드립니다'
+                  : '여기를 누르면 현재 위치로 바로 찾아드립니다') +
             '</span></span></span></span>' +
-          OIL.chev('#fff') +
+          /* 그라데이션 상자만으로는 누르는 곳인지 몰랐다(2026-09-27 사용자 지적).
+             흰 '찾기' 단추를 붙여 버튼이라는 게 바로 보이게 한다. */
+          '<span class="oil-near-go">찾기' + OIL.chev('#0891B2') + '</span>' +
         '</button>' +
-        '<p class="oil-find-hint">따지는 항목 : 기름값 · 실제 이동거리 · 편도/왕복<br>' +
+        '<p class="oil-find-hint">계산 항목 : 기름값 · 실제 이동거리 · 편도/왕복<br>' +
           '차종별 연비와 1회 주유량까지 따져서 계산합니다</p>' +
         '<div class="oil-locate-msg" id="oil-locate-msg"></div>' +
         '</section>';
@@ -147,7 +151,7 @@
          내 주변은 '편도/왕복'을 묻기 때문이다 - 없는 걸 적으면 안 된다. */
       '<p class="oil-find-hint">' + (pickOrigin
         ? esc(OIL.param('dq')) + '까지 가는 길에서 찾아드립니다'
-        : '따지는 항목 : 기름값 · 실제 이동거리 · 우회거리<br>' +
+        : '계산 항목 : 기름값 · 실제 이동거리 · 우회거리<br>' +
           '차종별 연비와 1회 주유량까지 따져서 계산합니다') +
       '</p></section>';
 
