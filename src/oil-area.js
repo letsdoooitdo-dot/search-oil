@@ -249,7 +249,7 @@
       '곳 기준 · 1년 성격은 최근 1년 일별 가격으로 산출 · 출처 오피넷</p></div>';
 
     OIL.render(html);
-    document.title = r.r + ' 주유소 최저가 - 오늘 ' + fuelName() + ' ' + won(s.lo) + '원부터';
+    document.title = r.r + ' 주유소 최저가 - 오늘 ' + fuelName() + ' ' + won(s.lo) + '원부터 | 갈까말까';
 
     if (P) P.wireBar(function () { renderArea(meta, r, total); });
   }

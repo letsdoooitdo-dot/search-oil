@@ -30,11 +30,11 @@
        ★ 아래 이름은 아이콘 밑에 붙는 글씨다. 길면 "다따져 주유..." 로 잘리므로
          여섯 자 안쪽으로 둔다. 안드로이드 크롬은 추가할 때 사용자가 고칠 수
          있는 칸을 띄워주는데, 그 칸에 처음 채워지는 값이 이것이다.
-       2026-09-27 로고 아이콘 + 이름 "갈까말까" 로 바꿨다(사용자 결정).
+       2026-09-27 이름을 "갈까말까" 로 바꿨다(사용자 결정). 로고 그림 아이콘은 이상해서 되돌렸다.
        ?v= 는 그림을 바꿀 때마다 올린다 - 안 올리면 폰·브라우저가 옛 그림을 계속 쓴다. -->
-  <link href='@@OIL_IMG_URL@@icon-180.png?v=2' rel='apple-touch-icon'/>
-  <link href='@@OIL_IMG_URL@@icon-192.png?v=2' rel='icon' sizes='192x192' type='image/png'/>
-  <link href='@@OIL_IMG_URL@@icon-512.png?v=2' rel='icon' sizes='512x512' type='image/png'/>
+  <link href='@@OIL_IMG_URL@@icon-180.png?v=3' rel='apple-touch-icon'/>
+  <link href='@@OIL_IMG_URL@@icon-192.png?v=3' rel='icon' sizes='192x192' type='image/png'/>
+  <link href='@@OIL_IMG_URL@@icon-512.png?v=3' rel='icon' sizes='512x512' type='image/png'/>
   <meta content='갈까말까' name='apple-mobile-web-app-title'/>
   <meta content='갈까말까' name='application-name'/>
 
@@ -47,23 +47,23 @@
      글 페이지에서는 제목을 그 글 제목으로 바꿔준다 - 공유했을 때
      전부 같은 제목으로 뜨면 무슨 글인지 알 수가 없다. -->
 <b:if cond='data:blog.pageType == &quot;item&quot;'>
-  <meta expr:content='data:blog.pageName + &quot; - 주유소찾기&quot;' property='og:title'/>
+  <meta expr:content='data:blog.pageName + &quot; - 갈까말까&quot;' property='og:title'/>
   <meta content='article' property='og:type'/>
 <b:else/>
-  <meta content='주유소찾기 - 다 따져서 제일 싼 주유소' property='og:title'/>
+  <meta content='갈까말까 - 다 따져서 제일 싼 주유소' property='og:title'/>
   <meta content='website' property='og:type'/>
 </b:if>
 <meta content='기름값만 싼 곳 말고, 가는 거리까지 계산해서 진짜 돈이 남는 주유소를 찾아드립니다. 전국 1만여 곳 실제 판매가, 매일 갱신.' property='og:description'/>
 <meta expr:content='data:blog.url' property='og:url'/>
-<meta content='주유소찾기' property='og:site_name'/>
+<meta content='갈까말까' property='og:site_name'/>
 <meta content='@@OIL_IMG_URL@@og.jpg' property='og:image'/>
 <meta content='1200' property='og:image:width'/>
 <meta content='630' property='og:image:height'/>
-<meta content='주유소찾기 - 다 따져서 제일 싼 주유소를 찾아드립니다' property='og:image:alt'/>
+<meta content='갈까말까 - 다 따져서 제일 싼 주유소를 찾아드립니다' property='og:image:alt'/>
 
 <!-- Twitter -->
 <meta content='summary_large_image' name='twitter:card'/>
-<meta content='주유소찾기 - 다 따져서 제일 싼 주유소' name='twitter:title'/>
+<meta content='갈까말까 - 다 따져서 제일 싼 주유소' name='twitter:title'/>
 <meta content='기름값만 싼 곳 말고, 가는 거리까지 계산해서 진짜 돈이 남는 주유소를 찾아드립니다.' name='twitter:description'/>
 <meta content='@@OIL_IMG_URL@@og.jpg' name='twitter:image'/>
 
@@ -84,7 +84,7 @@
   <a class='oil-hero-link' expr:href='data:blog.homepageUrl'>
     <picture>
       <source srcset='@@OIL_IMG_URL@@hero.webp' type='image/webp'/>
-      <img alt='주유소찾기 - 기름값과 실제 이동거리를 다 따져서 제일 싼 주유소를 찾아드립니다' class='oil-hero-img' height='452' src='@@OIL_IMG_URL@@hero.jpg' width='1200'/>
+      <img alt='갈까말까 - 기름값과 실제 이동거리를 다 따져서 제일 싼 주유소를 찾아드립니다' class='oil-hero-img' height='452' src='@@OIL_IMG_URL@@hero.jpg' width='1200'/>
     </picture>
   </a>
 </header>
@@ -165,7 +165,7 @@
       </a>
     </div>
   </div>
-  <div><b>다 따져서 주유소찾기</b>한국석유공사 오피넷이 공개하는 전국 주유소 판매가격을 바탕으로 정보 제공을 목적으로 운영됩니다.<br/>
+  <div><b>갈까말까</b>한국석유공사 오피넷이 공개하는 전국 주유소 판매가격을 바탕으로 정보 제공을 목적으로 운영됩니다.<br/>
   실제 판매가는 주유소 사정에 따라 다를 수 있으니 방문 전 확인하시기 바랍니다.</div>
 </footer>
 

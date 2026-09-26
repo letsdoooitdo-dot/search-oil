@@ -134,7 +134,7 @@ def main():
     body = body.replace("//<![CDATA[", "").replace("//]]>", "")
     body = body.replace("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n", "")
     body = re.sub(r"\sexpr:(dir|href|src|content|id)='[^']*'", "", body)
-    body = re.sub(r"<title><data:blog.pageTitle/></title>", "<title>주유소찾기</title>", body)
+    body = re.sub(r"<title><data:blog.pageTitle/></title>", "<title>갈까말까</title>", body)
     body = body.replace("<html b:version='2' class='v2'", "<html lang='ko'")
     body = re.sub(r"\sxmlns:[a-z]+='[^']*'", "", body)
     # 미리보기에서는 실제 광고를 부르지 않는다 (로더는 위에서 이미 지웠다).

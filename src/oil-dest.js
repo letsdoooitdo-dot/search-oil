@@ -390,7 +390,7 @@
       '우회 거리는 카카오맵 길찾기로 실제 경로를 계산한 값입니다</p></div>';
 
     OIL.render(html);
-    document.title = destName + ' 가는 길 주유소 - 주유소찾기';
+    document.title = destName + ' 가는 길 주유소 - 갈까말까';
     if (OIL.map) {
       OIL.map.render(document.getElementById('oil-list-map'), {
         from: { la: origin.la, ln: origin.ln, name: originName },

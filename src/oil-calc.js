@@ -167,7 +167,7 @@
 
     OIL.render(html);
     /* 블로그스팟이 "주유소찾기: calc" 로 붙이는 제목을 검색용으로 바꾼다 */
-    document.title = '싼 주유소 더 가도 될까 - 기름값 손익 계산기';
+    document.title = '싼 주유소 더 가도 될까 - 기름값 손익 계산기 | 갈까말까';
 
     wire(trip);
     if (P) {

@@ -158,7 +158,7 @@
     html += '</div>';
 
     OIL.render(html);
-    document.title = '주유소찾기 - 내 주변 기름값 싼 주유소';
+    document.title = '갈까말까 - 내 주변 기름값 싼 주유소';
 
     ENV.wireHomeTip();
 

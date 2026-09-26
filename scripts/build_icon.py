@@ -5,71 +5,73 @@
   img/icon-192.png   안드로이드 크롬
   img/icon-512.png   큰 화면·나중에 쓸 자리
 
-원본은 assets/app-icon-src.png (2026-09-27 사용자가 준 '갈까말까-최종로고.png' 복사본,
-1254px 정사각형). 홈 화면 이름은 "갈까말까" - blogger/theme-template.xml 의
-apple-mobile-web-app-title. 그림을 바꾸면 템플릿의 ?v= 숫자도 올린다.
-
-★ 원본은 귀퉁이가 흰색으로 둥글게(반지름 약 250px) 되어 있다. 폰이 모서리를 다시
-  둥글게 자르므로, 그대로 쓰면 귀퉁이에 흰 조각이 남는다. 흰 귀퉁이가 사라질 만큼
-  안쪽으로 잘라 쓴다(약 7%). 화살표·자동차는 그 안쪽이라 잘리지 않는다.
-
 ★ 이 그림이 없으면 폰이 알아서 만든다 - 주소 첫 글자 한 자를 동그라미에
   넣어버린다(실제로 'L' 로 나왔다, 2026-09-24). 무슨 앱인지 알 수가 없다.
 
-★ 폰이 모서리를 알아서 둥글게 자른다. 그래서 원본은 귀퉁이까지 그림이 꽉 찬
-  정사각형이어야 한다 - 이 로고는 귀퉁이가 하늘·도로로 차 있어 그대로 쓴다.
-  투명한 부분이 있으면 아이폰은 검게 칠하므로 RGB 로 바꿔 저장한다.
+★ 안드로이드 런처는 아이콘을 **동그랗게 잘라** 쓰는 경우가 많다.
+  그래서 글자는 가운데 원(지름의 78%) 안에 두고, 네 귀퉁이는 바탕색으로만
+  채운다 - 귀퉁이에 뭘 그리면 잘려 나간다.
 """
 
 import os
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "assets", "app-icon-src.png")
 OUT = os.path.join(ROOT, "img")
 
+# 머리 띠(#017A75)와 '내 주변' 버튼(#0891B2)을 잇는 대각선 그라데이션.
+# 사이트를 열었을 때 보이는 색과 같아야 "그 사이트" 로 알아본다.
+C1 = (1, 122, 117)
+C2 = (8, 145, 178)
 
-def white(p):
-    return min(p) > 235
+TEXT = "다따져"          # 아이콘에 넣을 글자 - 세 자가 한계다
+SIZE = 1024              # 큰 걸로 한 번 그리고 줄인다 (글자가 매끄러워진다)
+
+FONTS = [
+    r"C:\Windows\Fonts\malgunbd.ttf",   # 맑은 고딕 볼드
+    r"C:\Windows\Fonts\malgun.ttf",
+]
 
 
-def corner_inset(img):
-    """네 귀퉁이의 흰 둥근 부분이 다 빠지는 안쪽 여백(px). 귀퉁이가 차 있으면 0."""
-    w, h = img.size
-    worst = 0
-    for cx, cy, sx, sy in ((0, 0, 1, 1), (w - 1, 0, -1, 1), (0, h - 1, 1, -1), (w - 1, h - 1, -1, -1)):
-        i = 0
-        while i < min(w, h) // 3 and white(img.getpixel((cx + sx * i, cy + sy * i))):
-            i += 1
-        worst = max(worst, i)
-    return worst + 10 if worst else 0      # 둥근 선의 흐릿한 가장자리까지 넉넉히
+def font_for(px):
+    for path in FONTS:
+        if os.path.exists(path):
+            return ImageFont.truetype(path, px)
+    raise SystemExit("한글 글꼴을 못 찾았습니다: " + ", ".join(FONTS))
 
 
 def make():
-    img = Image.open(SRC).convert("RGB")
-    w, h = img.size
-    if w != h:                       # 정사각형이 아니면 가운데를 잘라 맞춘다
-        s = min(w, h)
-        img = img.crop(((w - s) // 2, (h - s) // 2, (w + s) // 2, (h + s) // 2))
-        w = h = s
-    m = corner_inset(img)
-    if m:
-        img = img.crop((m, m, w - m, h - m))
-        print("흰 귀퉁이를 잘라냈습니다: 가장자리 %dpx (%.1f%%)" % (m, m * 100 / w))
-    # 귀퉁이 근처만 검사한다 - 가장자리 가운데에는 흰 구름이 걸쳐 있을 수 있다
-    n = img.size[0] - 1
-    left = sum(1 for i in range(60) for p in (
-        img.getpixel((i, 0)), img.getpixel((0, i)), img.getpixel((n - i, 0)), img.getpixel((n, i)),
-        img.getpixel((i, n)), img.getpixel((0, n - i)), img.getpixel((n - i, n)), img.getpixel((n, n - i)))
-        if white(p))
-    if left:
-        raise SystemExit("귀퉁이에 흰 부분이 %d곳 남았습니다. 원본을 확인하세요." % left)
+    img = Image.new("RGB", (SIZE, SIZE))
+    d = ImageDraw.Draw(img)
+
+    # 대각선 그라데이션 - 왼쪽 위에서 오른쪽 아래로
+    for i in range(SIZE * 2):
+        t = i / (SIZE * 2 - 1)
+        c = tuple(round(C1[k] + (C2[k] - C1[k]) * t) for k in range(3))
+        d.line([(i, 0), (0, i)], fill=c)
+
+    # 글자를 '안전한 원' 안에 딱 맞게 키운다.
+    # 가로만 보고 키우면 세로가 원 밖으로 나가므로 둘 다 본다.
+    safe = SIZE * 0.72
+    px = 10
+    while True:
+        f = font_for(px + 10)
+        box = d.textbbox((0, 0), TEXT, font=f)
+        if box[2] - box[0] > safe or box[3] - box[1] > safe * 0.62:
+            break
+        px += 10
+    f = font_for(px)
+
+    box = d.textbbox((0, 0), TEXT, font=f)
+    x = (SIZE - (box[2] - box[0])) / 2 - box[0]
+    y = (SIZE - (box[3] - box[1])) / 2 - box[1]
+    d.text((x, y), TEXT, font=f, fill=(255, 255, 255))
 
     os.makedirs(OUT, exist_ok=True)
     for n in (180, 192, 512):
         path = os.path.join(OUT, "icon-%d.png" % n)
         img.resize((n, n), Image.LANCZOS).save(path, "PNG", optimize=True)
-        print("아이콘:", path, "%dKB" % (os.path.getsize(path) // 1024))
+        print("아이콘:", path)
 
 
 if __name__ == "__main__":
