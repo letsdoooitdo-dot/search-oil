@@ -60,10 +60,13 @@
   }
 
   /* 상황에 따라 바뀌는 글자들. 가는 길은 '여기서 거리'가 아니라 '우회거리'를 넣는다. */
+  /* ★ 거리는 비교할 곳 하나만 받는다(2026-09-27 사용자 지적). 계산에 들어가는 건
+     '기준보다 얼마나 더 가나'뿐이라, 기준 거리까지 바꿀 수 있으면 무엇을 넣는 칸인지
+     헷갈린다. 기준은 지금 그냥 넣으면 되는 곳 - 출발점(0km)으로 고정해 보여준다. */
   var MODE = {
-    near: { base: '제일 가까운 곳', dist: '여기서 거리', distHint: '실제 도로거리',
+    near: { base: '제일 가까운 곳', dist: '더 가는 거리', distHint: '제일 가까운 곳보다 (실제 도로거리)',
             modeHint: '지금 있는 곳 주변에서 고를 때' },
-    dest: { base: '처음 나오는 곳', dist: '우회거리', distHint: '들렀다 가면 더 가는 거리 · 길가면 0',
+    dest: { base: '처음 나오는 곳', dist: '더 돌아가는 거리', distHint: '처음 나오는 곳보다 · 길가면 0',
             modeHint: '목적지 가는 길에 들를 때' }
   };
 
@@ -92,7 +95,7 @@
        계산기를 누르고 들어온 사람에게 한 번 더 알려줄 필요가 없고, 붉은 글씨는
        '비용' 쪽에 써야 하는 색이라 제목 위에서 낭비된다. */
     html += '<div>' +
-      '<h1 class="oil-h1">저기까지 가서 넣어도 이득일까?</h1>' +
+      '<h1 class="oil-h1">정말 이득인지 계산해 보기</h1>' +
       '<p class="oil-lead">우리 사이트가 주유소를 추천할 때 쓰는 계산을 <b>그대로</b> ' +
       '해볼 수 있습니다. 그냥 넣었을 곳(비교 기준)과 비교할 곳의 가격·거리를 넣어보세요. ' +
       '기본값은 ' + (ms ? '<b>' + esc(mine.r) + '</b>' : '전국') + ' 오늘 실제 판매가입니다.</p></div>';
@@ -126,13 +129,17 @@
       '<p class="oil-field-hint" style="margin:-4px 0 10px;">아무것도 안 따지면 그냥 넣었을 곳</p>' +
       '<div class="oil-fields2">' +
         field('c3ap', '기름값', basePrice, '원/L', baseWhere + ' ' + fuelName) +
-        field('c3ad', M.dist, 1, 'km', M.distHint) +
+        /* 거리는 고정 - 입력칸처럼 보이되 바꿀 수 없다는 게 보이게 잠가 둔다 */
+        '<div class="oil-field"><label>거리</label>' +
+          '<div class="oil-field-in is-fixed"><input type="text" value="기준 0" disabled>' +
+          '<span class="oil-field-unit">km</span></div>' +
+          '<div class="oil-field-hint">출발점이라 고정</div></div>' +
       '</div></div>';
 
     html += '<div class="oil-card"><div class="oil-card-title">비교할 곳 · 더 싼 곳</div>' +
       '<div class="oil-fields2">' +
         field('c3bp', '기름값', basePrice - 30, '원/L', '비교 기준보다 싸면 이득 후보') +
-        field('c3bd', M.dist, 11, 'km', M.distHint) +
+        field('c3bd', M.dist, 10, 'km', M.distHint) +
       '</div></div>';
 
     html += '<div class="oil-card"><div class="oil-card-title">내 차</div>' +
@@ -204,11 +211,11 @@
 
     /* 식은 결과 화면과 똑같이 OIL.calcTrip 으로 낸다 - 여기서 따로 셈하지 않는다. */
     function calc() {
-      var ap = num('c3ap'), ad = num('c3ad'), bp = num('c3bp'), bd = num('c3bd');
+      var ap = num('c3ap'), bp = num('c3bp'), bd = num('c3bd');
       var kmpl = num('c3kmpl'), l = num('c3l');
       var M = MODE[calcMode], dest = calcMode === 'dest';
 
-      if (!(ap > 0 && bp > 0 && kmpl > 0 && l > 0 && ad >= 0 && bd >= 0)) {
+      if (!(ap > 0 && bp > 0 && kmpl > 0 && l > 0 && bd >= 0)) {
         $('c3out-k').textContent = '결과';
         $('c3out').textContent = '-';
         $('c3rows').innerHTML = '';
@@ -217,7 +224,7 @@
       }
 
       var round = !dest && trip === 'round';
-      var t = OIL.calcTrip(bp, ap, bd, ad, round, { L: l, kmpl: kmpl });
+      var t = OIL.calcTrip(bp, ap, bd, 0, round, { L: l, kmpl: kmpl });
       var net = Math.round(t.net);
 
       $('c3out-k').textContent = net > 0 ? '비교할 곳에서 넣는 게 이득입니다'
@@ -261,11 +268,9 @@
       $('c3mode-h').textContent = M.modeHint;
       $('c3a-name').textContent = M.base;
       $('c3trip-box').style.display = calcMode === 'dest' ? 'none' : '';
-      ['c3ad', 'c3bd'].forEach(function (id) {
-        var f = $(id).closest('.oil-field');
-        f.querySelector('label').textContent = M.dist;
-        f.querySelector('.oil-field-hint').textContent = M.distHint;
-      });
+      var f = $('c3bd').closest('.oil-field');
+      f.querySelector('label').textContent = M.dist;
+      f.querySelector('.oil-field-hint').textContent = M.distHint;
     }
 
     pick('c3mode', function (v) { calcMode = v; applyMode(); });
@@ -275,7 +280,7 @@
       $('c3trip-h').textContent = tripHint(trip);
     });
 
-    ['c3ap', 'c3ad', 'c3bp', 'c3bd', 'c3kmpl', 'c3l'].forEach(function (id) {
+    ['c3ap', 'c3bp', 'c3bd', 'c3kmpl', 'c3l'].forEach(function (id) {
       $(id).addEventListener('input', calc);
     });
     applyMode();

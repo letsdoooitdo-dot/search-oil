@@ -128,6 +128,11 @@
 .oil-fields2 .oil-chip { padding: 7px 0; flex: 1 1 0; text-align: center; }
 
 .oil-field { margin-bottom: 13px; }
+/* 바꿀 수 없는 칸(계산기의 기준 거리) - 회색으로 잠겨 있다는 게 보이게 */
+.oil-field-in.is-fixed input {
+  background: var(--oil-soft); color: var(--oil-muted); font-weight: 700;
+  cursor: not-allowed; -webkit-text-fill-color: var(--oil-muted); opacity: 1;
+}
 .oil-field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--oil-ink2); margin-bottom: 6px; }
 .oil-field-in { display: flex; align-items: center; gap: 8px; }
 .oil-field input, .oil-field select {
