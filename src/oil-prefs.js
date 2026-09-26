@@ -13,10 +13,10 @@
 
   /* 차종별 기본값 - 파이썬 fill_amount.VEHICLE 과 같은 값 */
   var VEHICLE = {
-    '경차':   { kmpl: 16, tank: 35, usual: 25, label: '경차' },
-    '일반':   { kmpl: 12, tank: 60, usual: 30, label: '일반 승용차' },
-    'SUV':    { kmpl: 8,  tank: 80, usual: 60, label: 'SUV' },
-    '화물':   { kmpl: 9,  tank: 60, usual: 50, label: '화물차' }
+    '경차':   { kmpl: 16, tank: 35, usual: 25, label: '경차', short: '경차' },
+    '일반':   { kmpl: 12, tank: 60, usual: 30, label: '일반 승용차', short: '승용차' },
+    'SUV':    { kmpl: 8,  tank: 80, usual: 60, label: 'SUV', short: 'SUV' },
+    '화물':   { kmpl: 9,  tank: 60, usual: 50, label: '화물차', short: '화물차' }
   };
   var VEHICLE_ORDER = ['경차', '일반', 'SUV', '화물'];
   var FUELS = { g: '휘발유', d: '경유' };
@@ -38,8 +38,13 @@
   var RANGE = [10, 20, 30, 50, 100];
   var DETOUR = [1, 2, 3, 5];
 
+  /* 주유량 - 싸게 넣어 아끼는 돈은 '리터당 차이 × 넣는 양'이라 이 값이 이득을 좌우한다.
+     전에는 차종마다 30L 같은 값이 숨어 고정돼 있어 사용자가 확인도, 바꿀 수도 없었다.
+     0 = 따로 안 골랐음 → 차종 기본값을 따른다(차종을 바꾸면 같이 바뀐다). */
+  var LITERS = [20, 25, 30, 40, 50, 60, 70, 80];
+
   var DEFAULTS = { fuel: 'g', vehicle: '일반', radius: 5, trip: 'one',
-                   range: 30, detour: 2,
+                   range: 30, detour: 2, liters: 0,
                    home: '', work: '', last: '', spot: '', visits: 0 };
 
   function read() {
@@ -65,6 +70,7 @@
   if (!TRIPS[state.trip]) state.trip = 'one';
   if (RANGE.indexOf(state.range) < 0) state.range = 30;
   if (DETOUR.indexOf(state.detour) < 0) state.detour = 2;
+  if (LITERS.indexOf(state.liters) < 0) state.liters = 0;
 
   state.visits = (state.visits || 0) + 1;
   write(state);
@@ -79,6 +85,7 @@
     get: function (k) { return k ? state[k] : state; },
     set: function (k, v) { state[k] = v; write(state); },
     car: function () { return VEHICLE[state.vehicle] || VEHICLE['일반']; },
+    liters: function () { return state.liters || P.car().usual; },
     fuelName: function () { return FUELS[state.fuel]; },
     /* 동네 요약에서 현재 유종의 통계를 꺼낸다 */
     pick: function (region) { return region ? region[state.fuel] : null; }
@@ -159,27 +166,34 @@
        유종 - 휘발유가 싼 집이 경유도 싸다는 보장이 없다
        차종 - 연비에 따라 손익분기가 2배까지 달라진다
      휴대폰에서는 <select> 가 운영체제 고르개를 띄워줘서 가장 쓰기 편하다. */
-  function sel(key, label, opts) {
+  function sel(key, label, opts, cur) {
+    cur = String(cur != null ? cur : state[key]);
     return '<label class="oil-pick">' +
       '<span class="oil-pick-k">' + label + '</span>' +
       '<select class="oil-pick-s" data-pref="' + key + '">' +
       opts.map(function (o) {
         return '<option value="' + o[0] + '"' +
-          (String(state[key]) === String(o[0]) ? ' selected' : '') + '>' + o[1] + '</option>';
+          (cur === String(o[0]) ? ' selected' : '') + '>' + o[1] + '</option>';
       }).join('') + '</select></label>';
   }
 
-  /* 네 개는 한 줄에 안 들어간다. 두 줄로 나누고, 넷을 한 상자에 담는다.
-     낱개로 떠 있으면 '고르는 곳'이 네 군데인 것처럼 보인다 - 한 덩어리로
+  /* 유종·차종·주유량은 두 화면이 똑같이 쓰는 '내 차' 조건이라 한 줄로 묶는다.
+     셋이 한 줄에 들어가도록 차종은 짧은 이름을 쓴다. */
+  function carRow() {
+    return '<div class="oil-picks is-3">' +
+      sel('fuel', '유종', Object.keys(FUELS).map(function (f) { return [f, FUELS[f]]; })) +
+      sel('vehicle', '차종', VEHICLE_ORDER.map(function (v) { return [v, VEHICLE[v].short]; })) +
+      sel('liters', '주유량', LITERS.map(function (l) { return [l, l + 'L']; }), P.liters()) +
+      '</div>';
+  }
+
+  /* 낱개로 떠 있으면 '고르는 곳'이 여러 군데인 것처럼 보인다 - 한 상자로
      묶어야 "여기가 조건 고르는 자리"로 한 번에 읽힌다. */
   P.pickerHtml = function () {
     return '<div class="oil-picks-box"><div class="oil-picks">' +
       sel('radius', '주변반경', RADIUS.map(function (k) { return [k, k + 'km']; })) +
-      sel('fuel', '유종', Object.keys(FUELS).map(function (f) { return [f, FUELS[f]]; })) +
-      '</div><div class="oil-picks">' +
-      sel('vehicle', '차종', VEHICLE_ORDER.map(function (v) { return [v, VEHICLE[v].label]; })) +
       sel('trip', '이동', Object.keys(TRIPS).map(function (t) { return [t, TRIPS[t]]; })) +
-      '</div></div>';
+      '</div>' + carRow() + '</div>';
   };
 
   /* 목적지 모드용. 반경·편도왕복 대신 주행가능거리·우회허용이 들어간다.
@@ -188,10 +202,7 @@
     return '<div class="oil-picks-box"><div class="oil-picks">' +
       sel('range', '더 갈 수 있는 거리', RANGE.map(function (k) { return [k, k + 'km']; })) +
       sel('detour', '우회 허용', DETOUR.map(function (k) { return [k, k + 'km까지']; })) +
-      '</div><div class="oil-picks">' +
-      sel('fuel', '유종', Object.keys(FUELS).map(function (f) { return [f, FUELS[f]]; })) +
-      sel('vehicle', '차종', VEHICLE_ORDER.map(function (v) { return [v, VEHICLE[v].label]; })) +
-      '</div></div>';
+      '</div>' + carRow() + '</div>';
   };
 
   P.wirePicker = function (onChange) {
@@ -201,7 +212,7 @@
         var s = e.target.closest('[data-pref]');
         if (!s) return;
         var key = s.getAttribute('data-pref');
-        var num = (key === 'radius' || key === 'range' || key === 'detour');
+        var num = (key === 'radius' || key === 'range' || key === 'detour' || key === 'liters');
         P.set(key, num ? parseInt(s.value, 10) : s.value);
         if (onChange) onChange(key);
       });

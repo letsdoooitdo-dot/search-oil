@@ -160,6 +160,12 @@ def main():
             if pts:
                 summary["la"] = round(sum(p[0] for p in pts) / len(pts), 4)
                 summary["ln"] = round(sum(p[1] for p in pts) / len(pts), 4)
+                # 주유소가 실제로 퍼져 있는 범위 [남, 서, 북, 동].
+                # 화면은 이 범위가 찾는 곳과 겹치는 동네를 전부 받는다. 중심만 보고
+                # 고르면 경계 건너편 주유소가 통째로 빠진다(2026-09-27 실측:
+                # 서울→인천 경로의 길가 주유소 30곳이 전부 빠졌다).
+                summary["bb"] = [round(min(p[0] for p in pts), 4), round(min(p[1] for p in pts), 4),
+                                 round(max(p[0] for p in pts), 4), round(max(p[1] for p in pts), 4)]
 
             summaries.append(summary)
 

@@ -89,9 +89,11 @@
      출발지에서의 전체 거리를 물리면 가까운 집이 공짜가 되어 늘 이긴다. */
   OIL.calcTrip = function (price, base, km, baseKm, round) {
     var car = (OIL.prefs && OIL.prefs.car()) || { kmpl: 12, usual: 30, label: '일반 승용차' };
-    var L = car.usual, kmpl = car.kmpl;
+    var L = (OIL.prefs && OIL.prefs.liters()) || car.usual, kmpl = car.kmpl;
     var mult = round ? 2 : 1;
-    var extra = Math.max(0, km - (baseKm || 0));   /* 기준보다 더 가는 도로거리 */
+    /* 기준보다 더 가는 도로거리. 가는 길 모드는 기준이 '처음 나오는 곳'이라
+       기준보다 덜 돌아가는 곳도 있다 - 그때는 음수로 두어 덜 달린 만큼 쳐준다. */
+    var extra = km - (baseKm || 0);
     var drive = extra * mult;                      /* 왕복이면 두 배 */
     var cost = drive / kmpl * price;               /* 더 가느라 쓰는 기름값 */
     var gain = (base - price) * L;                 /* 싸게 넣어 아끼는 돈 */
@@ -107,43 +109,213 @@
      "빼도 이득" 처럼 계산 과정을 말하면 한 번 더 생각해야 읽힌다 -
      "얼마를 더 아낀다"로 먼저 말하고, 왜 그런지는 아래 줄에 둔다.
      kind='detour' 면 목적지 모드라 '더 간다'가 아니라 '돌아간다'로 말한다. */
-  OIL.tripLine = function (t, isBase, kind) {
+  /* ── 판정 문구 ───────────────────────────────────────────────
+     ★ 원칙: 금액에는 늘 '무엇보다'를 붙인다. "1,350원 아낍니다"만 쓰면
+       무엇에 비해서인지 몰라 믿을 근거가 없다(2026-09-27 사용자 지적).
+       비교 기준은 사용자가 아무것도 안 따졌으면 들렀을 곳이다.
+         내 주변 - 제일 가까운 주유소
+         가는 길 - 가는 길에 처음 나오는 (거의 안 돌아가는) 주유소 */
+  var won = function (n) { return OIL.won(n); };
+  function km1(n) { return Math.abs(n).toFixed(1) + 'km'; }
+  function perL(t) { return t.L ? t.gain / t.L : 0; }     /* 기준보다 리터당 싼 금액 */
+  function signed(v) {
+    var r = Math.round(v);
+    return (r > 0 ? '+' : r < 0 ? '−' : '') + won(Math.abs(r)) + '원';
+  }
+  function tone(v) { v = Math.round(v); return v > 0 ? 'is-gain' : v < 0 ? 'is-cost' : ''; }
+
+  /* 카드 한 줄. baseShort = '제일 가까운 곳' 같은 비교 기준 이름 */
+  OIL.tripLine = function (t, isBase, kind, baseShort) {
     var off = (kind === 'detour');
-    var go = off ? '돌아가도' : '더 가도';
-    /* "더 드는 기름값"은 읽기가 어렵다. '더'(무엇에 비해?)와 '드는'(무슨 돈?)이
-       겹쳐서 한 번 더 생각해야 뜻이 잡힌다. 돈이 어디에 쓰이는지를 그대로 적는다. */
-    var costName = off ? '들렀다 가는' : '거기까지 가는';
+    var more = off ? '더 돌아가는' : '더 가는';
+    var ref = baseShort || (off ? '처음 나오는 곳' : '제일 가까운 곳');
     function sub(s) { return '<span class="oil-st-sub">' + s + '</span>'; }
+    var d = perL(t);
 
     if (isBase) {
       return { cls: 'is-base',
-               text: (off ? '가는 길에서 <b>제일 안 돌아가는 곳</b>'
-                          : '여기서 <b>제일 가까운 주유소</b>') +
-                     sub('이 집을 기준으로 나머지를 비교합니다') };
+               text: '<b>비교 기준</b> · ' + ref +
+                     sub('그냥 여기서 넣었을 때와 비교해 다른 곳의 이득을 셉니다') };
     }
-    if (t.gain <= 0) {
-      return { cls: 'is-bad',
-               text: (t.gain === 0 ? '<b>가격이 같은데</b> ' : '<b>여기보다 비싼데</b> ') +
-                     (off ? '돌아가야 합니다' : '더 멀기까지 합니다') };
-    }
-    if (t.net > 0) {
-      /* 기준과 거의 같은 거리면 "0.0km 더 가도"라고 쓰게 되어 어색하다 */
-      if (t.drive < 0.15) {
-        return { cls: 'is-good',
-                 text: '<b>' + OIL.won(t.net) + '원 더 아낍니다</b>' +
-                       sub('거의 같은 거리인데 기름값이 쌉니다') };
-      }
+    if (Math.round(t.net) > 0) {
+      var why = Math.abs(t.drive) < 0.15
+        ? '거리는 거의 같은데 리터당 ' + won(d) + '원 쌉니다'
+        : t.drive < 0
+          ? '리터당 ' + won(d) + '원 싸고, ' + km1(t.drive) + ' 덜 돌아갑니다'
+          : '리터당 ' + won(d) + '원 싸게 넣고, ' + km1(t.drive) + ' ' + more +
+            ' 기름값 ' + won(t.cost) + '원을 뺐습니다';
       return { cls: 'is-good',
-               text: '<b>' + OIL.won(t.net) + '원 더 아낍니다</b>' +
-                     sub(t.drive.toFixed(1) + 'km ' + go + ', ' + costName + ' 기름값 ' +
-                         OIL.won(t.cost) + '원을 뺀 금액입니다') };
+               text: ref + '보다 <b>' + won(t.net) + '원 남습니다</b>' + sub(why) };
     }
-    /* 싸긴 한데 오가는 기름값이 더 큰 경우 - 이게 우리가 잡아주는 함정이다 */
+    var bad = d < 0
+      ? '리터당 ' + won(-d) + '원 더 비쌉니다' +
+        (t.drive >= 0.15 ? ' · ' + km1(t.drive) + ' 더 가야 합니다' : '')
+      : d === 0
+        ? '가격이 같은데 ' + km1(t.drive) + ' ' + (off ? '더 돌아가야' : '더 가야') + ' 합니다'
+        : '리터당 ' + won(d) + '원 싸지만, ' + km1(t.drive) + ' ' + more +
+          ' 기름값 ' + won(t.cost) + '원이 더 큽니다';
     return { cls: 'is-bad',
-             text: '<b>' + OIL.won(-t.net) + '원 손해입니다</b>' +
-                   sub('싸게 넣어 ' + OIL.won(t.gain) + '원 아끼는데, ' +
-                       (off ? '돌아서' : '거기까지') + ' ' + t.drive.toFixed(1) +
-                       'km 가는 기름값이 ' + OIL.won(t.cost) + '원입니다') };
+             text: ref + '보다 ' + (Math.round(t.net) === 0 ? '<b>남는 돈 없음</b>'
+                                                           : '<b>' + won(-t.net) + '원 손해</b>') +
+                   sub(bad) };
+  };
+
+  /* 사용자가 직접 따라 셀 수 있는 계산 줄 (싸게 넣은 돈 − 더 가는 기름값 = 남는 돈).
+     숫자 하나하나에 식을 붙인다. 식이 없으면 결과를 믿을 근거가 없다. */
+  OIL.tripRows = function (t, price, kind) {
+    var off = (kind === 'detour');
+    var d = perL(t), rows = [];
+    function row(k, f, v, cls) {
+      return '<div class="oil-cr' + (cls ? ' ' + cls : '') + '"><span class="oil-cr-k">' + k +
+        (f ? '<i>' + f + '</i>' : '') + '</span><b class="' + tone(v) + '">' + signed(v) + '</b></div>';
+    }
+    rows.push(d > 0 ? row('싸게 넣어 아끼는 돈', '리터당 ' + won(d) + '원 × ' + t.L + 'L', t.gain)
+            : d < 0 ? row('비싸게 넣어 더 내는 돈', '리터당 ' + won(-d) + '원 × ' + t.L + 'L', t.gain)
+            : row('기름값 차이', '리터당 가격이 같습니다', 0));
+    if (Math.abs(t.drive) < 0.05) {
+      rows.push(row(off ? '더 돌아가는 기름값' : '더 가는 기름값', '더 가는 거리가 없습니다', 0));
+    } else {
+      var dist = t.round ? km1(t.extra) + ' × 2(왕복)' : km1(t.drive);
+      rows.push(row(t.drive < 0 ? '덜 돌아가서 아끼는 기름값' : (off ? '더 돌아가는 기름값' : '더 가는 기름값'),
+                    dist + ' ÷ 연비 ' + t.kmpl + 'km/L × ' + won(price) + '원', -t.cost));
+    }
+    rows.push(row(Math.round(t.net) < 0 ? '결과 (손해)' : '실제로 남는 돈', '', t.net, 'is-sum'));
+    return '<div class="oil-crs">' + rows.join('') + '</div>';
+  };
+
+  /* 시간은 돈 계산에 넣지 않는다(사람마다 값이 달라서). 대신 판단하라고 보여준다. */
+  OIL.timeNote = function (min) {
+    if (min == null || isNaN(min)) return '';
+    var m = Math.round(min);
+    return '<p class="oil-cr-note">' +
+      (m >= 1 ? '시간은 약 <b>' + m + '분</b> 더 걸립니다'
+              : m <= -1 ? '시간은 약 <b>' + (-m) + '분</b> 덜 걸립니다'
+                        : '시간 차이는 거의 없습니다') +
+      ' · 시간은 돈 계산에 넣지 않았습니다</p>';
+  };
+
+  /* ── 1위 고르기 ─────────────────────────────────────────────
+     기본은 남는 돈이 가장 큰 곳이다. 단, 차이가 TIE 원 미만이면 먼저 닿는 곳
+     (내 주변: 더 가까운 곳 / 가는 길: 먼저 나오는 곳)을 1위로 올린다.
+     몇십 원 더 남기자고 더 멀리 가거나 길을 벗어날 사람은 없고, 그 정도 차이는
+     길찾기 경로가 조금만 달라져도 뒤집힌다. 올렸을 때는 화면에 이유를 밝힌다.
+     reach(s) = 먼저 닿는 정도 (작을수록 먼저) */
+  OIL.TIE = 100;
+  OIL.rankTrips = function (all, reach, base) {
+    var list = all.slice().sort(function (a, b) {
+      if (b._trip.net !== a._trip.net) return b._trip.net - a._trip.net;
+      return reach(a) - reach(b);
+    });
+    var top = list[0], floor = Math.max(0, top._trip.net - OIL.TIE), first = top;
+    list.forEach(function (s) {
+      if (s._trip.net >= floor && reach(s) < reach(first)) first = s;
+    });
+    /* 남는 돈이 없으면 기준 주유소가 답이다 - 다른 곳을 1위로 두면 결론 문장과 어긋난다 */
+    if (Math.round(first._trip.net) <= 0 && base) first = base;
+    if (first === top) return { list: list, tie: null };
+    list.splice(list.indexOf(first), 1);
+    list.unshift(first);
+    return { list: list,
+             tie: Math.round(top._trip.net) > Math.round(first._trip.net) ? top : null };
+  };
+
+  /* ── 결론 상자: "왜 여기가 1위인가" ──────────────────────────
+     o = { best, base, list, all, tie, kind, price(s), reach(s), reachText(s, ref),
+           baseName, baseShort, scope, checked, cond }
+     사용자가 확인하고 싶은 것은 네 가지다.
+       1) 무엇에 비해 얼마가 남나 - 계산 줄로 직접 셀 수 있게
+       2) 2위보다는 얼마나 낫나
+       3) 제일 싼 곳은 왜 아닌가 - 지도에서 더 싼 가격을 보면 누구나 묻는다
+       4) 몇 곳이나 비교했나, 어떤 조건으로 계산했나 */
+  OIL.whyHtml = function (o) {
+    var esc = OIL.esc, best = o.best, base = o.base, p = o.price;
+    var isBase = best === base || Math.round(best._trip.net) <= 0;
+    var h = '<section class="oil-why">';
+    h += '<div class="oil-why-k">왜 여기를 추천하나요</div>';
+
+    if (isBase) {
+      h += '<p class="oil-why-t"><b>' + esc(base.n) + '</b>(' + esc(o.baseShort) + ')에서 ' +
+        '넣는 게 제일 낫습니다</p>' +
+        '<p class="oil-why-s">' + won(p(base)) + '원 · ' + o.reachText(base) + '</p>';
+    } else {
+      h += '<p class="oil-why-t"><b>' + esc(best.n) + '</b>에서 넣으면 ' + esc(o.baseShort) +
+        '(' + esc(base.n) + ')보다 <b class="is-gain">' + won(best._trip.net) + '원</b> 남습니다</p>' +
+        '<p class="oil-why-s">' + won(p(best)) + '원 · ' + o.reachText(best) +
+        ' — 비교 기준 ' + esc(base.n) + ' ' + won(p(base)) + '원 · ' + o.reachText(base) + '</p>';
+      h += OIL.tripRows(best._trip, p(best), o.kind) + OIL.timeNote(best._tmin);
+    }
+
+    var li = [];
+    /* 제일 싼 곳 - 1위가 아니면 왜 아닌지 숫자로 보여준다 */
+    var cheap = o.all.reduce(function (a, b) {
+      return p(b) < p(a) || (p(b) === p(a) && o.reach(b) < o.reach(a)) ? b : a;
+    });
+    if (o.tie) {
+      li.push('<b>' + esc(o.tie.n) + '</b>가 ' + won(o.tie._trip.net - best._trip.net) +
+        '원 더 남지만, 차이가 ' + OIL.TIE + '원도 안 돼서 ' +
+        (o.kind === 'detour' ? '먼저 나오는' : '더 가까운') + ' 이곳을 골랐습니다');
+    } else if (o.list[1] && !(o.list[1] === cheap && p(cheap) < p(best))) {
+      /* 2위가 제일 싼 곳이면 아래 줄에서 같이 말한다 - 같은 곳을 두 번 말하지 않는다 */
+      var gap = best._trip.net - o.list[1]._trip.net;
+      li.push('2위 ' + esc(o.list[1].n) + '보다 ' +
+        (Math.round(gap) >= 1 ? '<b>' + won(gap) + '원</b> 더 남습니다' : '남는 돈이 같아서 먼저 닿는 곳을 골랐습니다'));
+    }
+    if (cheap !== best && p(cheap) < p(best)) {
+      var ct = cheap._trip;
+      li.push('제일 싼 <b>' + esc(cheap.n) + '</b>(' + won(p(cheap)) + '원)는 ' + o.reachText(cheap) +
+        (Math.round(ct.net) > 0
+          ? '라 ' + esc(o.baseShort) + '보다 ' + won(ct.net) + '원 남는 데 그칩니다 (1위보다 ' +
+            won(best._trip.net - ct.net) + '원 적음)'
+          : '라, 싸게 넣어 ' + won(ct.gain) + '원 아껴도 ' +
+            (o.kind === 'detour' ? '돌아가는' : '가는') + ' 기름값 ' + won(ct.cost) + '원 때문에 ' +
+            (Math.round(ct.net) < 0 ? '<b class="is-cost">' + won(-ct.net) + '원 손해</b>입니다'
+                                    : '남는 돈이 없습니다')));
+    } else if (cheap === best) {
+      li.push('비교한 곳 중 리터당 가격도 제일 쌉니다');
+    }
+    li.push(o.checked);
+
+    h += '<ul class="oil-why-list">' + li.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>';
+    h += '<p class="oil-why-cond"><b>계산 조건</b> ' + o.cond + '</p>';
+    return h + '</section>';
+  };
+
+  /* 계산 조건 한 줄. 사용자가 고른 값이 그대로 들어갔는지 눈으로 확인하게 한다. */
+  OIL.condText = function (kind, date) {
+    var P = OIL.prefs, car = P.car();
+    var move = kind === 'detour'
+      ? '들렀다 가느라 더 달리는 거리(카카오 길찾기 실측)'
+      : (P.isRound() ? '왕복 — 갔다가 돌아오는 거리까지' : '편도 — 주유소까지 가는 거리만');
+    return P.fuelName() + ' · ' + car.label + ' 연비 ' + car.kmpl + 'km/L · 주유 ' + P.liters() + 'L · ' +
+      move + ' · 가격은 ' + OIL.dateKo(date) + ' 오피넷 판매가 · 시간·통행료·카드 할인은 넣지 않았습니다';
+  };
+
+  /* ── 받을 동네 고르기 ───────────────────────────────────────
+     동네 파일마다 주유소가 실제로 퍼져 있는 범위(bb: 남·서·북·동)가 있다.
+     그 범위가 찾는 곳(점들 + km 여유)과 겹치는 동네는 전부 받는다.
+     전에는 동네 중심 거리로 몇 곳만 받아서, 경계 건너편 주유소가 통째로 빠졌다
+     (2026-09-27 실측: 서울→인천 경로의 길가 주유소 30곳이 전부 빠졌다). */
+  OIL.regionsHit = function (items, pts, km) {
+    var dla = km / 110.57;
+    var hit = items.filter(function (r) {
+      var b = r.bb;
+      if (!b) return false;
+      var dln = km / (111.32 * Math.cos(r.la * Math.PI / 180));
+      for (var i = 0; i < pts.length; i++) {
+        var q = pts[i];
+        if (q.la >= b[0] - dla && q.la <= b[2] + dla && q.ln >= b[1] - dln && q.ln <= b[3] + dln) return true;
+      }
+      return false;
+    });
+    if (hit.length || items.some(function (r) { return r.bb; })) return hit;
+    /* 범위 정보가 없는 옛 데이터 - 가까운 동네 순으로 넉넉히 받는다 */
+    return items.filter(function (r) { return r.la != null; }).map(function (r) {
+      var d = Infinity;
+      pts.forEach(function (q) { d = Math.min(d, OIL.distKm(q.la, q.ln, r.la, r.ln)); });
+      return { r: r, d: d };
+    }).filter(function (x) { return x.d <= km + 15; })
+      .sort(function (a, b) { return a.d - b.d; }).slice(0, 12)
+      .map(function (x) { return x.r; });
   };
 
   /* ── 주유소 상표 ──────────────────────────────────────────
