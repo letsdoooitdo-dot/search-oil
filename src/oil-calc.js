@@ -115,8 +115,9 @@
     /* ── 입력 ─────────────────────────────────────────────────
        두 칸씩 나란히 놓는다. 숫자 하나 넣는 칸이 한 줄을 통째로 쓰면
        여섯 줄이 되어, 정작 답인 결과 카드가 화면 밖으로 밀려난다. */
-    /* 기본값은 첫 화면 예시와 같은 상황 - 리터당 30원 싼 곳이 10km 더 멀다.
-       들어오자마자 "그래서 손해구나"를 숫자로 확인하게 된다. */
+    /* 기본값은 첫 화면 예시와 같은 상황 - 리터당 100원 싼 곳이 15km 떨어져 있다.
+       첫 화면은 '다녀오기(왕복)' 기준이라 1,500원 손해, 편도로 보면 750원 이득이다.
+       편도/왕복은 사용자가 고른 값을 따른다 - 여기서 바꾸면 내 주변 화면 설정까지 바뀐다. */
     var mode = calcMode, M = MODE[mode];
     html += '<div class="oil-card"><div class="oil-fields2">' +
       chips('c3mode', '어디서 찾나요', [['near', '내 주변'], ['dest', '가는 길']], mode, M.modeHint) +
@@ -138,8 +139,8 @@
 
     html += '<div class="oil-card"><div class="oil-card-title">비교할 곳 · 더 싼 곳</div>' +
       '<div class="oil-fields2">' +
-        field('c3bp', '기름값', basePrice - 30, '원/L', '비교 기준보다 싸면 이득 후보') +
-        field('c3bd', M.dist, 10, 'km', M.distHint) +
+        field('c3bp', '기름값', basePrice - 100, '원/L', '비교 기준보다 싸면 이득 후보') +
+        field('c3bd', M.dist, 15, 'km', M.distHint) +
       '</div></div>';
 
     html += '<div class="oil-card"><div class="oil-card-title">내 차</div>' +

@@ -350,6 +350,10 @@
 }
 .oil-pitch-eq > div + div { border-top: 1px dashed var(--oil-line); }
 .oil-pitch-eq b { flex-shrink: 0; font-size: 15px; font-weight: 900; letter-spacing: -0.02em; }
+/* 금액 옆 식 - 숫자를 믿게 하는 근거라 작게라도 보여준다 */
+.oil-pitch-eq span i {
+  display: block; margin-top: 1px; font-style: normal; font-size: 11.5px; color: var(--oil-muted);
+}
 .oil-pitch-eq .is-sum { border-top: 1.5px solid var(--oil-ink2) !important; font-weight: 800; color: var(--oil-ink); }
 .oil-pitch-eq .is-sum b { font-size: 17px; }
 .oil-pitch-eq .is-gain { color: var(--oil-teal-dark); }
