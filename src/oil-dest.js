@@ -305,6 +305,11 @@
     var rad = allow();
 
     var html = '<div class="oil-stack">';
+    /* 첫 화면 메뉴 이름("가는 길에서 제일 이득인 주유소 찾기")과 같은 말로 (2026-09-27).
+       괄호 안은 보여주는 카드 수 - 5위 밖 비교 기준이 붙으면 6이다. */
+    html += '<div class="oil-near-head"><h1 class="oil-near-h1">가는 길에서 제일 이득인 주유소' +
+      (r ? '<span class="oil-near-n">(' + OIL.showList(r.list, r.base, SHOW).length + ')</span>' : '') +
+      '</h1></div>';
     html += head('전체 ' + state.baseKm.toFixed(0) + 'km 중 <b>앞 ' +
       state.cutKm.toFixed(0) + 'km</b> 구간에서 찾았습니다');
     if (P) html += P.destPickerHtml();

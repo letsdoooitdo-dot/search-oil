@@ -238,9 +238,10 @@
     /* 머리말 - 괄호 안은 '찾은 개수'가 아니라 '보여주는 개수'다.
        반경 안 15곳 중 5곳을 보여주면서 (15)라고 적으면 세어보고 어리둥절해진다. */
     html += '<div class="oil-near-head">' +
-      '<h1 class="oil-near-h1">' + (isMe ? '내 주변' : esc(placeName)) +
-      ' 다 따져서 제일 싼 주유소' +
-      '<span class="oil-near-n">(' + Math.min(all.length, SHOW) + ')</span></h1></div>';
+      /* 첫 화면 메뉴 이름("내 주변에서 제일 이득인 주유소 찾기")과 같은 말로 (2026-09-27) */
+      '<h1 class="oil-near-h1">' + (isMe ? '내 주변' : esc(placeName) + ' 주변') +
+      '에서 제일 이득인 주유소' +
+      '<span class="oil-near-n">(' + (r ? OIL.showList(r.list, r.base, SHOW).length : 0) + ')</span></h1></div>';
 
     /* 고르는 줄 - 반경 · 유종 · 차종 */
     if (P) html += P.pickerHtml();
