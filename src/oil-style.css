@@ -511,6 +511,21 @@
 .oil-near-t { display: block; font-size: 16px; font-weight: 800; letter-spacing: -0.02em; }
 /* 첫 화면에서는 누르는 곳이라는 게 확실히 보이게 한 단계 더 키운다 */
 .oil-find-sec .oil-near-btn { padding: 18px 12px 18px 16px; }
+/* 첫 화면 '내 주변' 버튼 제목은 폰에서도 한 줄(2026-09-27 사용자 요청).
+   320px 폰에서 글자 칸이 118px 뿐이라 - 좁으면 장식 아이콘을 숨기고, 제목은 화면 폭에 맞춰
+   살짝 줄인다(320px 15.5px ~ 19.2px). @media 안에 둬야 휴대폰 글자 키우기(mobile_font.py)가
+   이 규칙을 다시 키우지 않는다. */
+@media (max-width: 600px) {
+  .oil-find-sec .oil-near-t { white-space: nowrap; font-size: clamp(15px, 4.85vw, 19.2px); }
+  .oil-find-sec .oil-near-go { padding: 8px 8px 8px 12px; }
+}
+@media (max-width: 380px) {
+  .oil-find-sec .oil-near-l .oil-pin { display: none; }
+}
+@media (max-width: 340px) {
+  .oil-find-sec .oil-near-btn { padding-left: 12px; gap: 8px; }
+  .oil-find-sec .oil-near-t { font-size: 14.5px; }
+}
 /* 버튼 안의 흰 '찾기' 단추 - 그라데이션 상자만으로는 누르는 곳인지 몰랐다 */
 .oil-near-go {
   flex-shrink: 0; display: inline-flex; align-items: center; gap: 2px;

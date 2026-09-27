@@ -120,7 +120,7 @@
           '<b>제일 이득인 주유소</b> 찾기</span></h2>' +
         '<button type="button" class="oil-near-btn" id="oil-near">' +
           '<span class="oil-near-l">' + PIN +
-            '<span><span class="oil-near-t">내 주변 다 따져서 제일 싼 주유소</span>' +
+            '<span><span class="oil-near-t">내 주변 제일 이득인 주유소</span>' +
             '<span id="oil-near-sub"><span class="oil-near-where">' +
             (spot ? '누르면 ' + esc(spot) + ' 기준으로 바로 찾아드립니다'
                   : '여기를 누르면 현재 위치로 바로 찾아드립니다') +
