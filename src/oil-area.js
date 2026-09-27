@@ -5,7 +5,7 @@
        내 주변 찾기  - "지금 어디서 넣을까?" 거리까지 따져 한 곳을 추천
        동네 기름값   - "우리 동네 기름값 오늘 어때?" 매일 들여다보는 브리핑
      브리핑은 사용자가 알고 싶은 순서대로 쌓는다.
-       1. 오늘 제일 싼 곳 3곳 (어제보다 오르내림) + 내 위치에서 거리까지 따져보기
+       1. 오늘 제일 싼 곳 3곳 (어제보다 오르내림)
        2. 넣을 타이밍 - 최근 며칠 동네 보통 가격 흐름
        3. 우리 동네는 비싼 편일까 - 전국·옆 동네 3곳과 비교
        4. 믿고 다닐 만한 곳 - 1년 내내 최저권을 지킨 집
@@ -25,7 +25,7 @@
   if (mode !== 'browse' && mode !== 'area') return;
 
   var esc = OIL.esc, won = OIL.won;
-  var P = OIL.prefs, ENV = OIL.env;
+  var P = OIL.prefs;
   var AREA = OIL.cfg.areaPageUrl || '/p/area.html';
 
   function fuel() { return P ? P.get('fuel') : 'g'; }
@@ -129,14 +129,9 @@
         '<span class="oil-top3-p">' + won(price(x)) + '<small>원</small></span></summary>' +
         '<div class="oil-area-det">' + detailHtml(x, s.md) + '</div></details>';
     }).join('');
-    /* 싼 집이 나한테도 이득인지는 거리를 따져야 안다 - 그건 내 주변 찾기가 한다 */
-    h += '<div class="oil-sec-f">' +
-      '<button type="button" class="oil-near-btn" id="oil-area-near">' +
-        '<span class="oil-near-l"><span><span class="oil-near-t">내 위치에서 거리까지 따져보기</span>' +
-        '<span class="oil-near-where">제일 싼 곳이 나한테도 이득인지, 가는 기름값까지 계산합니다</span>' +
-        '</span></span><span class="oil-near-go">찾기' + OIL.chev('#0891B2') + '</span></button>' +
-      '<div class="oil-locate-msg" id="oil-area-msg"></div></div></section>';
-    return h;
+    /* '내 위치에서 거리까지 따져보기' 버튼은 뺐다(2026-09-27 사용자 결정) - 내 주변 찾기로
+       넘기기만 해서 1~3위와 연결이 끊겼다. 거리 계산은 첫 화면의 내 주변 찾기가 맡는다. */
+    return h + '</section>';
   }
 
   /* ── 2. 넣을 타이밍 ───────────────────────────────────────── */
@@ -331,10 +326,10 @@
     document.title = r.r + ' 주유소 최저가 - 오늘 ' + fuelName() + ' ' + won(s.lo) + '원부터 | 갈까말까';
 
     if (P) P.wireBar(function () { renderArea(meta, r, reg); });
-    wireArea(r, list, s);
+    wireArea(list, s);
   }
 
-  function wireArea(r, list, s) {
+  function wireArea(list, s) {
     var self = document.getElementById('oil-area-self');
     if (self) {
       self.addEventListener('click', function (e) {
@@ -346,23 +341,6 @@
           listRows(list, s.md, b.getAttribute('data-v') === 'self');
       });
     }
-    /* 내 위치로 '내 주변 찾기'를 연다. 위치를 못 받으면 이 동네 가운데를 출발점으로 */
-    var btn = document.getElementById('oil-area-near');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-      var msg = document.getElementById('oil-area-msg');
-      var center = AREA + '?la=' + r.la + '&ln=' + r.ln + '&q=' + encodeURIComponent(r.r + ' 가운데');
-      btn.disabled = true;
-      if (msg) msg.textContent = '위치를 확인하는 중...';
-      if (!ENV || !ENV.locate) { location.href = center; return; }
-      ENV.locate(function (pos) {
-        location.href = AREA + '?la=' + pos.coords.latitude.toFixed(5) +
-          '&ln=' + pos.coords.longitude.toFixed(5) + '&me=1';
-      }, function () {
-        if (msg) msg.textContent = '위치를 못 받아서 ' + r.r + ' 가운데를 기준으로 찾습니다...';
-        location.href = center;
-      }, function (step) { if (msg) msg.textContent = step; });
-    });
   }
 
   /* ── 동네 고르기 ──────────────────────────────────────────── */
