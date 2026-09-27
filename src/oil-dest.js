@@ -390,7 +390,7 @@
 
     html += '<a class="oil-btn" href="' + (OIL.cfg.listPageUrl || '/') + '">' +
       '<span>다른 목적지로 찾기</span>' + OIL.chev('#fff') + '</a>';
-    html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
+    html += '<p class="oil-p oil-srcnote">' +
       OIL.asOf(state.meta) + ' ' + fuelName() + ' 실제 판매가 · 출처 오피넷 · ' +
       '우회 거리는 카카오맵 길찾기로 실제 경로를 계산한 값입니다</p></div>';
 

@@ -29,6 +29,7 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
 from ui import ADSENSE_CLIENT, ADSENSE_SLOT_INCONTENT, ADSENSE_SLOT_TOP
+from mobile_font import mobile_css
 
 DEFAULT_DATA_URL = "https://letsdoooitdo-dot.github.io/search-oil/api/"
 # 그림은 데이터와 다른 폴더에 둔다 - api/ 는 매일 지워지고 다시 만들어진다
@@ -80,6 +81,9 @@ def main():
     data_url = (sys.argv[1] if len(sys.argv) > 1 else DEFAULT_DATA_URL).rstrip("/") + "/"
 
     css = "\n".join(read(p) for p in CSS_FILES)
+    # 휴대폰에서만 글자를 키운다 - 사이트 CSS 뒤에 붙여야 이긴다 (mobile_font.py 설명)
+    extra, n_font = mobile_css(css)
+    css += "\n" + extra
     js = "\n".join(read(p) for p in JS_FILES)
 
     # 블로그스팟 테마는 XML이라 CDATA 안에 "]]>" 가 있으면 통째로 깨진다
@@ -189,6 +193,7 @@ def main():
 
     print(f"테마 작성: {out}  ({os.path.getsize(out)/1024:,.0f}KB)")
     print(f"데이터 주소: {data_url}")
+    print(f"휴대폰 글자 키우기 규칙: {n_font}개")
     print(f"미리보기: {prev_dir}\\index.html  (area.html, calc.html 도 같이 생성)")
 
 

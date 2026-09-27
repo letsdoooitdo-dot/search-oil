@@ -156,7 +156,7 @@
       '<div class="oil-kicker" id="c3out-k">결과</div>' +
       '<div class="oil-hero" id="c3out" style="margin-top:6px;">-</div>' +
       '<div id="c3rows"></div>' +
-      '<p class="oil-p" id="c3out-s" style="margin-top:10px;font-size:12.5px;"></p></div>';
+      '<p class="oil-p oil-calc-say" id="c3out-s"></p></div>';
 
     /* 맨 아래 - 버튼을 빼고 출처를 그 자리에 둔다.
        계산기까지 온 사람에게 "다른 화면 보세요"는 흐름을 끊는 말이다. */

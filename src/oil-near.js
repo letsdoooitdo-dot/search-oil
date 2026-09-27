@@ -323,7 +323,7 @@
     html += '<a class="oil-btn" href="' + (OIL.cfg.listPageUrl || '/') + '">' +
       '<span>다른 장소로 찾기</span>' + OIL.chev('#fff') + '</a>';
 
-    html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
+    html += '<p class="oil-p oil-srcnote">' +
       OIL.asOf(meta) + ' ' + fuelName() + ' 실제 판매가 · 출처 오피넷 · ' +
       '거리는 카카오맵 길찾기의 실제 도로거리입니다</p></div>';
 

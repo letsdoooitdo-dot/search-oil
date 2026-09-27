@@ -317,7 +317,7 @@
     html += steadyHtml(r, list, s);
     html += fullHtml(list, s, r);
 
-    html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
+    html += '<p class="oil-p oil-srcnote">' +
       esc(r.r) + ' · ' + OIL.asOf(meta) + ' ' + fuelName() + ' 실제 판매가 ' + s.n + '곳 · ' +
       (r.prevDate ? '어제 대비는 ' + OIL.dateKo(r.prevDate) + ' 가격과 비교 · ' : '') +
       '1년 성격은 최근 1년 일별 가격으로 산출 · 출처 오피넷</p></div>';
@@ -380,7 +380,7 @@
           '<span class="v">' + won(st(r).md) + '원</span></a>';
       }).join('') + '</div></div>';
 
-    html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
+    html += '<p class="oil-p oil-srcnote">' +
       OIL.asOf(meta) + ' 실제 판매가 · 출처 오피넷 · 하루 5번 갱신</p></div>';
 
     OIL.render(html);
@@ -428,7 +428,7 @@
             return '<a href="' + OIL.areaUrl(r.sl) + '">' + esc(r.r) +
               '<span class="s">주유소 ' + st(r).n + '곳 · 최저 ' + won(st(r).lo) + '원</span></a>';
           }).join('')
-        : '<div style="padding:10px 12px;font-size:13px;color:#5B666A;">찾는 동네가 없습니다</div>';
+        : '<div class="oil-suggest-none">찾는 동네가 없습니다</div>';
     });
   }
 

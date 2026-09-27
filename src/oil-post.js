@@ -119,7 +119,7 @@
       var text = summarize(body);
       return '<a class="post" href="' + entryUrl(e) + '" style="display:block;">' +
         '<div class="post-title" style="margin-bottom:8px;">' + OIL.esc(title) + '</div>' +
-        '<div style="font-size:13px;line-height:1.7;color:#5B666A;">' + OIL.esc(text) + '...</div></a>';
+        '<div class="oil-post-more">' + OIL.esc(text) + '...</div></a>';
     }).join('');
   }
 
