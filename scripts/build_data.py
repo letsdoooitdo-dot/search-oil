@@ -93,17 +93,39 @@ def main():
         ).fetchone() or ("횡보", snap["gas"]["median"], 0.0)
 
         rows = con.execute("""
-            SELECT s.region, s.name, s.brand, s.is_self, s.lat, s.lng, s.addr, s.tel,
+            SELECT s.station_id, s.region, s.name, s.brand, s.is_self, s.lat, s.lng, s.addr, s.tel,
                    p.gasoline, p.diesel, p.premium_gasoline, p.kerosene, c.character
             FROM stations s
             JOIN prices p ON p.station_id = s.station_id AND p.price_date = ?
             LEFT JOIN station_character c ON c.station_id = s.station_id
             WHERE p.gasoline IS NOT NULL OR p.diesel IS NOT NULL
-        """, (day,))
+        """, (day,)).fetchall()
+
+        # 직전 날짜 가격 - "어제보다 10원 내림"을 보여주려고 (동네 기름값 화면).
+        # 수집을 빼먹은 날이 있으면 그 전날과 비교한다(날짜는 pd 에 적어 둔다).
+        prev_day = (con.execute("SELECT MAX(price_date) FROM prices WHERE price_date < ?",
+                                (day,)).fetchone() or [None])[0]
+        prev = {}
+        if prev_day:
+            prev = {sid: (g, dz) for sid, g, dz in con.execute(
+                "SELECT station_id, gasoline, diesel FROM prices WHERE price_date = ?", (prev_day,))}
+
+        # 최근 7개 날짜의 동네별 중앙값 - "넣을 타이밍"(오르는 중/내리는 중)에 쓴다
+        days7 = [r[0] for r in con.execute(
+            "SELECT DISTINCT price_date FROM prices WHERE price_date <= ? "
+            "ORDER BY price_date DESC LIMIT 7", (day,))][::-1]
+        hist = {}
+        for region, pdate, g, dz in con.execute(
+                "SELECT s.region, p.price_date, p.gasoline, p.diesel FROM prices p "
+                "JOIN stations s ON s.station_id = p.station_id "
+                "WHERE p.price_date IN (%s)" % ",".join("?" * len(days7)), days7):
+            h = hist.setdefault(region, {}).setdefault(pdate, ([], []))
+            if g: h[0].append(g)
+            if dz: h[1].append(dz)
 
         by_region = {}
         dongs = {}
-        for (region, name, brand, is_self, lat, lng, addr, tel,
+        for (sid, region, name, brand, is_self, lat, lng, addr, tel,
              gas, diesel, prem, kero, ch) in rows:
             # 좌표·주소·전화는 "여기서 몇 km" 와 상세보기·찾아가기에 쓴다.
             # 이게 없으면 우회 손익분기를 계산할 수가 없다.
@@ -112,6 +134,10 @@ def main():
                 "g": gas, "d": diesel, "c": ch or "",
                 "a": addr or "", "t": tel or "",
             }
+            if sid in prev:             # 직전 날짜 가격 (없으면 새로 생긴 곳)
+                pg, pdz = prev[sid]
+                if pg: item["yg"] = pg
+                if pdz: item["yd"] = pdz
             if lat and lng:
                 item["la"] = round(lat, 5)
                 item["ln"] = round(lng, 5)
@@ -172,6 +198,14 @@ def main():
             # 전부 담는다. 싼 40곳만 담으면 "지금 내 옆에 있는 주유소" 가 빠져서
             # 비교 기준(가까운 집 가격)을 잡을 수가 없다.
             detail = dict(summary)
+            # 최근 7개 날짜 동네 중앙값 흐름 + 비교한 직전 날짜
+            h = hist.get(region, {})
+            detail["trend"] = {
+                "dates": [x[5:] for x in days7],
+                "g": [float(st.median(h[x][0])) if x in h and h[x][0] else None for x in days7],
+                "d": [float(st.median(h[x][1])) if x in h and h[x][1] else None for x in days7],
+            }
+            detail["prevDate"] = prev_day or ""
             detail["stations"] = sorted(
                 items, key=lambda x: (x["g"] or 9e9, x["c"] != "늘 최저권"))
             total_bytes += write(os.path.join(OUT, "region", f"{slug(region)}.json"), detail)

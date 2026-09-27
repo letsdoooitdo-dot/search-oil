@@ -97,7 +97,61 @@
   padding: 10px 16px; font-size: 12.5px; color: var(--oil-ink);
 }
 .oil-rank a:nth-child(even) { background: var(--oil-soft); }
-.oil-rank .v { font-weight: 700; color: var(--oil-accent-dark); flex-shrink: 0; }
+/* 가격은 본문 색 - 빨강은 '드는 돈·손해'에만 쓴다(전에는 가격이 빨갛게 나왔다) */
+.oil-rank .v { font-weight: 700; color: var(--oil-ink); flex-shrink: 0; }
+.oil-rank .v i { font-style: normal; font-size: 11.5px; font-weight: 700; margin-left: 5px; color: var(--oil-muted); }
+.oil-rank .v i.is-gain { color: var(--oil-teal-dark); }
+.oil-rank .v i.is-cost { color: var(--oil-accent-dark); }
+.oil-rank a.is-me { font-weight: 700; }
+.oil-rank a.is-me i { font-style: normal; font-size: 11px; color: var(--oil-mint-strong); margin-left: 4px; }
+
+/* ── 동네 기름값 브리핑 ────────────────────────────────────── */
+.oil-sec-h { padding: 0 16px 10px; }
+.oil-sec-h .oil-card-title { margin: 0; }
+.oil-sec-s { margin: 5px 0 0; font-size: 12px; line-height: 1.6; color: var(--oil-muted); }
+.oil-sec-f { padding: 12px 16px 4px; }
+.oil-sec-note { margin: 10px 0 0; font-size: 11.5px; line-height: 1.6; color: var(--oil-muted); }
+.oil-sec-h .oil-p b.is-gain, .oil-card .oil-p b.is-gain { color: var(--oil-teal-dark); }
+.oil-sec-h .oil-p b.is-cost, .oil-card .oil-p b.is-cost { color: var(--oil-accent-dark); }
+.oil-area-where { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.oil-area-where .oil-spot { margin-top: 0; }
+.oil-area-other { font-size: 12.5px; font-weight: 700; color: var(--oil-ink2); text-decoration: underline; text-underline-offset: 2px; }
+
+/* 오늘 제일 싼 곳 3곳 */
+.oil-top3-item {
+  display: flex; align-items: center; gap: 11px; padding: 12px 16px;
+  border-top: 1px solid var(--oil-line-soft);
+}
+.oil-top3-no {
+  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--oil-soft); color: var(--oil-ink2);
+  font-size: 12px; font-weight: 900; line-height: 24px; text-align: center;
+}
+.oil-top3-no.is-first { background: var(--oil-ink); color: #fff; }
+.oil-top3-main { flex: 1 1 auto; min-width: 0; }
+.oil-top3-main b { display: block; font-size: 14.5px; font-weight: 800; color: var(--oil-ink); line-height: 1.4; }
+.oil-top3-main i { display: block; font-style: normal; margin-top: 2px; line-height: 1.5; }
+.oil-top3-main .oil-tag:first-child { margin-left: 0; }
+.oil-top3-p { flex-shrink: 0; font-size: 19px; font-weight: 900; letter-spacing: -0.03em; color: var(--oil-ink); }
+.oil-top3-p small { font-size: 12px; font-weight: 600; margin-left: 1px; }
+
+/* 어제 대비 - 내리면 사용자에게 좋은 일(초록), 오르면 드는 돈(빨강) */
+.oil-delta { font-size: 11.5px; font-weight: 600; color: var(--oil-muted); white-space: nowrap; }
+.oil-delta.is-down { color: var(--oil-teal-dark); }
+.oil-delta.is-up { color: var(--oil-accent-dark); }
+.oil-list-sub { display: block; font-style: normal; margin-top: 2px; }
+.oil-badge.is-mid { background: var(--oil-soft); color: var(--oil-muted); }
+
+/* 넣을 타이밍 */
+.oil-trend-head { margin: 4px 0 0; font-size: 17px; font-weight: 900; letter-spacing: -0.02em; color: var(--oil-ink); }
+.oil-trend-head.is-up { color: var(--oil-accent-dark); }
+.oil-trend-head.is-down { color: var(--oil-teal-dark); }
+.oil-spark { display: block; width: 100%; height: auto; margin-top: 10px; color: var(--oil-ink2); }
+.oil-spark circle { fill: #fff; stroke: var(--oil-ink2); stroke-width: 2; }
+.oil-spark circle.is-last { fill: var(--oil-ink); stroke: var(--oil-ink); }
+.oil-spark text { font-size: 11px; fill: var(--oil-muted); }
+.oil-spark text.v { font-weight: 700; fill: var(--oil-ink2); }
+.oil-spark text.v.is-last { font-size: 12.5px; font-weight: 900; fill: var(--oil-ink); }
 
 /* 버튼 */
 .oil-btn {
