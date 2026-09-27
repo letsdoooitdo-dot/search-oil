@@ -288,7 +288,7 @@
   }
 
   /* ── 화면 ────────────────────────────────────────────────── */
-  var state = null;   /* { baseKm, baseMin, cutKm, seg, reg, date, cand, pool, baseShort } */
+  var state = null;   /* { baseKm, baseMin, cutKm, seg, reg, meta, cand, pool, baseShort } */
 
   function head(extra) {
     return '<div class="oil-route">' +
@@ -343,7 +343,7 @@
           ? (unsure ? ' · 기다리지 않으려고 ' + unsure + '곳은 못 쟀습니다. 이 중에 1위보다 조금 나은 곳이 있을 수 있습니다'
                     : ' · 나머지는 가장 유리하게 쳐도 1위보다 덜 남는 곳') : '') + ')' +
         (guessed ? ' · 길찾기가 안 된 곳은 "약"을 붙였습니다' : ''),
-      cond: OIL.condText('detour', state.date)
+      cond: OIL.condText('detour', state.meta)
     });
 
     if (OIL.map && OIL.map.can()) html += '<div class="oil-list-map" id="oil-list-map"></div>';
@@ -386,7 +386,7 @@
     html += '<a class="oil-btn" href="' + (OIL.cfg.listPageUrl || '/') + '">' +
       '<span>다른 목적지로 찾기</span>' + OIL.chev('#fff') + '</a>';
     html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
-      OIL.dateKo(state.date) + ' ' + fuelName() + ' 실제 판매가 · 출처 오피넷 · ' +
+      OIL.asOf(state.meta) + ' ' + fuelName() + ' 실제 판매가 · 출처 오피넷 · ' +
       '우회 거리는 카카오맵 길찾기로 실제 경로를 계산한 값입니다</p></div>';
 
     OIL.render(html);
@@ -453,7 +453,7 @@
       var seg = cut(route.path, range());
       return Promise.all([OIL.meta(), OIL.regions()]).then(function (a) {
         state = { baseKm: route.km, baseMin: route.min, cutKm: Math.min(seg.km, route.km),
-                  seg: seg, reg: a[1], date: a[0].date };
+                  seg: seg, reg: a[1], meta: a[0] };
         return refresh();
       });
     }).catch(fail);

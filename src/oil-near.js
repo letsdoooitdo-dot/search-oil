@@ -277,7 +277,7 @@
           ? (unsure ? ' · ' + unsure + '곳은 길찾기가 안 돼 확인하지 못했습니다'
                     : ' · 나머지는 가장 가깝게 쳐도 1위보다 덜 남는 곳') : '') + ')' +
         (guessed ? ' · 길찾기가 안 된 곳은 거리 앞에 "약"을 붙였습니다' : ''),
-      cond: OIL.condText('near', meta.date)
+      cond: OIL.condText('near', meta)
     });
 
     /* 지도 - 목록에 보이는 곳을 그대로 찍는다 */
@@ -323,7 +323,7 @@
       '<span>다른 장소로 찾기</span>' + OIL.chev('#fff') + '</a>';
 
     html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
-      OIL.dateKo(meta.date) + ' ' + fuelName() + ' 실제 판매가 · 출처 오피넷 · ' +
+      OIL.asOf(meta) + ' ' + fuelName() + ' 실제 판매가 · 출처 오피넷 · ' +
       '거리는 카카오맵 길찾기의 실제 도로거리입니다</p></div>';
 
     OIL.render(html);

@@ -85,9 +85,10 @@ def deploy():
         return True
 
     n = len(out.strip().splitlines())
-    today = dt.date.today().isoformat()
+    # 하루 여러 번 올리므로 시각까지 적는다
+    stamp = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
     for cmd in (("add", "api"),
-                ("commit", "-m", f"데이터 갱신 {today}")):
+                ("commit", "-m", f"데이터 갱신 {stamp}")):
         code, out = git(*cmd)
         if code != 0:
             say(f"  ! git {cmd[0]} 실패: " + out.strip()[:200])
@@ -95,8 +96,16 @@ def deploy():
 
     code, out = git("push", "origin", "main")
     if code != 0:
-        say("  ! git push 실패: " + out.strip()[:300])
-        return False
+        # 그사이 다른 쪽(PC·GitHub 서버·사람)이 먼저 올렸다. 최신본 위에 이번 것을 얹고
+        # 다시 올린다. api/ 가 겹치면 방금 만든 이번 데이터(-X theirs)가 이긴다.
+        say("  먼저 올라간 게 있어 합친 뒤 다시 올립니다")
+        code, out = git("pull", "--rebase", "-X", "theirs", "origin", "main")
+        if code == 0:
+            code, out = git("push", "origin", "main")
+        if code != 0:
+            git("rebase", "--abort")
+            say("  ! git push 실패: " + out.strip()[:300])
+            return False
     say(f"  파일 {n}개 올림 · GitHub Pages 가 1~2분 뒤 반영합니다")
     return True
 

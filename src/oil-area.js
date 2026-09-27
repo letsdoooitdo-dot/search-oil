@@ -301,7 +301,7 @@
 
     /* 첫 줄이 곧 답이다 - 오늘 이 동네 최저가 */
     html += '<div><div class="oil-kicker" style="color:var(--oil-mint-strong)">동네 기름값 · ' +
-        OIL.dateKo(meta.date) + '</div>' +
+        OIL.asOf(meta) + ' 기준</div>' +
       '<h1 class="oil-h1">' + esc(r.r) + ' 오늘 ' + fuelName() + '<br>최저 ' + won(s.lo) + '원</h1>' +
       '<p class="oil-lead" style="margin-top:6px;">주유소 ' + s.n + '곳 · 보통 ' + won(s.md) + '원 · ' +
         '가장 비싼 곳 ' + won(s.hi) + '원</p>' +
@@ -318,7 +318,7 @@
     html += fullHtml(list, s, r);
 
     html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
-      esc(r.r) + ' · ' + OIL.dateKo(meta.date) + ' ' + fuelName() + ' 실제 판매가 ' + s.n + '곳 · ' +
+      esc(r.r) + ' · ' + OIL.asOf(meta) + ' ' + fuelName() + ' 실제 판매가 ' + s.n + '곳 · ' +
       (r.prevDate ? '어제 대비는 ' + OIL.dateKo(r.prevDate) + ' 가격과 비교 · ' : '') +
       '1년 성격은 최근 1년 일별 가격으로 산출 · 출처 오피넷</p></div>';
 
@@ -381,7 +381,7 @@
       }).join('') + '</div></div>';
 
     html += '<p class="oil-p" style="font-size:11.5px;color:var(--oil-muted);">' +
-      OIL.dateKo(meta.date) + ' 실제 판매가 · 출처 오피넷 · 매일 갱신</p></div>';
+      OIL.asOf(meta) + ' 실제 판매가 · 출처 오피넷 · 하루 5번 갱신</p></div>';
 
     OIL.render(html);
     document.title = '우리 동네 기름값 - 오늘 제일 싼 주유소 | 갈까말까';

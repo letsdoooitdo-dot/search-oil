@@ -23,6 +23,7 @@ import sys as _s
 try: _s.stdout.reconfigure(encoding="utf-8", errors="replace")
 except Exception: pass
 
+import datetime
 import json
 import os
 import re
@@ -217,6 +218,9 @@ def main():
 
         meta = {
             "date": day,
+            # 가격 기준 시각 - 하루 5번(07·10·13·16·19시) 받으므로 날짜만으로는 부족하다.
+            # 수집 직후에 만들므로 지금 시각이 곧 받은 시각이다(서버는 TZ=Asia/Seoul).
+            "at": datetime.datetime.now().strftime("%H:%M"),
             "phase": phase[0], "natMedian": phase[1], "trend": phase[2],
             "gas": snap["gas"], "diesel": snap["diesel"],
             "self": snap["self_full"]["self"]["median"],

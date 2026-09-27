@@ -1,0 +1,67 @@
+# 오피넷 가격을 하루 5번 받아 사이트 데이터(api/)를 갱신한다 - PC가 꺼져 있어도 돈다.
+#
+# 왜 5번인가 (2026-09-27 실측, logs/price_watch):
+#   오피넷 가격은 낮 동안 수시로 바뀐다. 오전 7시 한 번만 받으면 밤까지 휘발유 132곳·경유
+#   159곳이 실제와 어긋났다. 07·10·13·16·19시 5번이면 평균 2곳으로 줄었다. 19시 이후는
+#   거의 안 바뀐다.
+#
+# 하는 일은 PC에서 돌던 scripts/daily.py 그대로다 (수집 → 적재 → 좌표 → 데이터 → 점검 → 올리기).
+# 가격 이력 DB(oil.db)는 저장소에 넣지 않고 릴리스 'db-store' 의 첨부파일로 보관한다 -
+# 매번 내려받아 쓰고, 성공하면 다시 올려둔다.
+# 필요한 비밀값: KAKAO_REST_KEY (새 주유소 좌표 채우기용 카카오 REST 키)
+# 수동 실행: Actions 탭 → "가격 데이터 갱신" → Run workflow
+name: 가격 데이터 갱신
+
+on:
+  schedule:
+    - cron: '0 22,1,4,7,10 * * *'   # UTC → 한국시간 07·10·13·16·19시 (GitHub 사정으로 몇 분~수십 분 늦을 수 있다)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# 두 번이 겹쳐 돌면 DB를 서로 덮어쓴다 - 앞의 것이 끝날 때까지 기다린다
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TZ: Asia/Seoul              # 날짜·시각을 한국 기준으로 (안 하면 파일 날짜가 하루 밀린다)
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 브라우저 자동화 준비 (오피넷 대기열 때문에 진짜 브라우저로 받는다)
+        run: pip install playwright
+
+      - name: 가격 이력 DB 내려받기
+        run: gh release download db-store --pattern oil.db --dir scripts --clobber
+
+      - name: 수집 → 적재 → 좌표 → 데이터 → 점검 → 올리기
+        env:
+          KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python scripts/daily.py
+
+      - name: 가격 이력 DB 올려두기
+        if: success()
+        run: gh release upload db-store scripts/oil.db --clobber
+
+      - name: 실행 기록 남기기
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: log
+          path: logs/
+          retention-days: 7
+          if-no-files-found: ignore

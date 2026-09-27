@@ -160,7 +160,7 @@
 
     /* 맨 아래 - 버튼을 빼고 출처를 그 자리에 둔다.
        계산기까지 온 사람에게 "다른 화면 보세요"는 흐름을 끊는 말이다. */
-    html += '<p class="oil-calc-note">' + OIL.dateKo(meta.date) +
+    html += '<p class="oil-calc-note">' + OIL.asOf(meta) +
       ' ' + esc(baseWhere) + ' ' + fuelName + ' 실제 판매가 기준 · 출처 오피넷<br>' +
       '실제 주유비는 운전 습관과 유가 변동에 따라 달라집니다</p>';
 

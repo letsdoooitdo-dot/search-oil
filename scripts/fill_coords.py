@@ -10,8 +10,8 @@
   python fill_coords.py --dry      찾아만 보고 저장은 하지 않는다
   python fill_coords.py --limit 50 한 번에 이만큼만
 
-키는 scripts/local_keys.py 의 NAVI_KEY(카카오 REST 키)를 쓴다. 내 컴퓨터에서만
-도는 작업이라 중계 서버가 필요 없다.
+키는 scripts/local_keys.py 의 NAVI_KEY(카카오 REST 키)를 쓰고, 그 파일이 없으면
+환경변수 KAKAO_REST_KEY 를 쓴다(GitHub 서버에서는 저장소 비밀값으로 넣어준다).
 
 못 찾는 곳도 있다. 주소가 '00리 123-4' 처럼 옛 지번뿐이거나 폐업 직전이면
 카카오에도 없다. 그런 곳은 다음 날 다시 시도한다 - 며칠 뒤 등록되기도 한다.

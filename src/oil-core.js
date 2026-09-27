@@ -14,6 +14,10 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
   };
+  /* 가격 기준 - "2026년 9월 28일 13:04". 하루 5번 받으므로 시각까지 밝힌다. */
+  OIL.asOf = function (m) {
+    return OIL.dateKo(m && m.date) + (m && m.at ? ' ' + m.at : '');
+  };
   OIL.dateKo = function (iso) {
     if (!iso) return '';
     var p = iso.split('-');
@@ -349,13 +353,13 @@
   };
 
   /* 계산 조건 한 줄. 사용자가 고른 값이 그대로 들어갔는지 눈으로 확인하게 한다. */
-  OIL.condText = function (kind, date) {
+  OIL.condText = function (kind, meta) {
     var P = OIL.prefs, car = P.car();
     var move = kind === 'detour'
       ? '들렀다 가느라 더 달리는 거리(카카오 길찾기 실측)'
       : (P.isRound() ? '왕복 — 갔다가 돌아오는 거리까지' : '편도 — 주유소까지 가는 거리만');
     return P.fuelName() + ' · ' + car.label + ' 연비 ' + car.kmpl + 'km/L · 주유 ' + P.liters() + 'L · ' +
-      move + ' · 가격은 ' + OIL.dateKo(date) + ' 오피넷 판매가 · 시간·통행료·카드 할인은 넣지 않았습니다';
+      move + ' · 가격은 ' + OIL.asOf(meta) + ' 오피넷 판매가 · 시간·통행료·카드 할인은 넣지 않았습니다';
   };
 
   /* ── 받을 동네 고르기 ───────────────────────────────────────
