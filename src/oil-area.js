@@ -76,18 +76,58 @@
 
   function josa(w, pair) { return OIL.josa(w, pair); }
 
+  /* ── 누르면 펼치는 상세 ────────────────────────────────────
+     결과 화면의 '나머지 보기'와 같은 방식 - 그 자리에서 펼치고 다른 앱으로 넘어가지
+     않는다(2026-09-27 사용자 요청). <details> 라 스크립트 없이도 열리고 닫힌다. */
+  function yLine(now, y) {
+    if (!now || !y) return '';
+    var d = Math.round(now - y);
+    return d ? ' <span class="oil-delta ' + (d < 0 ? 'is-down' : 'is-up') + '">어제보다 ' +
+      won(Math.abs(d)) + '원 ' + (d < 0 ? '↓' : '↑') + '</span>' : ' <span class="oil-delta">어제와 같음</span>';
+  }
+
+  function detailHtml(s, md) {
+    var fuels = [['휘발유', s.g, s.yg], ['경유', s.d, s.yd], ['고급휘발유', s.p], ['실내등유', s.k]];
+    var h = '<div class="oil-rows">';
+    fuels.forEach(function (f) {
+      if (!f[1]) return;
+      h += '<div class="oil-row"><span class="oil-row-k">' + f[0] + '</span>' +
+        '<span class="oil-row-v">' + won(f[1]) + '원' + yLine(f[1], f[2]) + '</span></div>';
+    });
+    h += '<div class="oil-row"><span class="oil-row-k">주소</span>' +
+      '<span class="oil-row-v" style="font-weight:500;">' + esc(s.a || '-') + '</span></div>';
+    if (s.t) {
+      h += '<div class="oil-row"><span class="oil-row-k">전화</span>' +
+        '<span class="oil-row-v"><a href="tel:' + esc(s.t) + '">' + esc(s.t) + '</a></span></div>';
+    }
+    h += '<div class="oil-row"><span class="oil-row-k">상표</span>' +
+      '<span class="oil-row-v" style="font-weight:500;">' + esc(s.b || '-') + (s.s ? ' · 셀프' : '') +
+      '</span></div></div>';
+
+    var gap = Math.round(md - price(s)), notes = [];
+    notes.push(Math.abs(gap) < 1 ? '이 동네 보통 가격과 같아요.'
+      : '이 동네 보통 가격(' + won(md) + '원)보다 리터당 <b>' + won(Math.abs(gap)) + '원 ' +
+        (gap > 0 ? '싸요' : '비싸요') + '</b> (' + liters() + 'L면 ' + won(Math.abs(gap) * liters()) + '원).');
+    if (s.c === '늘 최저권') notes.push('최근 1년 동안 이 동네 최저권을 지킨 곳이에요. 오늘만 싼 곳이 아닙니다.');
+    else if (s.c === '늘 최고권') notes.push(price(s) <= md
+      ? '평소에는 이 동네에서 비싼 축인데 오늘은 싸요. 일시적일 수 있어요.'
+      : '최근 1년 동안 이 동네에서 비싼 축이었던 곳이에요.');
+    return h + '<p class="oil-st-why">' + notes.join('<br>') + '</p>';
+  }
+
   /* ── 1. 오늘 제일 싼 곳 ───────────────────────────────────── */
   function top3Html(r, list, s) {
     var top = list.slice(0, 3);
     var h = '<section class="oil-card is-flush' + SKIP + '"><div class="oil-sec-h">' +
       '<div class="oil-card-title">오늘 제일 싼 곳</div>' +
-      '<p class="oil-sec-s">' + esc(r.r) + ' 주유소 ' + s.n + '곳 중 ' + fuelName() + ' 가격 순</p></div>';
+      '<p class="oil-sec-s">' + esc(r.r) + ' 주유소 ' + s.n + '곳 중 ' + fuelName() + ' 가격 순 · 누르면 상세보기</p></div>';
     h += top.map(function (x, i) {
-      return '<div class="oil-top3-item">' +
+      return '<details class="oil-area-item"><summary class="oil-top3-item">' +
         '<span class="oil-top3-no' + (i === 0 ? ' is-first' : '') + '">' + (i + 1) + '</span>' +
         '<span class="oil-top3-main"><b>' + esc(x.n) + '</b>' +
           '<i>' + tags(x, s.md) + '</i><i>' + delta(x) + '</i></span>' +
-        '<span class="oil-top3-p">' + won(price(x)) + '<small>원</small></span></div>';
+        '<span class="oil-top3-p">' + won(price(x)) + '<small>원</small></span></summary>' +
+        '<div class="oil-area-det">' + detailHtml(x, s.md) + '</div></details>';
     }).join('');
     /* 싼 집이 나한테도 이득인지는 거리를 따져야 안다 - 그건 내 주변 찾기가 한다 */
     h += '<div class="oil-sec-f">' +
@@ -208,15 +248,17 @@
     var oneDay = list.filter(function (x) { return x.c === '늘 최고권' && price(x) <= s.md; }).length;
     var h = '<section class="oil-card is-flush' + SKIP + '"><div class="oil-sec-h">' +
       '<div class="oil-card-title">믿고 다닐 만한 곳</div>' +
-      '<p class="oil-sec-s">최근 1년 동안 이 동네 최저권을 지킨 주유소입니다. 오늘 하루 싼 집과 계속 싼 집은 다릅니다.</p></div>';
+      '<p class="oil-sec-s">최근 1년 동안 이 동네 최저권을 지킨 주유소입니다. 오늘 하루 싼 집과 계속 싼 집은 다릅니다. 누르면 상세보기</p></div>';
     if (!low.length) {
       h += '<p class="oil-p" style="padding:0 16px 14px;">이 동네에는 1년 내내 최저권을 지킨 곳이 없어요. ' +
         '오늘 싼 곳이 다음 달에도 싸다는 보장이 없으니, 넣기 전에 한 번씩 확인하는 게 좋아요.</p>';
     } else {
       h += low.slice(0, 5).map(function (x) {
-        return '<div class="oil-list-item"><span class="oil-list-name">' + esc(x.n) +
+        return '<details class="oil-area-item"><summary class="oil-list-item">' +
+          '<span class="oil-list-name">' + esc(x.n) +
           (x.s ? '<span class="oil-tag">셀프</span>' : '') + ' ' + delta(x) + '</span>' +
-          '<span class="oil-list-price">' + won(price(x)) + '원</span></div>';
+          '<span class="oil-list-price">' + won(price(x)) + '원</span></summary>' +
+          '<div class="oil-area-det">' + detailHtml(x, s.md) + '</div></details>';
       }).join('');
     }
     if (oneDay) {
@@ -229,15 +271,18 @@
   /* ── 5. 전체 목록 ─────────────────────────────────────────── */
   function listRows(list, md, selfOnly) {
     return list.filter(function (x) { return !selfOnly || x.s; }).map(function (x) {
-      return '<div class="oil-list-item"><span class="oil-list-name">' + esc(x.n) + tags(x, md) +
+      return '<details class="oil-area-item"><summary class="oil-list-item">' +
+        '<span class="oil-list-name">' + esc(x.n) + tags(x, md) +
         '<i class="oil-list-sub">' + delta(x) + '</i></span>' +
-        '<span class="oil-list-price">' + won(price(x)) + '원</span></div>';
+        '<span class="oil-list-price">' + won(price(x)) + '원</span></summary>' +
+        '<div class="oil-area-det">' + detailHtml(x, md) + '</div></details>';
     }).join('') || '<p class="oil-p" style="padding:10px 16px;">셀프 주유소가 없어요.</p>';
   }
 
   function fullHtml(list, s, r) {
     return '<section class="oil-card is-flush' + SKIP + '"><div class="oil-sec-h">' +
       '<div class="oil-card-title">전체 ' + list.length + '곳 · 싼 순서</div>' +
+      '<p class="oil-sec-s">누르면 상세보기</p>' +
       '<div class="oil-sido-tabs" id="oil-area-self" style="margin-top:9px;">' +
         '<button type="button" class="oil-chip active" data-v="all">전체</button>' +
         '<button type="button" class="oil-chip" data-v="self">셀프만 (' + r.sf + '곳)</button></div></div>' +

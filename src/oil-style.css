@@ -135,6 +135,17 @@
 .oil-top3-p { flex-shrink: 0; font-size: 19px; font-weight: 900; letter-spacing: -0.03em; color: var(--oil-ink); }
 .oil-top3-p small { font-size: 12px; font-weight: 600; margin-left: 1px; }
 
+/* 누르면 펼치는 주유소 줄 - 결과 화면의 '나머지 보기'와 같은 방식 */
+.oil-area-item > summary { list-style: none; cursor: pointer; }
+.oil-area-item > summary::-webkit-details-marker { display: none; }
+/* 줄마다 번갈아 옅은 바탕 - 줄이 <details> 안으로 들어가서 nth-child 를 details 기준으로 */
+.oil-area-item:nth-of-type(even) > .oil-list-item { background: var(--oil-soft); }
+.oil-area-item > .oil-list-item { background: transparent; }
+.oil-area-item[open] > summary { background: var(--oil-soft); }
+.oil-area-det { padding: 2px 16px 14px; }
+.oil-area-det .oil-rows { margin-top: 0; }
+.oil-area-det .oil-st-why b { color: var(--oil-ink); }
+
 /* 어제 대비 - 내리면 사용자에게 좋은 일(초록), 오르면 드는 돈(빨강) */
 .oil-delta { font-size: 11.5px; font-weight: 600; color: var(--oil-muted); white-space: nowrap; }
 .oil-delta.is-down { color: var(--oil-teal-dark); }
