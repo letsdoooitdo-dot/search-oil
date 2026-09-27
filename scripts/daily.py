@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-매일 한 번 이것만 돌면 된다 (수집 → 적재 → 데이터 → 배포)
+이것 하나가 수집 → 적재 → 데이터 → 배포를 한다 (GitHub 서버에서 하루 5번)
 ============================================================
-작업 스케줄러에 이 파일 하나만 걸어두면 손댈 일이 없다.
+2026-09-27부터 .github/workflows/update-data.yml 이 07·10·13·16·19시에 GitHub 서버에서 돌린다.
+PC 작업 스케줄러(--install)는 꺼 두었다 - 둘이 같이 돌면 올릴 때 서로 충돌한다.
 
   python daily.py                 전체
   python daily.py --skip-collect  이미 받아둔 CSV로 다시 만들기
@@ -99,7 +100,7 @@ def deploy():
         # 그사이 다른 쪽(PC·GitHub 서버·사람)이 먼저 올렸다. 최신본 위에 이번 것을 얹고
         # 다시 올린다. api/ 가 겹치면 방금 만든 이번 데이터(-X theirs)가 이긴다.
         say("  먼저 올라간 게 있어 합친 뒤 다시 올립니다")
-        code, out = git("pull", "--rebase", "-X", "theirs", "origin", "main")
+        code, out = git("pull", "--rebase", "--autostash", "-X", "theirs", "origin", "main")
         if code == 0:
             code, out = git("push", "origin", "main")
         if code != 0:
@@ -144,7 +145,7 @@ def main():
 
     start = dt.datetime.now()
     say("=" * 46)
-    say(f"주유소찾기 일일 갱신  {start:%Y-%m-%d %H:%M}")
+    say(f"갈까말까 데이터 갱신  {start:%Y-%m-%d %H:%M}")
     say("=" * 46)
 
     steps = []
