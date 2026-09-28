@@ -41,9 +41,15 @@ OUT = os.path.join(ROOT, "img")
 # 모든 페이지 맨 아래에 붙는 형제 사이트 배너.
 # 원본이 1.7MB 짜리 그림이라 그대로 쓰면 모든 페이지가 3MB 씩 무거워진다.
 # 둘을 나란히 놓으면 휴대폰에서 한 장이 190px 이라 600px 이면 넉넉하다.
-PROMO = [("정부지원금찾기-최종2.png", "promo-gov.jpg"),
+# 2026-09-28 정부지원금찾기 그림을 최종3 으로 바꿨다(사용자 요청).
+PROMO = [("정부지원금찾기-최종3.png", "promo-gov.jpg"),
          ("24시 심야약국.png", "promo-pharm.jpg")]
 PROMO_W = 600
+# 두 배너는 나란히 놓이고 높이가 그림 비율대로 정해진다(height:auto). 비율이 다르면
+# 한쪽만 높아져 아래 글씨 줄이 어긋난다 - 16:9 로 맞춰 자른다.
+# 위를 덜 자른다(TOP) - 제목 글씨가 위쪽에 있다. 최종3 은 3:2 라 위 34%·아래 66% 비율로 잘린다.
+PROMO_RATIO = 16 / 9
+PROMO_TOP = 0.34
 
 HERO_W = 1200                 # 머리 띠 가로 (휴대폰에서 2배로 봐도 충분하다)
 OG_W, OG_H = 1200, 630        # 카톡 큰 카드 규격 (1.91:1)
@@ -110,6 +116,11 @@ def main():
             print(f"  [건너뜀] assets/{src_name} 가 없습니다")
             continue
         im = Image.open(src_path).convert("RGB")
+        want_h = round(im.width / PROMO_RATIO)
+        if im.height - want_h > 4:          # 16:9 보다 높으면 위아래를 잘라 맞춘다
+            cut = im.height - want_h
+            top = round(cut * PROMO_TOP)
+            im = im.crop((0, top, im.width, top + want_h))
         w = PROMO_W
         im = im.resize((w, round(w * im.height / im.width)), Image.LANCZOS)
         save_jpg(im, os.path.join(OUT, out_name), quality=80)
