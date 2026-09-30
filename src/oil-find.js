@@ -148,7 +148,8 @@
     html += '</div>';
 
     OIL.render(html);
-    document.title = '갈까말까 - 내 주변 기름값 싼 주유소';
+    /* 검색 결과 제목 - 테마의 <title>(첫 화면)과 같은 말이어야 한다 (2026-09-30 사용자 확정) */
+    document.title = '내 주변 최저가 주유소 찾기 - 갈까말까';
 
     ENV.wireHomeTip();
 
