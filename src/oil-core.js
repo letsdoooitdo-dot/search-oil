@@ -414,7 +414,9 @@
 
   /* 찾아가기 - 카카오맵. API 키가 필요 없고 앱이 깔려 있으면 앱이 열린다. */
   OIL.mapUrl = function (s) {
-    var name = String(s.n || '주유소').replace(/,/g, ' ');
+    // 쉼표는 이름/좌표 구분자라 뺀다. '/' 는 인코딩해도 카카오가 경로로 읽어 404 가 난다
+    // ('평택복합휴게소(제천방향)주유소/충전소', 2026-10-01 실측). ? # % \ 도 같은 위험이 있어 같이 뺀다
+    var name = String(s.n || '주유소').replace(/[,\/\\?#%]/g, ' ');
     if (s.la && s.ln) {
       return 'https://map.kakao.com/link/to/' + encodeURIComponent(name) +
         ',' + s.la + ',' + s.ln;
